@@ -138,6 +138,8 @@ html,body{min-height:100vh;font-family:'Plus Jakarta Sans',sans-serif;background
 .flabel{font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.07em}
 .finput{padding:8px 11px;font-size:13px;border:1px solid rgba(26,32,53,.13);border-radius:var(--r);background:#fff;color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;outline:none}
 .finput:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow)}
+select.finput{appearance:auto;-webkit-appearance:auto;cursor:pointer}
+select.finput:focus{outline:none}
 .finput::placeholder{color:var(--tx3)}
 textarea.finput{resize:vertical;min-height:76px;line-height:1.5}
 .ffoot{padding:14px 18px;border-top:1px solid rgba(26,32,53,.07);display:flex;gap:8px;justify-content:flex-end;background:rgba(255,255,255,.4)}
@@ -352,6 +354,8 @@ function getSbNav(){
 <div class="content">
   <div class="topbar">
     <span class="topbar-title" id="topbar-title">Atendimentos</span>
+    <span id="save-indicator" style="font-size:11px;font-weight:600;color:#1a9e5c;
+      opacity:0;transition:opacity .6s;margin-left:auto;margin-right:8px">💾 Salvo</span>
     <span class="topbar-date" id="topbar-date"></span>
   </div>
   <div class="main">
@@ -664,13 +668,15 @@ function getSbNav(){
 
           <!-- Linha 2: Segmento + Porte (só PJ) -->
           <div class="fgroup" id="mc-seg-group">
-            <label class="flabel">Segmento</label>
-            <select class="finput" id="mc-seg" style="width:100%;box-sizing:border-box">
-              <option>Alimentação</option><option>Comércio</option><option>Serviços</option>
-              <option>Indústria</option><option>Saúde</option><option>Educação</option>
-              <option>Tecnologia</option><option>Construção</option><option>Transporte</option>
-              <option>Agronegócio</option><option>Outros</option>
-            </select>
+            <label class="flabel" style="display:flex;align-items:center;justify-content:space-between">
+              Segmento
+              <button type="button" onclick="adicionarSegmento('mc-seg')"
+                style="font-size:10px;color:var(--blue);background:var(--blue-dim);border:none;
+                       border-radius:6px;padding:2px 7px;cursor:pointer;font-family:inherit;font-weight:600">
+                + Novo
+              </button>
+            </label>
+            <select class="finput seg-select" id="mc-seg" style="width:100%;box-sizing:border-box"></select>
           </div>
 
           <div class="fgroup" id="mc-porte-group">
@@ -962,9 +968,14 @@ function getHojePend(){return records.filter(r=>(r.agend&&isToday(r.agend)&&!r.s
 function alertCount(){return getAtrasados().length+getHojePend().length}
 
 function populateSelects(){
+  // Sincronizar com window.*
+  operadores=window.operadores||operadores;
+  clientes=window.clientes||clientes;
   // operadores no form
   const sel=document.getElementById('f-operador');
-  sel.innerHTML=operadores.filter(o=>o.status==='Ativo').map(o=>`<option>${o.nome}</option>`).join('');
+  var opsAtivos = operadores.filter(o=>o.status==='Ativo');
+  sel.innerHTML = '<option value="">— Sem operador —</option>'
+    + opsAtivos.map(o=>`<option>${o.nome}</option>`).join('');
   // clientes no form
   const csel=document.getElementById('f-cliente');
   csel.innerHTML='<option value="">Selecione o cliente...</option>'+clientes.map(c=>`<option>${c.nome}</option>`).join('');
@@ -1007,6 +1018,7 @@ function fecharModal(id){document.getElementById(id).style.display='none'}
 
 // TABLE
 function getFiltered(){
+  records=window.records||records;
   let src=[...records];
   const q=(document.getElementById('search-input').value||'').toLowerCase();
   const opF=document.getElementById('op-filter').value;
@@ -1038,8 +1050,23 @@ function updateMetrics(){
   document.getElementById('met-pct').textContent=t?Math.round(fin/t*100)+'%':'0%';
   document.getElementById('met-data').textContent=fmtDate(TODAY_OBJ);
 }
+
+// ── Excluir atendimento ──
+function excluirAtendimento(cod){
+  records=window.records||records;
+  if(!confirm('Excluir atendimento #'+cod+'?')) return;
+  var idx = records.findIndex(function(r){ return r.cod===cod; });
+  if(idx >= 0){
+    records.splice(idx, 1);
+    if(typeof window.sisvipSave==='function') window.sisvipSave('excluir');
+    renderTable();
+    if(typeof notify==='function') notify('Atendimento #'+cod+' excluído');
+  }
+}
+
 function filterTable(){currentPage=1;renderTable()}
 function renderTable(){
+  records=window.records||records;
   const src=getFiltered();
   const total=src.length;
   const pages=Math.max(1,Math.ceil(total/perPage));
@@ -1131,6 +1158,8 @@ function editRow(cod){
   toggleAgendFields();switchPage('novo');
 }
 function salvarAtendimento(){
+  // Garantir que 'records' aponta para o array atual (pode ter sido recarregado do localStorage)
+  records = window.records;
   const agIso=document.getElementById('f-agend-data').value;
   const novo={
     cliente:document.getElementById('f-cliente').value,
@@ -1141,7 +1170,7 @@ function salvarAtendimento(){
     status:document.getElementById('f-status').value,
     op:document.getElementById('f-operador').value,
     forma:document.getElementById('f-forma').value,
-    data:isoToDisp(document.getElementById('f-data').value)||'16/03/2026',
+    data:isoToDisp(document.getElementById('f-data').value)||window.TODAY||'',
     agend:agIso?isoToDisp(agIso):'',
     agendHora:document.getElementById('f-agend-hora').value,
     agendObs:document.getElementById('f-agend-obs').value.trim(),
@@ -1151,15 +1180,17 @@ function salvarAtendimento(){
     const idx=records.findIndex(r=>r.cod===editCod);
     if(idx>=0){const before={...records[idx]};const diffs=diffRecords(before,{...before,...novo});Object.assign(records[idx],novo);logHist('editado',editCod,novo.op,diffs);notify('Atendimento #'+editCod+' atualizado');}
   }else{
-    const c=Math.max(0,...records.map(r=>r.cod))+1;
+    const c=Math.max.apply(null,[0].concat(records.map(function(r){return r.cod||0;})))+1;
     records.push({cod:c,...novo});logHist('criado',c,novo.op,[]);notify('Atendimento #'+c+' criado');
   }
+  if(typeof window.sisvipSave==='function') window.sisvipSave('atendimento');
   editCod=null;switchPage('lista');renderCalendar();
 }
 function cancelForm(){editCod=null;switchPage('lista')}
 
 // CLIENTES
 function renderClientes(){
+  clientes=window.clientes||clientes;
   var q   = (document.getElementById('cli-search').value||'').toLowerCase();
   var seg = document.getElementById('cli-seg').value;
   var src = clientes.filter(function(c){
@@ -1478,6 +1509,7 @@ function editarCliente(id){ abrirModalCliente(id); }
 
 // ── Salvar cliente ──
 function salvarCliente() {
+  clientes=window.clientes||clientes;
   var get = function(id){ var e=document.getElementById(id); return e?e.value.trim():''; };
   var nome = get('mc-nome');
   if (!nome) { if(typeof notify==='function') notify('⚠️ Informe o nome do cliente'); return; }
@@ -1520,6 +1552,7 @@ function salvarCliente() {
   fecharModal('modal-cliente');
   if(typeof populateSelects==='function') populateSelects();
   if(typeof renderClientes==='function')  renderClientes();
+  if(typeof window.sisvipSave==='function') window.sisvipSave('cliente');
 }
 
 // ── Excluir pelo modal ──
@@ -1534,8 +1567,10 @@ window.excluirClienteModal = function() {
 };
 
 function excluirCliente(id){
+  clientes=window.clientes||clientes;
   if(!confirm('Excluir este cliente?'))return;
   clientes=clientes.filter(function(c){return c.id!==id;});
+  if(typeof window.sisvipSave==='function') window.sisvipSave('excluir-cliente');
   if(typeof populateSelects==='function') populateSelects();
   if(typeof renderClientes==='function')  renderClientes();
   if(typeof notify==='function') notify('Cliente excluído');
@@ -1752,6 +1787,7 @@ window.novoAtendimentoCliente = function() {
   }, 200);
 };
 function renderOperadores(){
+  operadores=window.operadores||operadores;
   document.getElementById('op-count').textContent=operadores.length+' operador'+(operadores.length!==1?'es':'');
   document.getElementById('op-grid').innerHTML=operadores.map(o=>`
     <div class="cad-card">
@@ -1803,10 +1839,11 @@ function salvarOperador(){
     if(idx>=0)Object.assign(operadores[idx],obj);
     notify('Operador atualizado');
   }else{
-    const newId=Math.max(0,...operadores.map(o=>o.id))+1;
+    const newId=Math.max.apply(null,[0].concat(operadores.map(function(o){return o.id||0;})))+1;
     operadores.push({id:newId,...obj});
     notify('Operador cadastrado');
   }
+  if(typeof window.sisvipSave==='function') window.sisvipSave('operador');
   fecharModal('modal-operador');populateSelects();renderOperadores();
 }
 function excluirOperador(id){
@@ -1936,7 +1973,7 @@ function renderPainel(){
 }
 
 // HIST
-function logHist(action,cod,op,diffs){historyLog.unshift({id:Date.now(),action,cod,op,time:nowTime(),date:'16/03/2026',diffs:diffs||[]})}
+function logHist(action,cod,op,diffs){historyLog.unshift({id:Date.now(),action,cod,op,time:nowTime(),date:window.TODAY_REAL||new Date().toLocaleDateString('pt-BR'),diffs:diffs||[]})}
 function diffRecords(before,after){
   const fs={cliente:'Cliente',status:'Status',op:'Operador',motivo:'Motivo',detalhe:'Detalhe',resolucao:'Resolução',forma:'Forma',contato:'Contato',agend:'Agendamento'};
   return Object.entries(fs).filter(([k])=>(before[k]||'')!==(after[k]||'')).map(([k,l])=>({field:l,old:before[k]||'—',new:after[k]||'—'}));
@@ -2010,6 +2047,14 @@ window.USERS = USERS;
         </div>
         <div id="li-error" style="display:none;background:#fee2e2;border:1px solid rgba(214,48,48,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#d63030;margin-bottom:14px">Usuário ou senha incorretos.</div>
         <button onclick="fazerLogin()" style="width:100%;padding:12px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#2b7fff 0%,#1a6ef0 100%);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;box-shadow:0 4px 14px rgba(43,127,255,.4)" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(43,127,255,.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(43,127,255,.4)'">Entrar</button>
+        <div style="text-align:center;margin-top:12px">
+          <button onclick="abrirRecuperarSenha()" type="button"
+            style="background:none;border:none;color:#2b7fff;font-size:12px;cursor:pointer;
+                   font-family:'Plus Jakarta Sans',sans-serif;text-decoration:underline;
+                   text-underline-offset:2px;opacity:.8">
+            🔑 Esqueci minha senha
+          </button>
+        </div>
         <div style="margin-top:16px;padding:10px 13px;background:#f0f6ff;border-radius:8px;font-size:11px;color:#4a5570;line-height:1.6">
           <strong style="color:#2b7fff">Acesso inicial:</strong> usuário <code style="background:#e0edff;padding:1px 5px;border-radius:4px;color:#2b7fff">admin</code> — senha <code style="background:#e0edff;padding:1px 5px;border-radius:4px;color:#2b7fff">admin</code>
         </div>
@@ -2035,7 +2080,7 @@ window.pode = function(perm){
 // ── FILTRO DE ATENDIMENTOS POR ACESSO ──
 // window.getFiltered removido — usa window.getFiltered diretamente
 
-window.// getFiltered — unificado na função principal acima
+// getFiltered — unificado na função principal acima
 
 // ── GUARDAR REFERÊNCIA AO renderTable ORIGINAL ──
 // window.renderTable removido — usa window.renderTable diretamente
@@ -2703,7 +2748,7 @@ window.salvarLancamento=function(){
     if(idx>=0)Object.assign(window.lancamentos[idx],obj);
     notify('Lançamento atualizado');
   } else {
-    const newId=Math.max(0,...window.lancamentos.map(l=>l.id))+1;
+    const newId=Math.max.apply(null,[0].concat((window.lancamentos||[]).map(function(l){return l.id||0;})))+1;
     window.lancamentos.push({id:newId,...obj});
     notify('Lançamento criado');
   }
@@ -2715,7 +2760,7 @@ window.salvarLancamento=function(){
 window.marcarPago=function(id){
   const l=window.lancamentos.find(x=>x.id===id);
   if(!l)return;
-  l.status='pago'; l.pago='16/03/2026';
+  l.status='pago'; l.pago=window.TODAY_REAL||new Date().toLocaleDateString('pt-BR');
   notify('✓ Marcado como pago');
   renderReceber(); renderPagar();
 };
@@ -2723,6 +2768,7 @@ window.marcarPago=function(id){
 window.excluirLancamento=function(id){
   if(!confirm('Excluir este lançamento?'))return;
   window.lancamentos=window.lancamentos.filter(l=>l.id!==id);
+  if(typeof window.sisvipSave==='function') window.sisvipSave('lancamento-excluir');
   notify('Lançamento excluído');
   renderReceber(); renderPagar();
 };
@@ -3451,13 +3497,14 @@ function renderCfgContent(tab){
   }
   else if(tab==='permissoes'){
     // renderizar o painel de permissões dentro da aba de configurações
-    const TODAS_P = window.TODAS_PERMISSOES || [];
-    // allUsers — reatribuição intencional
-    const ativo = window.permUserAtivo || 'admin';
-    // perms — reatribuição intencional
-    isAdmin = isAdmin = ativo==='admin';
-    // grupos — reatribuição intencional
-    const cores = {
+    var TODAS_P  = window.TODAS_PERMISSOES || [];
+    var allUsers = Object.keys(window.userPermissions || {});
+    var ativo    = window.permUserAtivo || 'admin';
+    var perms    = (window.userPermissions || {})[ativo] || {};
+    var grupos   = [];
+    TODAS_P.forEach(function(p){ if(grupos.indexOf(p.grupo)<0) grupos.push(p.grupo); });
+    var isAdmin  = (ativo === 'admin');
+    var cores = {
       admin:'#d63030', kleber:'#2b7fff', ana:'#7b5af5',
       carlos:'#e07b20', fernanda:'#1a9e5c'
     };
@@ -3498,12 +3545,12 @@ function renderCfgContent(tab){
                   <label style="display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:${isAdmin?'default':'pointer'};transition:background .1s"
                     onmouseover="${isAdmin?'':'this.style.background=\"rgba(43,127,255,.04)\"'}"
                     onmouseout="${isAdmin?'':'this.style.background=\"\"'}">
-                    <input type="checkbox" id="perm2-${p.key}" ${perms[p.key]?'checked':''} ${isAdmin?'disabled':''}
-                      onchange="window.updatePermPreview('${p.key}',this.checked)"
+                    <input type="checkbox" id="perm2-${p.id}" ${perms[p.id]?'checked':''} ${isAdmin?'disabled':''}
+                      onchange="window.updatePermPreview('${p.id}',this.checked)"
                       style="width:15px;height:15px;accent-color:var(--blue);cursor:${isAdmin?'default':'pointer'}">
                     <span style="font-size:12px;color:${isAdmin?'#8a95b0':'var(--tx)'}">${p.label}</span>
-                    ${p.key==='ver_todos'?'<span class="badge bg" style="margin-left:auto;font-size:9px">visibilidade</span>':''}
-                    ${p.key==='gerenciar_permissoes'?'<span class="badge bd-" style="margin-left:auto;font-size:9px">admin</span>':''}
+                    ${p.id==='ver_todos'?'<span class="badge bg" style="margin-left:auto;font-size:9px">visibilidade</span>':''}
+                    ${p.id==='gerenciar_permissoes'?'<span class="badge bd-" style="margin-left:auto;font-size:9px">admin</span>':''}
                   </label>`).join('')}
               </div>
             </div>`;
@@ -3593,6 +3640,9 @@ function renderCfgContent(tab){
           <button class="btn btn-sm" onclick="exportarDados()">📤 Exportar todos os dados (JSON)</button>
           <button class="btn btn-sm" onclick="notify('Funcionalidade em breve')">📥 Importar dados</button>
           <button class="btn btn-sm btn-danger" onclick="if(confirm('Limpar todos os dados?'))notify('Dados limpos')">🗑 Limpar dados</button>
+                  <button class="btn btn-sm" onclick="window.sisvipExport()" style="background:#f0fdf4;color:#1a9e5c;border-color:#bbf7d0">📥 Exportar backup</button>
+                  <button class="btn btn-sm" onclick="window.sisvipImport()" style="background:#eff6ff;color:#2b7fff;border-color:#bfdbfe">📤 Importar backup</button>
+                  <button class="btn btn-sm" onclick="window.sisvipClear()" style="background:#fff5f5;color:#d63030;border-color:#fecaca">🗑 Apagar tudo</button>
         </div>
         <div style="margin-top:12px;font-size:11px;color:var(--tx3)">Versão ${c.sistema.versao} · SisVip © 2026</div>
       </div>`;
@@ -3698,13 +3748,14 @@ window.salvarConfig = function(){
   const msg=document.getElementById('cfg-saved-msg');
   msg.style.display='inline';
   setTimeout(()=>msg.style.display='none',2500);
+  if(typeof window.sisvipSave==='function') window.sisvipSave('config');
   notify('✓ Configurações salvas!');
 };
 
 window.resetCfgTab = function(){ renderCfgContent(cfgTabAtiva); notify('Alterações descartadas'); };
 
 // ── HOOK SWITCH PAGE ──
-const prevSwitch3 = window.switchPage;
+// switchPage já definido no FinalFix
 })();
 </script>
 <script>
@@ -3760,6 +3811,11 @@ const prevSwitch3 = window.switchPage;
             'background:linear-gradient(135deg,#2b7fff,#1a6ef0);color:#fff;border:none;',
             'border-radius:8px;cursor:pointer;font-family:inherit;',
             'box-shadow:0 4px 14px rgba(43,127,255,.4)">Entrar</button>',
+            '<div style="text-align:center;margin-top:10px">',
+            '<button onclick="abrirRecuperarSenha()" type="button" style="background:none;border:none;',
+            'color:#2b7fff;font-size:12px;cursor:pointer;font-family:inherit;',
+            'text-decoration:underline;text-underline-offset:2px;opacity:.8">',
+            '🔑 Esqueci minha senha</button></div>',
         '</div>',
       '</div>',
     ].join('');
@@ -5886,7 +5942,7 @@ window._wppWin = null; // referência à janela aberta
     <div class="modal-header" style="flex-direction:column;gap:8px;padding-bottom:0">
       <div style="display:flex;align-items:center;width:100%;gap:10px">
         <span class="modal-title">Cadastrar Cliente Rápido</span>
-        <button onclick="fecharModal('modal-cliente-rapido');setTimeout(function(){abrirBuscaClienteWeb();},150)"
+        <button type="button" onclick="fecharModal('modal-cliente-rapido');setTimeout(function(){abrirBuscaClienteWeb();},150)"
           style="margin-left:auto;padding:5px 12px;font-size:11px;font-weight:600;background:rgba(43,127,255,.1);
                  color:var(--blue);border:1px solid rgba(43,127,255,.2);border-radius:8px;cursor:pointer;
                  font-family:inherit;white-space:nowrap" title="Buscar CNPJ na internet">
@@ -5898,7 +5954,7 @@ window._wppWin = null; // referência à janela aberta
         <input id="crp-busca" class="finput" placeholder="Cole o CNPJ (14 dígitos) para preencher automaticamente..."
           style="flex:1;font-size:12px" oninput="crpBuscaInput(this.value)"
           onkeydown="if(event.key==='Enter')crpBuscar()">
-        <button onclick="crpBuscar()"
+        <button type="button" onclick="crpBuscar()"
           style="padding:8px 14px;font-size:12px;font-weight:600;background:var(--blue);color:#fff;
                  border:none;border-radius:var(--r);cursor:pointer;white-space:nowrap;font-family:inherit">
           Buscar
@@ -5921,12 +5977,15 @@ window._wppWin = null; // referência à janela aberta
           <input class="finput" id="crp-email" type="email" placeholder="email@empresa.com" style="width:100%;box-sizing:border-box">
         </div>
         <div>
-          <label class="flabel">Segmento</label>
-          <select class="finput" id="crp-seg" style="width:100%;box-sizing:border-box">
-            <option>Alimentação</option><option>Comércio</option><option>Serviços</option>
-            <option>Indústria</option><option>Saúde</option><option>Educação</option>
-            <option>Tecnologia</option><option>Outro</option>
-          </select>
+          <label class="flabel" style="display:flex;align-items:center;justify-content:space-between">
+            Segmento
+            <button type="button" onclick="adicionarSegmento('crp-seg')"
+              style="font-size:10px;color:var(--blue);background:var(--blue-dim);border:none;
+                     border-radius:6px;padding:2px 7px;cursor:pointer;font-family:inherit;font-weight:600">
+              + Novo
+            </button>
+          </label>
+          <select class="finput seg-select" id="crp-seg" style="width:100%;box-sizing:border-box"></select>
         </div>
         <div>
           <label class="flabel">CNPJ / CPF</label>
@@ -5942,8 +6001,8 @@ window._wppWin = null; // referência à janela aberta
         </div>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-        <button class="btn btn-sm" onclick="fecharModal('modal-cliente-rapido')">Cancelar</button>
-        <button class="btn btn-p btn-sm" onclick="salvarClienteRapido()">✓ Salvar e selecionar</button>
+        <button type="button" class="btn btn-sm" onclick="fecharModal('modal-cliente-rapido')">Cancelar</button>
+        <button type="button" class="btn btn-p btn-sm" onclick="salvarClienteRapido()">✓ Salvar e selecionar</button>
       </div>
     </div>
   </div>
@@ -6009,6 +6068,7 @@ window.abrirModalClienteRapido = function(){
   });
   var hint = document.getElementById('crp-busca-status');
   if(hint){ hint.textContent=''; hint.style.color='var(--tx3)'; }
+  if(typeof window.popularSegmentos==='function') window.popularSegmentos('crp-seg');
   document.getElementById('modal-cliente-rapido').style.display='flex';
   // Focar no campo de busca
   setTimeout(function(){
@@ -6022,76 +6082,127 @@ window.crpBuscaInput = function(val){
   var nums = (val||'').replace(/\D/g,'');
   var hint = document.getElementById('crp-busca-status');
   if(!hint) return;
-  if(nums.length === 14) hint.textContent = '✓ CNPJ detectado — pressione Enter ou clique Buscar';
-  else if(nums.length > 0) hint.textContent = nums.length + '/14 dígitos';
-  else hint.textContent = '';
+  if(nums.length === 14){
+    hint.textContent = '✅ CNPJ completo — clique Buscar ou pressione Enter';
+    hint.style.color = '#1a9e5c';
+  } else if(nums.length > 0){
+    hint.textContent = '⌨️ ' + nums.length + ' de 14 dígitos';
+    hint.style.color = 'var(--tx3)';
+  } else {
+    hint.textContent = 'Digite o CNPJ (somente números) para preencher automaticamente';
+    hint.style.color = 'var(--tx3)';
+  }
 };
 
 window.crpBuscar = function(){
-  var val  = (document.getElementById('crp-busca')||{value:''}).value;
-  var nums = (val||'').replace(/\D/g,'');
+  var inp  = document.getElementById('crp-busca');
   var hint = document.getElementById('crp-busca-status');
+  var val  = inp ? inp.value : '';
+  var nums = (val||'').replace(/\D/g,'');
+
+  if(!hint){ console.warn('[crpBuscar] crp-busca-status não encontrado'); }
+
   if(nums.length !== 14){
-    if(hint) hint.textContent = '⚠️ Digite os 14 dígitos do CNPJ';
+    if(hint){ hint.textContent = '⚠️ CNPJ deve ter 14 dígitos (atual: '+nums.length+')'; hint.style.color='var(--danger)'; }
     return;
   }
-  if(hint) hint.textContent = '⏳ Buscando...';
 
+  if(hint){ hint.textContent = '⏳ Buscando dados do CNPJ '+nums+'...'; hint.style.color='var(--tx3)'; }
+
+  // Busca principal: publica.cnpj.ws
   fetch('https://publica.cnpj.ws/cnpj/'+nums, {mode:'cors'})
-    .then(function(r){ return r.json(); })
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
     .then(function(d){
-      if(!d || d.status === 'ERROR'){ throw new Error('not found'); }
-      // Preencher campos
-      var set = function(id, v){ var el=document.getElementById(id); if(el && v) el.value=v; };
-      var nome = d.razao_social || '';
-      var fant = (d.estabelecimento && d.estabelecimento.nome_fantasia) || '';
-      set('crp-nome', fant || nome);
-      // Telefone
-      var tel = '';
-      if(d.estabelecimento && d.estabelecimento.ddd1 && d.estabelecimento.telefone1)
-        tel = '('+d.estabelecimento.ddd1+') '+d.estabelecimento.telefone1;
-      set('crp-tel', tel);
-      // Email
-      if(d.estabelecimento && d.estabelecimento.email)
-        set('crp-email', d.estabelecimento.email);
-      // Doc
-      set('crp-doc', nums.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5'));
-      // Endereço
-      var est = d.estabelecimento;
-      if(est){
-        var end = (est.logradouro||'') + (est.numero?' '+est.numero:'');
-        if(est.bairro) end += ' - '+est.bairro;
-        if(est.cidade && est.cidade.nome) end += ', '+est.cidade.nome;
-        if(est.estado && est.estado.sigla) end += '/'+est.estado.sigla;
-        set('crp-end', end.trim());
-      }
-      if(hint) hint.textContent = '✅ Dados preenchidos! Confira e ajuste se necessário.';
-      hint.style.color = '#1a9e5c';
+      if(!d || d.status === 'ERROR' || !d.razao_social) throw new Error('sem dados');
+      _crpPreencher(d, 'publica.cnpj.ws');
     })
     .catch(function(){
-      // Fallback BrasilAPI
+      // Fallback: BrasilAPI
       fetch('https://brasilapi.com.br/api/cnpj/v1/'+nums, {mode:'cors'})
-        .then(function(r){ return r.json(); })
-        .then(function(d){
-          if(!d || d.message){ throw new Error('not found'); }
-          var set = function(id, v){ var el=document.getElementById(id); if(el && v) el.value=v; };
-          set('crp-nome', d.nome_fantasia || d.razao_social || '');
-          set('crp-doc',  nums.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5'));
-          if(d.ddd_telefone_1) set('crp-tel', d.ddd_telefone_1);
-          if(d.email) set('crp-email', d.email);
-          var end = (d.descricao_tipo_logradouro||'')+' '+(d.logradouro||'');
-          if(d.numero) end += ', '+d.numero;
-          if(d.bairro) end += ' - '+d.bairro;
-          if(d.municipio) end += ', '+d.municipio;
-          if(d.uf) end += '/'+d.uf;
-          set('crp-end', end.trim());
-          if(hint){ hint.textContent='✅ Dados preenchidos via BrasilAPI!'; hint.style.color='#1a9e5c'; }
+        .then(function(r){
+          if(!r.ok) throw new Error('HTTP '+r.status);
+          return r.json();
         })
-        .catch(function(){
-          if(hint){ hint.textContent='❌ CNPJ não encontrado. Preencha manualmente.'; hint.style.color='var(--danger)'; }
+        .then(function(d){
+          if(!d || d.message) throw new Error('sem dados');
+          _crpPreencherBrasil(d);
+        })
+        .catch(function(err){
+          if(hint){ hint.textContent='❌ CNPJ não encontrado nas APIs. Verifique o número ou preencha manualmente.'; hint.style.color='var(--danger)'; }
         });
     });
 };
+
+function _crpPreencher(d, fonte){
+  var hint = document.getElementById('crp-busca-status');
+  var set  = function(id, v){ var el=document.getElementById(id); if(el && v) el.value=v; };
+  var est  = d.estabelecimento || {};
+
+  set('crp-nome', est.nome_fantasia || d.razao_social || '');
+  set('crp-doc',  (d.cnpj||'').replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5'));
+
+  var tel = '';
+  if(est.ddd1 && est.telefone1) tel = '('+est.ddd1+') '+est.telefone1;
+  set('crp-tel',   tel);
+  set('crp-email', est.email || '');
+
+  var end = '';
+  if(est.logradouro) end = est.logradouro + (est.numero ? ', '+est.numero : '');
+  if(est.bairro)     end += (end?'  -  ':'')+est.bairro;
+  if(est.cidade && est.cidade.nome) end += ', '+est.cidade.nome;
+  if(est.estado && est.estado.sigla) end += '/'+est.estado.sigla;
+  set('crp-end', end.trim());
+
+  // Segmento via CNAE
+  var cnae = est.atividade_principal && est.atividade_principal[0];
+  if(cnae && cnae.descricao) _crpSetSeg(cnae.descricao);
+
+  if(hint){ hint.textContent='✅ Dados preenchidos via '+fonte+'!'; hint.style.color='#1a9e5c'; }
+}
+
+function _crpPreencherBrasil(d){
+  var hint = document.getElementById('crp-busca-status');
+  var set  = function(id, v){ var el=document.getElementById(id); if(el && v) el.value=v; };
+
+  set('crp-nome', d.nome_fantasia || d.razao_social || '');
+  set('crp-doc',  (d.cnpj||'').replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5'));
+  if(d.ddd_telefone_1) set('crp-tel', d.ddd_telefone_1.replace(/(\d{2})(\d+)/,'($1) $2'));
+  if(d.email) set('crp-email', d.email);
+
+  var end = '';
+  if(d.descricao_tipo_logradouro) end = d.descricao_tipo_logradouro+' ';
+  if(d.logradouro) end += d.logradouro;
+  if(d.numero) end += ', '+d.numero;
+  if(d.bairro) end += '  -  '+d.bairro;
+  if(d.municipio) end += ', '+d.municipio;
+  if(d.uf) end += '/'+d.uf;
+  set('crp-end', end.trim());
+
+  if(d.cnae_fiscal_descricao) _crpSetSeg(d.cnae_fiscal_descricao);
+
+  if(hint){ hint.textContent='✅ Dados preenchidos via BrasilAPI!'; hint.style.color='#1a9e5c'; }
+}
+
+function _crpSetSeg(desc){
+  var d   = (desc||'').toLowerCase();
+  var seg = 'Outros';
+  if(/aliment|restaur|lanch|padari|mercad|superm|bebida|café|açoug/.test(d)) seg='Alimentação';
+  else if(/saúde|médic|hospit|clínic|farmác|dental|odont|laborat/.test(d))   seg='Saúde';
+  else if(/tecno|softw|inform|sistem|dados|digital|internet|comput/.test(d)) seg='Tecnologia';
+  else if(/educa|escola|curso|ensino|treinam|capacit|universid/.test(d))     seg='Educação';
+  else if(/constru|obra|reform|engenhar|arquitet|imóvel|imobil/.test(d))     seg='Construção';
+  else if(/transport|logíst|frete|entrega|mudança|courier/.test(d))           seg='Transporte';
+  else if(/agro|fazend|pecuár|rural|agricultur|lavoura|grão/.test(d))        seg='Agronegócio';
+  else if(/indústr|fabric|manufat|produção|montagem|metalúrg/.test(d))       seg='Indústria';
+  else if(/serviç|manutenç|consult|assessor|contábil|contador/.test(d))      seg='Serviços';
+  else if(/comérc|atacad|varej|distribu|import|export|loja/.test(d))         seg='Comércio';
+  var sel = document.getElementById('crp-seg');
+  if(sel) sel.value = seg;
+}
+
 
 
 
@@ -6122,6 +6233,7 @@ window.salvarClienteRapido = function(){
   if(sel) sel.value = novoCliente.nome;
 
   fecharModal('modal-cliente-rapido');
+  if(typeof window.sisvipSave==='function') window.sisvipSave('cliente-rapido');
   if(typeof notify==='function') notify('✅ Cliente "'+novoCliente.nome+'" cadastrado!');
 };
 
@@ -6478,15 +6590,20 @@ window.buscaWebSelecionarItem = function(idx){
       return;
     }
 
-    // Verificar admin
-    var ok = (u === 'admin' && p === 'admin');
+    // Verificar senhas customizadas (definidas via Recuperar Senha)
+    var _sc = {};
+    try { _sc = JSON.parse(localStorage.getItem('sisvip_senhas')||'{}'); } catch(e){}
+
+    // Verificar admin (senha padrão 'admin' ou customizada)
+    var ok = (u === 'admin' && p === (_sc['admin'] || 'admin'));
     var opFound = null;
 
     // Verificar operadores cadastrados
     if (!ok) {
       opFound = (window.operadores || []).find(function(o) {
         var first = o.nome.split(' ')[0].toLowerCase();
-        return (first === u || o.nome.toLowerCase().replace(/\s/g,'') === u) && p === '1234';
+        if(!(first === u || o.nome.toLowerCase().replace(/\s/g,'') === u)) return false;
+        return p === (_sc[o.nome] || '1234');
       });
       if (opFound) ok = true;
     }
@@ -6648,5 +6765,491 @@ window.wppAbrirCliente = function(id) {
   else window.open('https://wa.me/'+tel, '_blank');
 };
 </script>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  SISVIP — PERSISTÊNCIA LOCAL (localStorage)
+//  Salva e restaura dados automaticamente entre sessões
+// ════════════════════════════════════════════════════════════
+(function(){
+
+  var KEY_RECORDS    = 'sisvip_records';
+  var KEY_CLIENTES   = 'sisvip_clientes';
+  var KEY_OPERADORES = 'sisvip_operadores';
+  var KEY_LANCAM     = 'sisvip_lancamentos';
+  var KEY_CONFIG     = 'sisvip_config';
+  var KEY_HISTORY    = 'sisvip_history';
+  var KEY_VERSION    = 'sisvip_version';
+  var DATA_VERSION   = '1.0';
+
+  // ── Salvar tudo ──────────────────────────────────────────
+  window.sisvipSave = function(source){
+    try {
+      localStorage.setItem(KEY_RECORDS,    JSON.stringify(window.records    || []));
+      localStorage.setItem(KEY_CLIENTES,   JSON.stringify(window.clientes   || []));
+      localStorage.setItem(KEY_OPERADORES, JSON.stringify(window.operadores || []));
+      localStorage.setItem(KEY_LANCAM,     JSON.stringify(window.lancamentos|| []));
+      localStorage.setItem(KEY_HISTORY,    JSON.stringify(window.historyLog || []));
+      localStorage.setItem(KEY_VERSION,    DATA_VERSION);
+      // Config apenas se modificada
+      if(window.appConfig) localStorage.setItem(KEY_CONFIG, JSON.stringify(window.appConfig));
+      window._lastSave = new Date();
+      _atualizarIndicador(true);
+    } catch(e){
+      console.warn('[SisVip] Erro ao salvar:', e.message);
+      _atualizarIndicador(false);
+    }
+  };
+
+  // ── Carregar tudo ────────────────────────────────────────
+  window.sisvipLoad = function(){
+    try {
+      var ver = localStorage.getItem(KEY_VERSION);
+      var records    = _parse(KEY_RECORDS,    []);
+      var clientes   = _parse(KEY_CLIENTES,   []);
+      var operadores = _parse(KEY_OPERADORES, []);
+      var lancam     = _parse(KEY_LANCAM,     []);
+      var history    = _parse(KEY_HISTORY,    []);
+      var cfg        = _parse(KEY_CONFIG,     null);
+
+      window.records     = records;
+      window.clientes    = clientes;
+      window.operadores  = operadores;
+      window.lancamentos = lancam;
+      window.historyLog  = history;
+      if(cfg && window.appConfig){
+        // Mesclar config salva com defaults (preserva estrutura)
+        _merge(window.appConfig, cfg);
+      }
+
+      var total = records.length + clientes.length + operadores.length + lancam.length;
+      if(total > 0){
+        console.log('[SisVip] 💾 Dados restaurados — Atendimentos:', records.length,
+          '| Clientes:', clientes.length, '| Operadores:', operadores.length,
+          '| Lançamentos:', lancam.length);
+        // Atualizar a interface após carregar
+        setTimeout(function(){
+          if(typeof renderTable      === 'function') renderTable();
+          if(typeof renderClientes   === 'function') renderClientes();
+          if(typeof renderOperadores === 'function') renderOperadores();
+          if(typeof populateSelects  === 'function') populateSelects();
+          if(typeof updateMetrics    === 'function') updateMetrics();
+          if(typeof renderAlertBar   === 'function') renderAlertBar('alert-lista');
+        // Sincronizar variáveis locais com window.* após carregar do localStorage
+        try {
+          if(typeof records    !== 'undefined') records    = window.records;
+          if(typeof clientes   !== 'undefined') clientes   = window.clientes;
+          if(typeof operadores !== 'undefined') operadores = window.operadores;
+          if(typeof lancamentos!== 'undefined') lancamentos= window.lancamentos;
+          if(typeof historyLog !== 'undefined') historyLog = window.historyLog;
+        } catch(e){}
+        }, 300);
+      } else {
+        console.log('[SisVip] 💾 Nenhum dado salvo — iniciando zerado');
+      }
+    } catch(e){
+      console.warn('[SisVip] Erro ao carregar:', e.message);
+    }
+  };
+
+  // ── Limpar tudo ──────────────────────────────────────────
+  window.sisvipClear = function(){
+    if(!confirm('⚠️ Apagar TODOS os dados salvos? Esta ação não pode ser desfeita!')) return;
+    [KEY_RECORDS,KEY_CLIENTES,KEY_OPERADORES,KEY_LANCAM,KEY_CONFIG,KEY_HISTORY,KEY_VERSION].forEach(function(k){
+      localStorage.removeItem(k);
+    });
+    window.records = []; window.clientes = []; window.operadores = [];
+    window.lancamentos = []; window.historyLog = [];
+    if(typeof renderTable    === 'function') renderTable();
+    if(typeof renderClientes === 'function') renderClientes();
+    if(typeof populateSelects=== 'function') populateSelects();
+    if(typeof notify         === 'function') notify('🗑️ Dados apagados com sucesso');
+    console.log('[SisVip] Dados limpos');
+  };
+
+  // ── Exportar backup JSON ─────────────────────────────────
+  window.sisvipExport = function(){
+    var data = {
+      version:    DATA_VERSION,
+      exportedAt: new Date().toISOString(),
+      records:    window.records    || [],
+      clientes:   window.clientes   || [],
+      operadores: window.operadores || [],
+      lancamentos:window.lancamentos|| [],
+      historyLog: window.historyLog || [],
+      appConfig:  window.appConfig  || {},
+    };
+    var json = JSON.stringify(data, null, 2);
+    var blob = new Blob([json], {type:'application/json'});
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href   = url;
+    a.download = 'sisvip_backup_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    if(typeof notify === 'function') notify('📥 Backup exportado com sucesso!');
+  };
+
+  // ── Importar backup JSON ─────────────────────────────────
+  window.sisvipImport = function(){
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function(e){
+      var file = e.target.files[0];
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        try {
+          var data = JSON.parse(ev.target.result);
+          if(!data.records && !data.clientes){
+            alert('Arquivo inválido — não parece ser um backup do SisVip');
+            return;
+          }
+          if(!confirm('Importar dados do arquivo "'+file.name+'"?\n\n'+
+            'Atendimentos: '+(data.records||[]).length+'\n'+
+            'Clientes: '+(data.clientes||[]).length+'\n'+
+            'Operadores: '+(data.operadores||[]).length+'\n\n'+
+            'Os dados atuais serão substituídos.')) return;
+
+          window.records     = data.records     || [];
+          window.clientes    = data.clientes    || [];
+          window.operadores  = data.operadores  || [];
+          window.lancamentos = data.lancamentos || [];
+          window.historyLog  = data.historyLog  || [];
+          if(data.appConfig && window.appConfig) _merge(window.appConfig, data.appConfig);
+
+          window.sisvipSave('import');
+          if(typeof renderTable    === 'function') renderTable();
+          if(typeof renderClientes === 'function') renderClientes();
+          if(typeof populateSelects=== 'function') populateSelects();
+          if(typeof updateMetrics  === 'function') updateMetrics();
+          if(typeof notify         === 'function') notify('✅ Backup importado! '+window.records.length+' atendimentos carregados.');
+        } catch(err){
+          alert('Erro ao importar: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
+  // ── Helpers internos ─────────────────────────────────────
+  function _parse(key, def){
+    try {
+      var raw = localStorage.getItem(key);
+      if(!raw) return def;
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) || typeof parsed === 'object' ? parsed : def;
+    } catch(e){ return def; }
+  }
+
+  function _merge(target, source){
+    if(!source || typeof source !== 'object') return;
+    Object.keys(source).forEach(function(k){
+      if(target[k] !== undefined && typeof target[k] === 'object' && !Array.isArray(target[k])){
+        _merge(target[k], source[k]);
+      } else {
+        target[k] = source[k];
+      }
+    });
+  }
+
+  function _atualizarIndicador(ok){
+    var ind = document.getElementById('save-indicator');
+    if(!ind) return;
+    ind.textContent = ok ? '💾 Salvo' : '⚠️ Erro ao salvar';
+    ind.style.color = ok ? '#1a9e5c' : '#d63030';
+    ind.style.opacity = '1';
+    setTimeout(function(){ ind.style.opacity = '0'; }, 2500);
+  }
+
+  // ── Auto-save a cada 60s ─────────────────────────────────
+  setInterval(function(){
+    if((window.records||[]).length + (window.clientes||[]).length > 0){
+      window.sisvipSave('autosave');
+    }
+  }, 60000);
+
+  // ── Salvar ao fechar a aba ───────────────────────────────
+  window.addEventListener('beforeunload', function(){
+    window.sisvipSave('beforeunload');
+  });
+
+  // ── Carregar dados ao iniciar ────────────────────────────
+  // (executado após o DOM estar pronto)
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ window.sisvipLoad(); });
+  } else {
+    setTimeout(function(){ window.sisvipLoad(); }, 100);
+  }
+
+  console.log('[SisVip] 💾 Módulo localStorage inicializado');
+
+})();
+</script>
+
+
+<script>
+// ════════════════════════════════════════════════════
+//  SISVIP — SEGMENTOS PERSONALIZADOS
+// ════════════════════════════════════════════════════
+(function(){
+
+  var KEY = 'sisvip_segmentos';
+  var DEFAULTS = [
+    'Alimentação','Comércio','Serviços','Indústria',
+    'Saúde','Educação','Tecnologia','Construção',
+    'Transporte','Agronegócio','Outros'
+  ];
+
+  // Carregar segmentos salvos (ou usar defaults)
+  function getSegmentos(){
+    try {
+      var saved = localStorage.getItem(KEY);
+      if(saved){
+        var arr = JSON.parse(saved);
+        if(Array.isArray(arr) && arr.length > 0) return arr;
+      }
+    } catch(e){}
+    return DEFAULTS.slice();
+  }
+
+  // Salvar segmentos
+  function saveSegmentos(arr){
+    try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch(e){}
+  }
+
+  // Popular todos os selects de segmento na página
+  window.popularSegmentos = function(selectId, valorAtual){
+    var segs = getSegmentos();
+    var targets = selectId
+      ? [document.getElementById(selectId)]
+      : Array.from(document.querySelectorAll('.seg-select'));
+
+    targets.forEach(function(sel){
+      if(!sel) return;
+      var current = valorAtual || sel.value || '';
+      sel.innerHTML = '';
+
+      // Opção vazia
+      var optEmpty = document.createElement('option');
+      optEmpty.value = ''; optEmpty.textContent = 'Selecione...';
+      sel.appendChild(optEmpty);
+
+      segs.forEach(function(s){
+        var opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        if(s === current) opt.selected = true;
+        sel.appendChild(opt);
+      });
+
+      // Opção especial "+ Novo segmento"
+      var optNovo = document.createElement('option');
+      optNovo.value = '__novo__';
+      optNovo.textContent = '✏️  + Criar novo segmento...';
+      optNovo.style.color = 'var(--blue)';
+      optNovo.style.fontWeight = '600';
+      sel.appendChild(optNovo);
+
+      // Restaurar valor atual
+      if(current) sel.value = current;
+    });
+  };
+
+  // Adicionar segmento via prompt (chamado pelo botão "+ Novo")
+  window.adicionarSegmento = function(selectId){
+    var nome = (prompt('Nome do novo segmento:') || '').trim();
+    if(!nome) return;
+
+    // Capitalizar
+    nome = nome.charAt(0).toUpperCase() + nome.slice(1);
+
+    var segs = getSegmentos();
+    if(segs.indexOf(nome) >= 0){
+      if(typeof notify === 'function') notify('Segmento "'+nome+'" já existe');
+      return;
+    }
+
+    // Inserir antes de "Outros" (mantém ordenado)
+    var idxOutros = segs.indexOf('Outros');
+    if(idxOutros >= 0) segs.splice(idxOutros, 0, nome);
+    else segs.push(nome);
+
+    saveSegmentos(segs);
+    // Repopular todos os selects e selecionar o novo
+    window.popularSegmentos(null, null);
+    // Selecionar o novo no select alvo
+    var sel = selectId ? document.getElementById(selectId) : null;
+    if(sel) sel.value = nome;
+
+    if(typeof notify === 'function') notify('✅ Segmento "'+nome+'" adicionado!');
+  };
+
+  // Interceptar mudança para "__novo__"
+  document.addEventListener('change', function(e){
+    if(e.target && e.target.classList.contains('seg-select')){
+      if(e.target.value === '__novo__'){
+        e.target.value = e.target._prevVal || '';
+        window.adicionarSegmento(e.target.id);
+      } else {
+        e.target._prevVal = e.target.value;
+      }
+    }
+  });
+
+  // Popular ao carregar a página
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ window.popularSegmentos(); });
+  } else {
+    setTimeout(function(){ window.popularSegmentos(); }, 200);
+  }
+
+  console.log('[SisVip] Segmentos carregados:', getSegmentos().length);
+})();
+</script>
+
+
+<script>
+// ════════════════════════════════════════════════════
+//  RECUPERAR SENHA — SisVip
+// ════════════════════════════════════════════════════
+
+window.recEnterSenha = function(e){
+  if(e && e.key==='Enter') window.confirmarRecuperarSenha();
+};
+
+window.fecharModalRecuperar = function(){
+  var m = document.getElementById('modal-recuperar-senha');
+  if(m) m.remove();
+};
+
+
+window.recToggleSenha = function(id){
+  var el = document.getElementById(id);
+  if(!el) return;
+  el.type = el.type === 'password' ? 'text' : 'password';
+};
+
+window.abrirRecuperarSenha = function(){
+  window.fecharModalRecuperar();
+
+  var overlay = document.createElement('div');
+  overlay.id = 'modal-recuperar-senha';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(26,32,53,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
+  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+
+  // Montar HTML interno sem concatenação problemática
+  var html = '';
+  html += '<div style="background:#fff;border-radius:20px;width:400px;max-width:94vw;box-shadow:0 32px 80px rgba(26,32,53,.35);overflow:hidden">';
+  // Header
+  html += '<div style="background:linear-gradient(135deg,#2b7fff,#1a6ef0);padding:22px 24px;display:flex;align-items:center;justify-content:space-between">';
+  html += '<div><div style="font-size:16px;font-weight:700;color:#fff">🔑 Recuperar Senha</div>';
+  html += '<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px">Redefina a senha de acesso</div></div>';
+  html += '<button type="button" onclick="fecharModalRecuperar()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;font-family:inherit;line-height:1">✕</button>';
+  html += '</div>';
+  // Body
+  html += '<div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px">';
+  // Select usuário
+  html += '<div>';
+  html += '<label style="font-size:10px;font-weight:600;color:#4a5570;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Usuário</label>';
+  html += '<select id="rec-usuario" style="width:100%;padding:10px 12px;font-size:13px;border:1px solid rgba(26,32,53,.15);border-radius:8px;background:#fff;color:#1a2035;font-family:inherit;box-sizing:border-box">';
+  html += '<option value="">Selecione o usuário...</option>';
+  html += '<option value="admin">admin (Administrador)</option>';
+  html += '</select></div>';
+  // Nova senha
+  html += '<div>';
+  html += '<label style="font-size:10px;font-weight:600;color:#4a5570;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Nova Senha</label>';
+  html += '<div style="position:relative">';
+  html += '<input id="rec-nova-senha" type="password" placeholder="Digite a nova senha..." autocomplete="new-password" ';
+  html += 'style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(26,32,53,.15);border-radius:8px;background:#fff;color:#1a2035;font-family:inherit;box-sizing:border-box">';
+  html += '<span onclick="recToggleSenha("rec-nova-senha")" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.5;user-select:none">👁</span>';
+  html += '</div></div>';
+  // Confirmar senha
+  html += '<div>';
+  html += '<label style="font-size:10px;font-weight:600;color:#4a5570;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Confirmar Nova Senha</label>';
+  html += '<div style="position:relative">';
+  html += '<input id="rec-conf-senha" type="password" placeholder="Repita a nova senha..." autocomplete="new-password" ';
+  html += 'onkeydown="recEnterSenha(event)" ';
+  html += 'style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(26,32,53,.15);border-radius:8px;background:#fff;color:#1a2035;font-family:inherit;box-sizing:border-box">';
+  html += '<span onclick="recToggleSenha("rec-conf-senha")" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.5;user-select:none">👁</span>';
+  html += '</div></div>';
+  // Mensagem
+  html += '<div id="rec-msg" style="display:none;padding:10px 12px;border-radius:8px;font-size:12px;font-weight:500"></div>';
+  // Botões
+  html += '<div style="display:flex;gap:8px;justify-content:flex-end">';
+  html += '<button type="button" onclick="fecharModalRecuperar()" style="padding:10px 20px;font-size:13px;font-weight:600;background:#f0f2f5;color:#4a5570;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Cancelar</button>';
+  html += '<button type="button" onclick="confirmarRecuperarSenha()" style="padding:10px 20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#2b7fff,#1a6ef0);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(43,127,255,.35)">✓ Redefinir Senha</button>';
+  html += '</div>';
+  html += '</div></div>';
+
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+
+  // Adicionar operadores ao select
+  setTimeout(function(){
+    var sel = document.getElementById('rec-usuario');
+    if(!sel) return;
+    (window.operadores||[]).filter(function(o){ return o.status==='Ativo'; }).forEach(function(op){
+      var opt = document.createElement('option');
+      opt.value = op.nome;
+      opt.textContent = op.nome + (op.cargo ? ' ('+op.cargo+')' : '');
+      sel.appendChild(opt);
+    });
+    sel.focus();
+  }, 100);
+};
+
+window.confirmarRecuperarSenha = function(){
+  var user = (document.getElementById('rec-usuario')||{value:''}).value || '';
+  var nova = (document.getElementById('rec-nova-senha')||{value:''}).value || '';
+  var conf = (document.getElementById('rec-conf-senha')||{value:''}).value || '';
+  var msg  = document.getElementById('rec-msg');
+
+  var showMsg = function(texto, tipo){
+    if(!msg) return;
+    msg.style.display  = 'block';
+    msg.style.background = tipo==='ok' ? '#f0fdf4' : '#fff5f5';
+    msg.style.border     = '1px solid ' + (tipo==='ok' ? '#bbf7d0' : '#fecaca');
+    msg.style.color      = tipo==='ok' ? '#166534' : '#991b1b';
+    msg.textContent      = texto;
+  };
+
+  if(!user){ showMsg('⚠️ Selecione o usuário', 'erro'); return; }
+  if(nova.length < 4){ showMsg('⚠️ A senha deve ter pelo menos 4 caracteres', 'erro'); return; }
+  if(nova !== conf){
+    showMsg('⚠️ As senhas não conferem', 'erro');
+    var cel = document.getElementById('rec-conf-senha');
+    if(cel){ cel.value=''; cel.focus(); }
+    return;
+  }
+
+  // Salvar nova senha no localStorage
+  var senhas = {};
+  try { senhas = JSON.parse(localStorage.getItem('sisvip_senhas')||'{}'); } catch(e){}
+  senhas[user] = nova;
+  // Para operadores, salvar também no array
+  if(user !== 'admin'){
+    var op = (window.operadores||[]).find(function(o){ return o.nome===user; });
+    if(op) op.senha = nova;
+    if(typeof window.sisvipSave==='function') window.sisvipSave('senha');
+  }
+  try { localStorage.setItem('sisvip_senhas', JSON.stringify(senhas)); } catch(e){}
+
+  showMsg('✅ Senha redefinida! Faça login com a nova senha.', 'ok');
+
+  setTimeout(function(){
+    window.fecharModalRecuperar();
+    var passEl = document.getElementById('li-pass');
+    var userEl = document.getElementById('li-user');
+    if(passEl) passEl.value = '';
+    if(userEl) userEl.value = user==='admin' ? 'admin' : user.split(' ')[0].toLowerCase();
+    if(passEl) passEl.focus();
+  }, 2000);
+};
+
+// Senhas customizadas verificadas diretamente no fazerLogin (FinalFix)
+</script>
+
 </body>
 </html>
