@@ -287,8 +287,10 @@ function getSbNav(){
         <path fill="#25d366" d="M87.184 25.227c-33.733 0-61.166 27.423-61.178 61.13a60.98 60.98 0 0 0 9.349 32.535l1.455 2.312-6.179 22.535 23.146-6.069 2.235 1.324c9.387 5.571 20.15 8.517 31.126 8.523h.023c33.707 0 61.14-27.426 61.153-61.135a60.75 60.75 0 0 0-17.895-43.251 60.75 60.75 0 0 0-43.235-17.504z"/>
         <path fill="#fff" fill-rule="evenodd" d="M68.772 55.603c-1.378-3.061-2.828-3.123-4.137-3.176l-3.524-.043c-1.226 0-3.218.46-4.902 2.3s-6.435 6.287-6.435 15.332 6.588 17.785 7.506 19.013 12.718 20.381 31.405 27.75c15.529 6.124 18.689 4.906 22.061 4.6s10.877-4.447 12.408-8.74 1.533-7.971 1.073-8.74-1.685-1.226-3.525-2.146-10.877-5.367-12.562-5.981-2.91-.919-4.137.921-4.746 5.979-5.819 7.206-2.144 1.381-3.984.462-7.76-2.861-14.784-9.124c-5.465-4.873-9.154-10.891-10.228-12.73s-.114-2.835.808-3.751c.825-.824 1.838-2.147 2.759-3.22s1.224-1.84 1.836-3.065.307-2.301-.153-3.22-4.032-10.011-5.67-13.646z"/>
       </svg>
-      WhatsApp Web
-      <span id="wpp-sb-dot" style="display:none;margin-left:auto;width:8px;height:8px;border-radius:50%;background:#25d366;flex-shrink:0;box-shadow:0 0 6px rgba(37,211,102,.8)"></span>
+      <span id="wpp-sb-label">WhatsApp Web</span>
+      <span id="wpp-sb-status" style="display:none;margin-left:auto;font-size:10px;font-weight:600;
+        color:#25d366;background:rgba(37,211,102,.12);padding:2px 6px;border-radius:10px">Aberto</span>
+      <span id="wpp-sb-dot" style="display:none;margin-left:4px;width:8px;height:8px;border-radius:50%;background:#25d366;flex-shrink:0;box-shadow:0 0 6px rgba(37,211,102,.8)"></span>
     </div>
     <div class="sb-section">Cadastros</div>
     <div class="sb-item" onclick="switchPage('clientes')">
@@ -2266,6 +2268,111 @@ function formaBadge(f){
 // ── CRIAR PÁGINAS ──
 const mainEl = document.querySelector('.main');
 
+
+// ── DASHBOARD ──────────────────────────────────────
+const pageDashboard = document.createElement('div');
+pageDashboard.className='page'; pageDashboard.id='page-dashboard';
+pageDashboard.innerHTML=`
+<div style="padding:20px 24px">
+  <div class="panel-header" style="margin-bottom:20px">
+    <span class="panel-title" style="font-size:18px">📊 Dashboard</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px">
+    <div class="panel" style="padding:20px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:var(--blue)" id="dash-total">0</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Total de Atendimentos</div>
+    </div>
+    <div class="panel" style="padding:20px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:var(--success)" id="dash-fin">0</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Finalizados</div>
+    </div>
+    <div class="panel" style="padding:20px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:var(--warning)" id="dash-pend">0</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Pendentes</div>
+    </div>
+    <div class="panel" style="padding:20px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:var(--blue2)" id="dash-agend">0</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Agendados</div>
+    </div>
+    <div class="panel" style="padding:20px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:var(--tx)" id="dash-clientes">0</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Clientes Cadastrados</div>
+    </div>
+    <div class="panel" style="padding:20px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:var(--danger)" id="dash-atraso">0</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Em Atraso</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="panel" style="padding:20px">
+      <div style="font-size:13px;font-weight:700;color:var(--tx);margin-bottom:14px">🕐 Últimos Atendimentos</div>
+      <div id="dash-recentes" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div class="panel" style="padding:20px">
+      <div style="font-size:13px;font-weight:700;color:var(--tx);margin-bottom:14px">📅 Agendados Hoje</div>
+      <div id="dash-hoje" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+</div>`;
+mainEl.appendChild(pageDashboard);
+
+window.renderDashboard = function(){
+  var recs   = window.records    || [];
+  var clis   = window.clientes   || [];
+  var hoje   = window.TODAY      || new Date().toISOString().slice(0,10);
+  var total  = recs.length;
+  var fin    = recs.filter(function(r){ return r.status && r.status.startsWith('Finalizado'); }).length;
+  var pend   = recs.filter(function(r){ return r.status === 'Pendente'; }).length;
+  var agend  = recs.filter(function(r){ return r.status === 'Agendado'; }).length;
+  var atraso = recs.filter(function(r){
+    return r.status === 'Agendado' && r.agend && r.agend < hoje;
+  }).length;
+
+  var set = function(id, v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+  set('dash-total',    total);
+  set('dash-fin',      fin);
+  set('dash-pend',     pend);
+  set('dash-agend',    agend);
+  set('dash-clientes', clis.length);
+  set('dash-atraso',   atraso);
+
+  // Últimos 5 atendimentos
+  var recEl = document.getElementById('dash-recentes');
+  if(recEl){
+    var ultimos = recs.slice().sort(function(a,b){ return (b.cod||0)-(a.cod||0); }).slice(0,5);
+    if(!ultimos.length){
+      recEl.innerHTML = '<div style="color:var(--tx3);font-size:12px">Nenhum atendimento</div>';
+    } else {
+      recEl.innerHTML = ultimos.map(function(r){
+        var sc = r.status==='Pendente'?'#c88a10': r.status&&r.status.startsWith('Finalizado')?'#1a9e5c':'#2b7fff';
+        return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">'
+          +'<span style="font-size:11px;color:var(--tx3);min-width:28px">#'+r.cod+'</span>'
+          +'<span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.cliente||'—')+'</span>'
+          +'<span style="font-size:10px;color:'+sc+';font-weight:600">'+r.status+'</span>'
+          +'</div>';
+      }).join('');
+    }
+  }
+
+  // Agendados hoje
+  var hojeEl = document.getElementById('dash-hoje');
+  if(hojeEl){
+    var agendHoje = recs.filter(function(r){ return r.agend === hoje; });
+    if(!agendHoje.length){
+      hojeEl.innerHTML = '<div style="color:var(--tx3);font-size:12px">Nenhum agendamento hoje</div>';
+    } else {
+      hojeEl.innerHTML = agendHoje.map(function(r){
+        return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">'
+          +'<span style="font-size:11px;color:var(--blue);min-width:28px">#'+r.cod+'</span>'
+          +'<span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.cliente||'—')+'</span>'
+          +'<span style="font-size:10px;color:var(--tx2)">'+(r.horaIni||'')+'</span>'
+          +'</div>';
+      }).join('');
+    }
+  }
+};
+// ── FIM DASHBOARD ───────────────────────────────────
+
 // ── 1. CONTAS A RECEBER ──
 const pageReceber = document.createElement('div');
 pageReceber.className='page'; pageReceber.id='page-fin_receber';
@@ -4037,10 +4144,12 @@ try{
   }
 
   function atualizarSidebar(ativo) {
-    var sb  = document.getElementById('sb-whatsapp-static');
-    var dot = document.getElementById('wpp-sb-dot');
-    if (sb)  { if(ativo) sb.classList.add('active'); else sb.classList.remove('active'); }
-    if (dot) dot.style.display = ativo ? 'block' : 'none';
+    var sb     = document.getElementById('sb-whatsapp-static');
+    var dot    = document.getElementById('wpp-sb-dot');
+    var status = document.getElementById('wpp-sb-status');
+    if (sb)     { if(ativo) sb.classList.add('active'); else sb.classList.remove('active'); }
+    if (dot)    dot.style.display    = ativo ? 'block' : 'none';
+    if (status) status.style.display = ativo ? 'inline-block' : 'none';
   }
 
   function monitorarJanela() {
@@ -4102,15 +4211,19 @@ try{
     av.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(26,32,53,.65);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
     // Guardar URL no elemento para evitar escaping problemático
     av.dataset.wppUrl = url;
-    av.innerHTML = '<div style="background:#fff;border-radius:20px;padding:32px;max-width:380px;width:92%;text-align:center;box-shadow:0 32px 80px rgba(26,32,53,.35)">'
-      + '<div style="font-size:40px;margin-bottom:12px">🔒</div>'
-      + '<div style="font-size:17px;font-weight:700;color:#1a2035;margin-bottom:8px">Pop-up bloqueado</div>'
-      + '<div style="font-size:13px;color:#4a5570;line-height:1.7;margin-bottom:20px">'
-      + 'Clique no ícone <strong>🔒</strong> na barra de endereço<br>'
-      + 'e permita <strong>Pop-ups</strong> para liberar.</div>'
-      + '<div style="display:flex;gap:10px;justify-content:center">'
-      + '<button onclick="wppFecharAviso(this)" style="padding:10px 20px;font-size:13px;font-weight:600;background:rgba(26,32,53,.08);color:#4a5570;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Fechar</button>'
-      + '<button onclick="wppFecharAbrirAviso(this)" style="padding:10px 20px;font-size:13px;font-weight:600;background:#25d366;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Abrir mesmo assim</button>'
+    av.innerHTML = '<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:400px;width:94%;text-align:center;box-shadow:0 32px 80px rgba(26,32,53,.35)">'
+      + '<div style="font-size:36px;margin-bottom:10px">🔒</div>'
+      + '<div style="font-size:16px;font-weight:700;color:#1a2035;margin-bottom:6px">Pop-up bloqueado pelo navegador</div>'
+      + '<div style="font-size:12px;color:#4a5570;line-height:1.8;margin-bottom:16px;background:#f8f9fc;padding:12px;border-radius:10px;text-align:left">'
+      + '<b>Como liberar:</b><br>'
+      + '① Clique no ícone <b>🔒</b> ou <b>⚠️</b> na barra de endereço<br>'
+      + '② Selecione <b>Permissões do site</b> → <b>Pop-ups</b><br>'
+      + '③ Escolha <b>Permitir</b> e recarregue a página<br><br>'
+      + '<span style="color:#888;font-size:11px">Ou clique em <b>Abrir mesmo assim</b> abaixo</span>'
+      + '</div>'
+      + '<div style="display:flex;gap:8px;justify-content:center">'
+      + '<button onclick="wppFecharAviso(this)" style="padding:9px 18px;font-size:12px;font-weight:600;background:#f0f2f5;color:#4a5570;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Fechar</button>'
+      + '<button onclick="wppFecharAbrirAviso(this)" style="padding:9px 18px;font-size:12px;font-weight:600;background:#25d366;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit">💬 Abrir mesmo assim</button>'
       + '</div></div>';
     av.addEventListener('click', function(e){ if(e.target===av) av.remove(); });
     document.body.appendChild(av);
@@ -5770,8 +5883,28 @@ window._wppWin = null; // referência à janela aberta
 
 <div class="modal-overlay" id="modal-cliente-rapido" style="display:none">
   <div class="modal" style="max-width:560px">
-    <div class="modal-header">
-      <span class="modal-title">Cadastrar Cliente Rápido</span>
+    <div class="modal-header" style="flex-direction:column;gap:8px;padding-bottom:0">
+      <div style="display:flex;align-items:center;width:100%;gap:10px">
+        <span class="modal-title">Cadastrar Cliente Rápido</span>
+        <button onclick="fecharModal('modal-cliente-rapido');setTimeout(function(){abrirBuscaClienteWeb();},150)"
+          style="margin-left:auto;padding:5px 12px;font-size:11px;font-weight:600;background:rgba(43,127,255,.1);
+                 color:var(--blue);border:1px solid rgba(43,127,255,.2);border-radius:8px;cursor:pointer;
+                 font-family:inherit;white-space:nowrap" title="Buscar CNPJ na internet">
+          🔍 Buscar na web
+        </button>
+      </div>
+      <!-- Busca inline por CNPJ -->
+      <div style="display:flex;gap:8px;align-items:center;width:100%;padding-bottom:12px">
+        <input id="crp-busca" class="finput" placeholder="Cole o CNPJ (14 dígitos) para preencher automaticamente..."
+          style="flex:1;font-size:12px" oninput="crpBuscaInput(this.value)"
+          onkeydown="if(event.key==='Enter')crpBuscar()">
+        <button onclick="crpBuscar()"
+          style="padding:8px 14px;font-size:12px;font-weight:600;background:var(--blue);color:#fff;
+                 border:none;border-radius:var(--r);cursor:pointer;white-space:nowrap;font-family:inherit">
+          Buscar
+        </button>
+      </div>
+      <div id="crp-busca-status" style="font-size:11px;color:var(--tx3);min-height:14px;margin-top:-8px;padding-bottom:8px"></div>
     </div>
     <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -5871,11 +6004,96 @@ window._wppWin = null; // referência à janela aberta
 // ── Abrir modal cadastro rápido ──
 window.abrirModalClienteRapido = function(){
   // Limpar campos
-  ['crp-nome','crp-tel','crp-email','crp-doc','crp-end','crp-obs'].forEach(function(id){
+  ['crp-nome','crp-tel','crp-email','crp-doc','crp-end','crp-obs','crp-busca'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.value='';
   });
+  var hint = document.getElementById('crp-busca-status');
+  if(hint){ hint.textContent=''; hint.style.color='var(--tx3)'; }
   document.getElementById('modal-cliente-rapido').style.display='flex';
+  // Focar no campo de busca
+  setTimeout(function(){
+    var b = document.getElementById('crp-busca');
+    if(b) b.focus();
+  }, 150);
 };
+
+// ── Busca inline por CNPJ no modal rápido ──
+window.crpBuscaInput = function(val){
+  var nums = (val||'').replace(/\D/g,'');
+  var hint = document.getElementById('crp-busca-status');
+  if(!hint) return;
+  if(nums.length === 14) hint.textContent = '✓ CNPJ detectado — pressione Enter ou clique Buscar';
+  else if(nums.length > 0) hint.textContent = nums.length + '/14 dígitos';
+  else hint.textContent = '';
+};
+
+window.crpBuscar = function(){
+  var val  = (document.getElementById('crp-busca')||{value:''}).value;
+  var nums = (val||'').replace(/\D/g,'');
+  var hint = document.getElementById('crp-busca-status');
+  if(nums.length !== 14){
+    if(hint) hint.textContent = '⚠️ Digite os 14 dígitos do CNPJ';
+    return;
+  }
+  if(hint) hint.textContent = '⏳ Buscando...';
+
+  fetch('https://publica.cnpj.ws/cnpj/'+nums, {mode:'cors'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || d.status === 'ERROR'){ throw new Error('not found'); }
+      // Preencher campos
+      var set = function(id, v){ var el=document.getElementById(id); if(el && v) el.value=v; };
+      var nome = d.razao_social || '';
+      var fant = (d.estabelecimento && d.estabelecimento.nome_fantasia) || '';
+      set('crp-nome', fant || nome);
+      // Telefone
+      var tel = '';
+      if(d.estabelecimento && d.estabelecimento.ddd1 && d.estabelecimento.telefone1)
+        tel = '('+d.estabelecimento.ddd1+') '+d.estabelecimento.telefone1;
+      set('crp-tel', tel);
+      // Email
+      if(d.estabelecimento && d.estabelecimento.email)
+        set('crp-email', d.estabelecimento.email);
+      // Doc
+      set('crp-doc', nums.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5'));
+      // Endereço
+      var est = d.estabelecimento;
+      if(est){
+        var end = (est.logradouro||'') + (est.numero?' '+est.numero:'');
+        if(est.bairro) end += ' - '+est.bairro;
+        if(est.cidade && est.cidade.nome) end += ', '+est.cidade.nome;
+        if(est.estado && est.estado.sigla) end += '/'+est.estado.sigla;
+        set('crp-end', end.trim());
+      }
+      if(hint) hint.textContent = '✅ Dados preenchidos! Confira e ajuste se necessário.';
+      hint.style.color = '#1a9e5c';
+    })
+    .catch(function(){
+      // Fallback BrasilAPI
+      fetch('https://brasilapi.com.br/api/cnpj/v1/'+nums, {mode:'cors'})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if(!d || d.message){ throw new Error('not found'); }
+          var set = function(id, v){ var el=document.getElementById(id); if(el && v) el.value=v; };
+          set('crp-nome', d.nome_fantasia || d.razao_social || '');
+          set('crp-doc',  nums.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5'));
+          if(d.ddd_telefone_1) set('crp-tel', d.ddd_telefone_1);
+          if(d.email) set('crp-email', d.email);
+          var end = (d.descricao_tipo_logradouro||'')+' '+(d.logradouro||'');
+          if(d.numero) end += ', '+d.numero;
+          if(d.bairro) end += ' - '+d.bairro;
+          if(d.municipio) end += ', '+d.municipio;
+          if(d.uf) end += '/'+d.uf;
+          set('crp-end', end.trim());
+          if(hint){ hint.textContent='✅ Dados preenchidos via BrasilAPI!'; hint.style.color='#1a9e5c'; }
+        })
+        .catch(function(){
+          if(hint){ hint.textContent='❌ CNPJ não encontrado. Preencha manualmente.'; hint.style.color='var(--danger)'; }
+        });
+    });
+};
+
+
 
 // ── Salvar cliente rápido e selecionar no form ──
 window.salvarClienteRapido = function(){
