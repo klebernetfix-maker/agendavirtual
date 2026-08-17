@@ -884,6 +884,13 @@ function getSbNav(){
         <div class="fgroup"><label class="flabel">Cor de Identificação</label>
           <input class="finput" id="mo-cor" type="color" value="#3b82f6" style="height:38px;padding:4px 8px;cursor:pointer">
         </div>
+        <div class="fgroup full"><label class="flabel">Senha de Acesso</label>
+          <div style="position:relative">
+            <input class="finput" id="mo-senha" type="password" autocomplete="new-password" placeholder="••••" style="width:100%;box-sizing:border-box;padding-right:34px">
+            <span onclick="recToggleSenha('mo-senha')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;opacity:.5;user-select:none">👁</span>
+          </div>
+          <div style="font-size:10px;color:var(--tx3);margin-top:2px" id="mo-senha-hint">Deixe em branco para usar a senha padrão (1234)</div>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1832,10 +1839,13 @@ function abrirModalOperador(id){
     document.getElementById('mo-email').value=o.email;
     document.getElementById('mo-status').value=o.status;
     document.getElementById('mo-cor').value=o.cor;
+    document.getElementById('mo-senha').value='';
+    document.getElementById('mo-senha-hint').textContent='Deixe em branco para manter a senha atual';
   }else{
-    ['mo-nome','mo-cargo','mo-tel','mo-email'].forEach(i=>document.getElementById(i).value='');
+    ['mo-nome','mo-cargo','mo-tel','mo-email','mo-senha'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('mo-status').value='Ativo';
     document.getElementById('mo-cor').value=OP_COLORS_DEF[operadores.length%OP_COLORS_DEF.length];
+    document.getElementById('mo-senha-hint').textContent='Deixe em branco para usar a senha padrão (1234)';
   }
   document.getElementById('modal-operador').style.display='flex';
 }
@@ -1843,16 +1853,32 @@ function editarOperador(id){abrirModalOperador(id)}
 function salvarOperador(){
   const nome=document.getElementById('mo-nome').value.trim();
   if(!nome){notify('Informe o nome do operador');return;}
+  const senhaInput=document.getElementById('mo-senha').value.trim();
+  if(senhaInput && senhaInput.length<4){notify('A senha deve ter pelo menos 4 caracteres');return;}
   const obj={nome,cargo:document.getElementById('mo-cargo').value.trim(),tel:document.getElementById('mo-tel').value.trim(),email:document.getElementById('mo-email').value.trim(),status:document.getElementById('mo-status').value,cor:document.getElementById('mo-cor').value};
+  let nomeAnterior=null;
   if(editOpId){
     const idx=operadores.findIndex(o=>o.id===editOpId);
-    if(idx>=0)Object.assign(operadores[idx],obj);
+    if(idx>=0){ nomeAnterior=operadores[idx].nome; Object.assign(operadores[idx],obj); }
     notify('Operador atualizado');
   }else{
     const newId=Math.max.apply(null,[0].concat(operadores.map(function(o){return o.id||0;})))+1;
     operadores.push({id:newId,...obj});
     notify('Operador cadastrado');
   }
+  // Senha de acesso (mesmo armazenamento usado por "Esqueci minha senha")
+  try{
+    const senhas=JSON.parse(localStorage.getItem('sisvip_senhas')||'{}');
+    if(senhaInput){
+      senhas[nome]=senhaInput;
+      if(nomeAnterior && nomeAnterior!==nome) delete senhas[nomeAnterior];
+    }else if(nomeAnterior && nomeAnterior!==nome && senhas[nomeAnterior]!==undefined){
+      // Nome mudou sem trocar senha: migra a senha existente para o novo nome
+      senhas[nome]=senhas[nomeAnterior];
+      delete senhas[nomeAnterior];
+    }
+    localStorage.setItem('sisvip_senhas', JSON.stringify(senhas));
+  }catch(e){}
   if(typeof window.sisvipSave==='function') window.sisvipSave('operador');
   fecharModal('modal-operador');populateSelects();renderOperadores();
 }
@@ -2179,6 +2205,9 @@ function renderPermissoes(){
   const grupos = [...new Set(TODAS_PERMISSOES.map(p=>p.grupo))];
 
   document.getElementById('perm-grid').innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn btn-sm" onclick="definirSenhaUsuario('${permUserAtivo}')">🔑 Definir senha</button>
+    </div>
     ${isAdmin?`<div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#60a5fa;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🔐</span> O administrador possui todas as permissões e não pode ser restringido.</div>`:''}
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
       ${grupos.map(grupo=>{
@@ -3541,6 +3570,10 @@ function renderCfgContent(tab){
             style="padding:9px 14px;font-size:12px;color:var(--blue);border:none;background:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap">
             + Adicionar usuário
           </button>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+          <button class="btn btn-sm" onclick="definirSenhaUsuario('${ativo}')">🔑 Definir senha</button>
         </div>
 
         ${isAdmin?`<div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#60a5fa;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🔐</span> O administrador possui todas as permissões e não pode ser restringido.</div>`:''}
@@ -7142,7 +7175,7 @@ window.recToggleSenha = function(id){
   el.type = el.type === 'password' ? 'text' : 'password';
 };
 
-window.abrirRecuperarSenha = function(){
+window.abrirRecuperarSenha = function(preselect){
   window.fecharModalRecuperar();
 
   var overlay = document.createElement('div');
@@ -7207,8 +7240,25 @@ window.abrirRecuperarSenha = function(){
       opt.textContent = op.nome + (op.cargo ? ' ('+op.cargo+')' : '');
       sel.appendChild(opt);
     });
-    sel.focus();
+    if(preselect){
+      sel.value = preselect;
+      var senhaEl = document.getElementById('rec-nova-senha');
+      if(senhaEl) senhaEl.focus();
+    } else {
+      sel.focus();
+    }
   }, 100);
+};
+
+// Abre o modal já com um usuário específico selecionado (usado pelo botão
+// "Definir senha" nas telas de Permissões, sem precisar deslogar).
+window.definirSenhaUsuario = function(chave){
+  if(!chave || chave==='admin'){ window.abrirRecuperarSenha('admin'); return; }
+  var op = (window.operadores||[]).find(function(o){
+    var first = o.nome.split(' ')[0].toLowerCase();
+    return first===chave || o.nome.toLowerCase().replace(/\s/g,'')===chave;
+  });
+  window.abrirRecuperarSenha(op ? op.nome : chave);
 };
 
 window.confirmarRecuperarSenha = function(){
