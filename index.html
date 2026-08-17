@@ -10,32 +10,32 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --blue:#2b7fff;--blue2:#1a6ef0;--blue-light:#4a95ff;
-  --blue-dim:rgba(43,127,255,.13);--blue-glow:rgba(43,127,255,.08);
-  --sidebar:#1a2035;--sidebar2:#222a42;
-  --bg:#3a8bf5;--bg2:#2f7de8;
-  --card:rgba(255,255,255,.92);--card2:rgba(255,255,255,.70);--card-border:rgba(255,255,255,.45);
-  --tx:#1a2035;--tx2:#4a5570;--tx3:#8a95b0;
+  --blue:#3b82f6;--blue2:#2563eb;--blue-light:#60a5fa;--accent:#60a5fa;
+  --blue-dim:rgba(59,130,246,.16);--blue-glow:rgba(59,130,246,.20);
+  --sidebar:#0b1220;--sidebar2:#111c33;
+  --bg:#0a0f1e;--bg2:#0d1730;
+  --card:#111a2e;--card2:#0e1727;--card-border:rgba(255,255,255,.08);--border:rgba(255,255,255,.08);
+  --tx:#e7ecf5;--tx2:#94a3b8;--tx3:#64748b;
   --tx-w:rgba(255,255,255,.92);--tx2-w:rgba(255,255,255,.60);
-  --success:#1a9e5c;--success-bg:rgba(26,158,92,.12);
-  --warning:#c88a10;--warning-bg:rgba(200,138,16,.12);
-  --danger:#d63030;--danger-bg:rgba(214,48,48,.12);
+  --success:#22c55e;--success-bg:rgba(34,197,94,.14);
+  --warning:#f59e0b;--warning-bg:rgba(245,158,11,.14);
+  --danger:#ef4444;--danger-bg:rgba(239,68,68,.14);
   --r:8px;--rl:12px;--rxl:16px;
 }
 html,body{min-height:100vh;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:3px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
 .shell{display:flex;min-height:100vh}
 
 /* SIDEBAR */
-.sidebar{width:220px;background:var(--sidebar);flex-shrink:0;display:flex;flex-direction:column;height:100vh;overflow-y:auto;position:sticky;top:0}
+.sidebar{width:220px;background:var(--sidebar);flex-shrink:0;display:flex;flex-direction:column;height:100vh;overflow-y:auto;position:sticky;top:0;border-right:1px solid rgba(255,255,255,.06)}
 .sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
 .sb-brand-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:#fff;letter-spacing:-.3px}
 .sb-brand-name span{color:var(--accent)}
 .sb-brand-sub{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.12em;margin-top:2px;font-weight:600}
 .sb-user{display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
-.sb-av{width:32px;height:32px;border-radius:50%;background:rgba(107,159,255,.2);border:1px solid rgba(107,159,255,.35);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#6b9fff;flex-shrink:0}
+.sb-av{width:32px;height:32px;border-radius:50%;background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.35);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#60a5fa;flex-shrink:0}
 .sb-uname{font-size:12px;color:rgba(255,255,255,.75);font-weight:500}
 .sb-urole{font-size:10px;color:rgba(255,255,255,.35)}
 .sb-nav{padding:10px 0;flex:1}
@@ -49,86 +49,86 @@ html,body{min-height:100vh;font-family:'Plus Jakarta Sans',sans-serif;background
 
 /* CONTENT */
 .content{flex:1;min-width:0;display:flex;flex-direction:column}
-.topbar{background:rgba(255,255,255,.12);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.15);padding:0 24px;display:flex;align-items:center;height:52px;gap:12px;position:sticky;top:0;z-index:50}
+.topbar{background:rgba(255,255,255,.03);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.07);padding:0 24px;display:flex;align-items:center;height:52px;gap:12px;position:sticky;top:0;z-index:50}
 .topbar-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-right:auto}
 .topbar-date{font-size:11px;color:var(--tx2-w)}
 .main{padding:20px 24px;flex:1}
 .page{display:none}.page.active{display:block}
 
 /* PANEL */
-.panel{background:var(--card);border:1px solid var(--card-border);border-radius:var(--rl);overflow:hidden;margin-bottom:16px;box-shadow:0 2px 12px rgba(26,32,53,.12)}
-.panel-header{padding:13px 18px;border-bottom:1px solid rgba(26,32,53,.07);display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.6)}
+.panel{background:var(--card);border:1px solid var(--card-border);border-radius:var(--rl);overflow:hidden;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.panel-header{padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.02)}
 .panel-title{font-size:13px;font-weight:600;color:var(--tx);margin-right:auto}
 
 /* METRICS */
 .metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-.mc{background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.30);border-radius:var(--rl);padding:16px 18px;transition:all .2s;box-shadow:0 2px 8px rgba(26,32,53,.1)}
-.mc:hover{background:rgba(255,255,255,.25)}
-.ml{font-size:10px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:500}
-.mv{font-size:28px;font-weight:700;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-1px;line-height:1}
-.ms{font-size:11px;color:rgba(255,255,255,.55);margin-top:5px}
+.mc{background:rgba(255,255,255,.04);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:var(--rl);padding:16px 18px;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.mc:hover{background:rgba(255,255,255,.07)}
+.ml{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:500}
+.mv{font-size:28px;font-weight:700;color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-1px;line-height:1}
+.ms{font-size:11px;color:var(--tx3);margin-top:5px}
 
 /* BADGES */
 .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;white-space:nowrap}
-.bs{background:rgba(26,158,92,.18);color:#1a9e5c;border:1px solid rgba(26,158,92,.25)}
-.bw{background:rgba(200,138,16,.18);color:#c88a10;border:1px solid rgba(200,138,16,.25)}
-.bd-{background:rgba(214,48,48,.18);color:#d63030;border:1px solid rgba(214,48,48,.25)}
-.bi{background:rgba(43,127,255,.18);color:#2b7fff;border:1px solid rgba(43,127,255,.25)}
-.bg{background:rgba(90,100,128,.12);color:var(--tx2);border:1px solid rgba(90,100,128,.18)}
-.bw-sm{background:rgba(255,255,255,.18);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.3);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500}
+.bs{background:rgba(34,197,94,.16);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.bw{background:rgba(245,158,11,.16);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.bd-{background:rgba(239,68,68,.16);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.bi{background:rgba(59,130,246,.18);color:#60a5fa;border:1px solid rgba(59,130,246,.3)}
+.bg{background:rgba(148,163,184,.12);color:var(--tx2);border:1px solid rgba(148,163,184,.2)}
+.bw-sm{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500}
 
 /* TABLE */
 .tbl{width:100%;border-collapse:collapse}
-.tbl thead tr{border-bottom:1px solid rgba(26,32,53,.08)}
-.tbl th{padding:9px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;background:rgba(255,255,255,.5)}
-.tbl td{padding:10px 14px;font-size:12px;color:var(--tx);border-bottom:1px solid rgba(26,32,53,.06);white-space:nowrap}
+.tbl thead tr{border-bottom:1px solid rgba(255,255,255,.07)}
+.tbl th{padding:9px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;background:rgba(255,255,255,.02)}
+.tbl td{padding:10px 14px;font-size:12px;color:var(--tx);border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tbody tr{cursor:pointer;transition:background .1s}
-.tbl tbody tr:hover{background:rgba(43,127,255,.05)}
-.tbl tbody tr.row-warn{background:rgba(200,138,16,.06)}
-.tbl tbody tr.row-warn:hover{background:rgba(200,138,16,.1)}
-.tbl tbody tr.row-danger{background:rgba(214,48,48,.06)}
-.tbl tbody tr.row-danger:hover{background:rgba(214,48,48,.1)}
+.tbl tbody tr:hover{background:rgba(59,130,246,.08)}
+.tbl tbody tr.row-warn{background:rgba(245,158,11,.07)}
+.tbl tbody tr.row-warn:hover{background:rgba(245,158,11,.12)}
+.tbl tbody tr.row-danger{background:rgba(239,68,68,.07)}
+.tbl tbody tr.row-danger:hover{background:rgba(239,68,68,.12)}
 
 /* STATUS PILL */
 .sp{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500}
 .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 
 /* FILTERS */
-.filters{padding:10px 18px;border-bottom:1px solid rgba(26,32,53,.07);display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:rgba(255,255,255,.4)}
-.fi{flex:1;min-width:130px;padding:7px 11px;font-size:12px;border:1px solid rgba(26,32,53,.12);border-radius:var(--r);background:#fff;color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:all .15s}
+.filters{padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:rgba(255,255,255,.02)}
+.fi{flex:1;min-width:130px;padding:7px 11px;font-size:12px;border:1px solid rgba(255,255,255,.1);border-radius:var(--r);background:var(--card2);color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:all .15s}
 .fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow)}
 .fi::placeholder{color:var(--tx3)}
-.fs{padding:7px 10px;font-size:12px;border:1px solid rgba(26,32,53,.12);border-radius:var(--r);background:#fff;color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer}
+.fs{padding:7px 10px;font-size:12px;border:1px solid rgba(255,255,255,.1);border-radius:var(--r);background:var(--card2);color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer}
 
 /* CHIPS */
-.chips{display:flex;gap:6px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid rgba(26,32,53,.07);background:rgba(255,255,255,.4)}
-.chip{padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid rgba(26,32,53,.14);background:transparent;color:var(--tx2);transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif}
-.chip:hover{border-color:var(--blue);color:var(--blue)}
-.chip.on{background:var(--blue-dim);color:var(--blue2);border-color:rgba(43,127,255,.3);font-weight:500}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)}
+.chip{padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--tx2);transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif}
+.chip:hover{border-color:var(--blue);color:var(--blue-light)}
+.chip.on{background:var(--blue-dim);color:var(--blue-light);border-color:rgba(59,130,246,.4);font-weight:500}
 
 /* BUTTONS */
-.btn{padding:7px 16px;font-size:12px;border:1px solid rgba(26,32,53,.14);border-radius:var(--r);background:#fff;color:var(--tx);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;font-weight:400;display:inline-flex;align-items:center;gap:5px}
-.btn:hover{background:#f0f4ff;border-color:rgba(43,127,255,.3);transform:translateY(-1px);box-shadow:0 2px 8px rgba(43,127,255,.12)}
+.btn{padding:7px 16px;font-size:12px;border:1px solid rgba(255,255,255,.12);border-radius:var(--r);background:var(--card2);color:var(--tx);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;font-weight:400;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.35);transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .btn:active{transform:translateY(0)}
-.btn-p{background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);color:#fff;border-color:transparent;font-weight:600;box-shadow:0 2px 8px rgba(43,127,255,.35)}
-.btn-p:hover{background:linear-gradient(135deg,var(--blue-light) 0%,var(--blue) 100%);box-shadow:0 4px 16px rgba(43,127,255,.45);transform:translateY(-1px)}
+.btn-p{background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);color:#fff;border-color:transparent;font-weight:600;box-shadow:0 2px 8px rgba(59,130,246,.35)}
+.btn-p:hover{background:linear-gradient(135deg,var(--blue-light) 0%,var(--blue) 100%);box-shadow:0 4px 16px rgba(59,130,246,.5);transform:translateY(-1px)}
 .btn-sm{padding:5px 12px;font-size:11px}
-.btn-ghost{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.25)}
-.btn-ghost:hover{background:rgba(255,255,255,.28)}
+.btn-ghost{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)}
+.btn-ghost:hover{background:rgba(255,255,255,.18)}
 @keyframes fadeDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{box-shadow:0 3px 14px rgba(37,211,102,.45)}50%{box-shadow:0 3px 22px rgba(37,211,102,.7)}}
 .btn-alert{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;font-size:11px;font-weight:600;border-radius:var(--r);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;letter-spacing:.02em;white-space:nowrap;border:none}
-.btn-alert-danger{background:#fff;color:var(--danger);box-shadow:0 2px 8px rgba(214,48,48,.25)}
-.btn-alert-danger:hover{background:#fff5f5;box-shadow:0 4px 14px rgba(214,48,48,.35);transform:translateY(-1px)}
-.btn-alert-warning{background:#fff;color:var(--warning);box-shadow:0 2px 8px rgba(200,138,16,.25)}
-.btn-alert-warning:hover{background:#fffbf0;box-shadow:0 4px 14px rgba(200,138,16,.35);transform:translateY(-1px)}
-.btn-warn{background:var(--warning-bg);color:var(--warning);border-color:rgba(200,138,16,.25)}
-.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:rgba(214,48,48,.25)}
-.btn-success{background:var(--success-bg);color:var(--success);border-color:rgba(26,158,92,.25)}
-.btn-danger2{background:rgba(214,48,48,.1);color:var(--danger);border:1px solid rgba(214,48,48,.2);padding:3px 8px;font-size:11px;border-radius:var(--r);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s}
-.btn-danger2:hover{background:rgba(214,48,48,.2)}
+.btn-alert-danger{background:var(--card2);color:#f87171;box-shadow:0 2px 8px rgba(239,68,68,.2)}
+.btn-alert-danger:hover{background:rgba(239,68,68,.14);box-shadow:0 4px 14px rgba(239,68,68,.3);transform:translateY(-1px)}
+.btn-alert-warning{background:var(--card2);color:#fbbf24;box-shadow:0 2px 8px rgba(245,158,11,.2)}
+.btn-alert-warning:hover{background:rgba(245,158,11,.14);box-shadow:0 4px 14px rgba(245,158,11,.3);transform:translateY(-1px)}
+.btn-warn{background:var(--warning-bg);color:var(--warning);border-color:rgba(245,158,11,.3)}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:rgba(239,68,68,.3)}
+.btn-success{background:var(--success-bg);color:var(--success);border-color:rgba(34,197,94,.3)}
+.btn-danger2{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25);padding:3px 8px;font-size:11px;border-radius:var(--r);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s}
+.btn-danger2:hover{background:rgba(239,68,68,.22)}
 
 /* FORM */
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:20px 18px}
@@ -136,91 +136,91 @@ html,body{min-height:100vh;font-family:'Plus Jakarta Sans',sans-serif;background
 .fgroup.full{grid-column:1/-1}
 .fgroup.third{grid-column:span 1}
 .flabel{font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.07em}
-.finput{padding:8px 11px;font-size:13px;border:1px solid rgba(26,32,53,.13);border-radius:var(--r);background:#fff;color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;outline:none}
+.finput{padding:8px 11px;font-size:13px;border:1px solid rgba(255,255,255,.1);border-radius:var(--r);background:var(--card2);color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;outline:none}
 .finput:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow)}
 select.finput{appearance:auto;-webkit-appearance:auto;cursor:pointer}
 select.finput:focus{outline:none}
 .finput::placeholder{color:var(--tx3)}
 textarea.finput{resize:vertical;min-height:76px;line-height:1.5}
-.ffoot{padding:14px 18px;border-top:1px solid rgba(26,32,53,.07);display:flex;gap:8px;justify-content:flex-end;background:rgba(255,255,255,.4)}
+.ffoot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:8px;justify-content:flex-end;background:rgba(255,255,255,.02)}
 
 /* PAGINATION */
-.pag{display:flex;align-items:center;gap:8px;padding:10px 18px;border-top:1px solid rgba(26,32,53,.07);font-size:12px;color:var(--tx2);background:rgba(255,255,255,.4)}
+.pag{display:flex;align-items:center;gap:8px;padding:10px 18px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:var(--tx2);background:rgba(255,255,255,.02)}
 .pag-info{margin-right:auto}
 
 /* OP AVATAR */
-.opa{width:24px;height:24px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--blue2);flex-shrink:0;border:1px solid rgba(43,127,255,.2)}
+.opa{width:24px;height:24px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--blue-light);flex-shrink:0;border:1px solid rgba(59,130,246,.3)}
 
 /* NOTIF */
-.notif{position:fixed;bottom:20px;right:20px;background:var(--sidebar);color:#fff;padding:12px 18px;border-radius:var(--rl);font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;box-shadow:0 8px 24px rgba(26,32,53,.3)}
+.notif{position:fixed;bottom:20px;right:20px;background:var(--sidebar2);color:#fff;padding:12px 18px;border-radius:var(--rl);font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.08)}
 .notif.show{opacity:1}
 
 /* EMPTY */
 .empty{padding:36px;text-align:center;color:var(--tx3);font-size:13px}
 
 /* ALERT */
-.alert-bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--rl);margin-bottom:10px;font-size:12px;border:1px solid;backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(26,32,53,.1)}
-.alert-bar.danger{background:rgba(214,48,48,.18);border-color:rgba(214,48,48,.3);color:#fff}
-.alert-bar.warning{background:rgba(200,138,16,.18);border-color:rgba(200,138,16,.3);color:#fff}
+.alert-bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--rl);margin-bottom:10px;font-size:12px;border:1px solid;backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.alert-bar.danger{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.35);color:#fff}
+.alert-bar.warning{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.35);color:#fff}
 .alert-icon{font-size:18px;flex-shrink:0;line-height:1}
 .alert-text{flex:1;line-height:1.4}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(26,32,53,.5);display:flex;align-items:center;justify-content:center;z-index:9998;backdrop-filter:blur(4px)}
-.modal{background:#fff;border-radius:var(--rxl);width:500px;max-width:95vw;box-shadow:0 24px 64px rgba(26,32,53,.25);overflow:hidden}
+.modal-overlay{position:fixed;inset:0;background:rgba(4,7,15,.65);display:flex;align-items:center;justify-content:center;z-index:9998;backdrop-filter:blur(4px)}
+.modal{background:var(--card);border:1px solid var(--card-border);border-radius:var(--rxl);width:500px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,.5);overflow:hidden}
 .modal-header{background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);padding:22px 24px 18px;position:relative;overflow:hidden}
 .modal-header::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08)}
 .modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:#fff;position:relative}
 .modal-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:3px;position:relative}
 .modal-body{padding:18px 22px;max-height:55vh;overflow-y:auto}
-.modal-footer{padding:13px 22px;border-top:1px solid rgba(26,32,53,.08);display:flex;justify-content:flex-end;gap:8px;background:#f7f9ff}
-.ri{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);margin-bottom:6px;border:1px solid rgba(26,32,53,.07)}
-.ri.danger{background:var(--danger-bg);border-color:rgba(214,48,48,.15)}
-.ri.warning{background:var(--warning-bg);border-color:rgba(200,138,16,.15)}
-.ri.ok{background:var(--success-bg);border-color:rgba(26,158,92,.15)}
+.modal-footer{padding:13px 22px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:flex-end;gap:8px;background:rgba(255,255,255,.02)}
+.ri{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);margin-bottom:6px;border:1px solid rgba(255,255,255,.06)}
+.ri.danger{background:var(--danger-bg);border-color:rgba(239,68,68,.2)}
+.ri.warning{background:var(--warning-bg);border-color:rgba(245,158,11,.2)}
+.ri.ok{background:var(--success-bg);border-color:rgba(34,197,94,.2)}
 .rsec{margin-bottom:16px}
 .rsec-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--tx2);margin-bottom:8px}
 
 /* CALENDAR */
 .agenda-grid{display:grid;grid-template-columns:1fr 320px;gap:14px}
-.cal{background:var(--card);border:1px solid var(--card-border);border-radius:var(--rl);overflow:hidden;box-shadow:0 2px 12px rgba(26,32,53,.12)}
-.cal-header{padding:12px 16px;border-bottom:1px solid rgba(26,32,53,.07);display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.6)}
+.cal{background:var(--card);border:1px solid var(--card-border);border-radius:var(--rl);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.cal-header{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.02)}
 .cal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--tx);margin-right:auto;text-transform:capitalize}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
-.cal-dow{padding:8px 0;text-align:center;font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(26,32,53,.07);background:rgba(255,255,255,.5)}
-.cal-day{min-height:68px;padding:6px 7px;border-right:1px solid rgba(26,32,53,.06);border-bottom:1px solid rgba(26,32,53,.06);cursor:pointer;transition:background .1s;background:rgba(255,255,255,.7)}
+.cal-dow{padding:8px 0;text-align:center;font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)}
+.cal-day{min-height:68px;padding:6px 7px;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;transition:background .1s;background:transparent}
 .cal-day:nth-child(7n){border-right:none}
-.cal-day:hover{background:rgba(43,127,255,.06)}
-.cal-day.selected{background:rgba(43,127,255,.1)}
+.cal-day:hover{background:rgba(59,130,246,.08)}
+.cal-day.selected{background:rgba(59,130,246,.14)}
 .cal-day.today .day-num{background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:600}
-.cal-day.other-month{background:rgba(255,255,255,.35)}
+.cal-day.other-month{background:rgba(0,0,0,.15)}
 .cal-day.other-month .day-num{color:var(--tx3)}
 .day-num{font-size:12px;font-weight:500;color:var(--tx);margin-bottom:4px;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .cal-dot-row{display:flex;flex-wrap:wrap;gap:3px}
 .cal-dot{width:6px;height:6px;border-radius:50%}
 .cal-dot.atras{background:var(--danger)}.cal-dot.pend{background:var(--warning)}.cal-dot.ok{background:var(--success)}.cal-dot.agend{background:var(--blue)}
-.cal-legend{display:flex;gap:14px;padding:9px 14px;border-top:1px solid rgba(26,32,53,.07);flex-wrap:wrap;background:rgba(255,255,255,.5)}
+.cal-legend{display:flex;gap:14px;padding:9px 14px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;background:rgba(255,255,255,.02)}
 .cal-legend span{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tx2)}
 .agenda-side{display:flex;flex-direction:column;gap:12px}
-.ai{background:rgba(255,255,255,.88);border:1px solid var(--card-border);border-radius:var(--r);padding:11px 13px;cursor:pointer;transition:all .15s;border-left:3px solid rgba(26,32,53,.1);box-shadow:0 1px 4px rgba(26,32,53,.07)}
-.ai:hover{box-shadow:0 4px 12px rgba(26,32,53,.12);transform:translateY(-1px)}
+.ai{background:var(--card2);border:1px solid var(--card-border);border-radius:var(--r);padding:11px 13px;cursor:pointer;transition:all .15s;border-left:3px solid rgba(255,255,255,.1);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.ai:hover{box-shadow:0 4px 12px rgba(0,0,0,.3);transform:translateY(-1px)}
 .ai.atras{border-left-color:var(--danger)}.ai.hoje-pend{border-left-color:var(--warning)}.ai.finalizado{border-left-color:var(--success)}.ai.agendado{border-left-color:var(--blue)}
 .ai-cliente{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:3px}
 .ai-meta{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 
 /* PAINEL */
 .painel-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.pbar{height:6px;background:rgba(26,32,53,.08);border-radius:3px;overflow:hidden;margin-top:5px}
+.pbar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-top:5px}
 .pbar-fill{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1)}
 
 /* HIST */
 .hitem{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start;padding-top:10px}
 .hdotcol{display:flex;flex-direction:column;align-items:center;padding-top:2px}
 .hdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.hline{width:1px;background:rgba(26,32,53,.1);flex:1;min-height:18px;margin-top:4px}
+.hline{width:1px;background:rgba(255,255,255,.1);flex:1;min-height:18px;margin-top:4px}
 .hbody{flex:1}
 .haction{font-size:13px;color:var(--tx);font-weight:500}
-.hdiff{margin-top:7px;background:rgba(43,127,255,.05);border:1px solid rgba(43,127,255,.1);border-radius:var(--r);padding:9px 11px;font-size:11px}
+.hdiff{margin-top:7px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:var(--r);padding:9px 11px;font-size:11px}
 .hrow{display:flex;gap:7px;align-items:baseline;margin-bottom:3px}
 .hrow:last-child{margin-bottom:0}
 .hf{color:var(--tx2);min-width:76px;font-size:10px;text-transform:uppercase;letter-spacing:.05em}
@@ -228,19 +228,19 @@ textarea.finput{resize:vertical;min-height:76px;line-height:1.5}
 
 /* CADASTRO CARDS */
 .cad-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;padding:16px 18px}
-.cad-card{background:#fff;border:1px solid rgba(26,32,53,.1);border-radius:var(--rl);padding:14px 16px;transition:all .15s;box-shadow:0 1px 4px rgba(26,32,53,.06)}
-.cad-card:hover{box-shadow:0 4px 14px rgba(26,32,53,.12);transform:translateY(-1px)}
+.cad-card{background:var(--card2);border:1px solid var(--card-border);border-radius:var(--rl);padding:14px 16px;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.cad-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.3);transform:translateY(-1px)}
 .cad-name{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:4px}
 .cad-detail{font-size:11px;color:var(--tx2);margin-bottom:2px;display:flex;align-items:center;gap:5px}
-.cad-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(26,32,53,.07)}
+.cad-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}
 .cad-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;margin-bottom:10px}
 
 /* RELATÓRIO */
 .rel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-.rel-card{background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.3);border-radius:var(--rl);padding:14px 16px;text-align:center}
-.rel-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:700;color:#fff}
-.rel-label{font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
-.rel-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:14px 18px;background:rgba(255,255,255,.92);border-radius:var(--rl);border:1px solid var(--card-border);box-shadow:0 2px 8px rgba(26,32,53,.08)}
+.rel-card{background:rgba(255,255,255,.04);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:var(--rl);padding:14px 16px;text-align:center}
+.rel-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:700;color:var(--tx)}
+.rel-label{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+.rel-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:14px 18px;background:var(--card);border-radius:var(--rl);border:1px solid var(--card-border);box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .periodo-label{font-size:12px;font-weight:500;color:var(--tx2);white-space:nowrap}
 
 /* Grids responsivos — detalhes no bloco mobile abaixo */
@@ -321,7 +321,7 @@ function getSbNav(){
   <!-- LOGOUT -->
   <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,.07)">
     <div id="sb-user-info" style="display:flex;align-items:center;gap:8px;padding:8px 6px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,.05)">
-      <div id="sb-av-logout" style="width:30px;height:30px;border-radius:50%;background:rgba(107,159,255,.2);border:1px solid rgba(107,159,255,.35);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#6b9fff;flex-shrink:0">KO</div>
+      <div id="sb-av-logout" style="width:30px;height:30px;border-radius:50%;background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.35);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#60a5fa;flex-shrink:0">KO</div>
       <div style="flex:1;min-width:0">
         <div id="sb-logout-name" style="font-size:12px;color:rgba(255,255,255,.8);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
         <div id="sb-logout-role" style="font-size:10px;color:rgba(255,255,255,.35)">Operador</div>
@@ -331,17 +331,17 @@ function getSbNav(){
       width:100%;
       display:flex;align-items:center;justify-content:center;gap:8px;
       padding:9px 14px;
-      background:rgba(214,48,48,.12);
+      background:rgba(239,68,68,.12);
       color:rgba(255,100,100,.9);
-      border:1px solid rgba(214,48,48,.2);
+      border:1px solid rgba(239,68,68,.2);
       border-radius:10px;
       font-size:12px;font-weight:500;
       font-family:'Plus Jakarta Sans',sans-serif;
       cursor:pointer;
       transition:all .18s;
     "
-    onmouseover="this.style.background='rgba(214,48,48,.22)';this.style.borderColor='rgba(214,48,48,.4)';this.style.color='#ff6464'"
-    onmouseout="this.style.background='rgba(214,48,48,.12)';this.style.borderColor='rgba(214,48,48,.2)';this.style.color='rgba(255,100,100,.9)'">
+    onmouseover="this.style.background='rgba(239,68,68,.22)';this.style.borderColor='rgba(239,68,68,.4)';this.style.color='#ff6464'"
+    onmouseout="this.style.background='rgba(239,68,68,.12)';this.style.borderColor='rgba(239,68,68,.2)';this.style.color='rgba(255,100,100,.9)'">
       <svg style="width:15px;height:15px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
       </svg>
@@ -354,7 +354,7 @@ function getSbNav(){
 <div class="content">
   <div class="topbar">
     <span class="topbar-title" id="topbar-title">Atendimentos</span>
-    <span id="save-indicator" style="font-size:11px;font-weight:600;color:#1a9e5c;
+    <span id="save-indicator" style="font-size:11px;font-weight:600;color:#22c55e;
       opacity:0;transition:opacity .6s;margin-left:auto;margin-right:8px">💾 Salvo</span>
     <span class="topbar-date" id="topbar-date"></span>
   </div>
@@ -629,7 +629,7 @@ function getSbNav(){
     <div class="modal-body" style="padding:0">
 
       <!-- Busca rápida integrada -->
-      <div style="padding:12px 20px;background:#f8faff;border-bottom:1px solid rgba(26,32,53,.07)">
+      <div style="padding:12px 20px;background:rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.07)">
         <div style="display:flex;gap:8px;align-items:center">
           <div style="flex:1;position:relative">
             <input id="mc-busca-input" class="finput" style="padding-left:32px;width:100%;box-sizing:border-box"
@@ -816,7 +816,7 @@ function getSbNav(){
         <div id="mc-fin-resumo" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
 
         <!-- Configurações financeiras -->
-        <div style="background:var(--bg);border-radius:12px;padding:14px;border:1px solid rgba(26,32,53,.08)">
+        <div style="background:var(--card2);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,.08)">
           <div style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Configurações</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div>
@@ -882,7 +882,7 @@ function getSbNav(){
           <select class="finput" id="mo-status"><option>Ativo</option><option>Inativo</option></select>
         </div>
         <div class="fgroup"><label class="flabel">Cor de Identificação</label>
-          <input class="finput" id="mo-cor" type="color" value="#2b7fff" style="height:38px;padding:4px 8px;cursor:pointer">
+          <input class="finput" id="mo-cor" type="color" value="#3b82f6" style="height:38px;padding:4px 8px;cursor:pointer">
         </div>
       </div>
     </div>
@@ -898,8 +898,8 @@ function getSbNav(){
 <script>
 const TODAY=(function(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');})();
 const TODAY_OBJ=parseDate(TODAY);
-const OP_COLORS_DEF=['#2b7fff','#7b5af5','#e07b20','#1a9e5c','#d63030','#c88a10'];
-const STATUS_COLORS={'Finalizado c/ Sucesso':'#1a9e5c','Pendente':'#c88a10','Finalizado c/ Ressalvas':'#c88a10','Finalizado s/ Sucesso':'#d63030','Agendado':'#2b7fff'};
+const OP_COLORS_DEF=['#3b82f6','#7b5af5','#e07b20','#22c55e','#ef4444','#f59e0b'];
+const STATUS_COLORS={'Finalizado c/ Sucesso':'#22c55e','Pendente':'#f59e0b','Finalizado c/ Ressalvas':'#f59e0b','Finalizado s/ Sucesso':'#ef4444','Agendado':'#3b82f6'};
 const PAGE_TITLES={'lista':'Atendimentos','novo':'Novo Atendimento','agenda':'Agenda','clientes':'Clientes','operadores':'Operadores','relatorio':'Relatório por Período','painel':'Painel','historico':'Histórico'};
 const DIAS=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
@@ -1075,11 +1075,11 @@ function renderTable(){
 
   // Status cores
   const sc={
-    'Pendente':           {bg:'rgba(200,138,16,.12)',color:'#c88a10'},
-    'Agendado':           {bg:'rgba(43,127,255,.12)', color:'#2b7fff'},
-    'Finalizado c/ Sucesso':  {bg:'rgba(26,158,92,.12)',color:'#1a9e5c'},
-    'Finalizado c/ Ressalvas':{bg:'rgba(200,138,16,.12)',color:'#c88a10'},
-    'Finalizado s/ Sucesso':  {bg:'rgba(214,48,48,.12)', color:'#d63030'},
+    'Pendente':           {bg:'rgba(245,158,11,.12)',color:'#f59e0b'},
+    'Agendado':           {bg:'rgba(59,130,246,.12)', color:'#3b82f6'},
+    'Finalizado c/ Sucesso':  {bg:'rgba(34,197,94,.12)',color:'#22c55e'},
+    'Finalizado c/ Ressalvas':{bg:'rgba(245,158,11,.12)',color:'#f59e0b'},
+    'Finalizado s/ Sucesso':  {bg:'rgba(239,68,68,.12)', color:'#ef4444'},
   };
 
   const tbody=document.getElementById('table-body');
@@ -1204,23 +1204,23 @@ function renderClientes(){
   document.getElementById('cli-count').textContent = src.length + ' cliente' + (src.length!==1?'s':'');
 
   var segColors = {
-    Alimentação:'#e07b20',Comércio:'#2b7fff',Serviços:'#7b5af5',
-    Indústria:'#1a9e5c',Saúde:'#e05555',Educação:'#1a7bb3',
+    Alimentação:'#e07b20',Comércio:'#3b82f6',Serviços:'#7b5af5',
+    Indústria:'#22c55e',Saúde:'#e05555',Educação:'#1a7bb3',
     Tecnologia:'#0ea5e9',Construção:'#b45309',Transporte:'#0891b2',
-    Agronegócio:'#16a34a',Outros:'#8a95b0'
+    Agronegócio:'#16a34a',Outros:'#64748b'
   };
-  var statusColors = { Ativo:'#1a9e5c', Inativo:'#8a95b0', Prospect:'#2b7fff', Bloqueado:'#d63030' };
+  var statusColors = { Ativo:'#22c55e', Inativo:'#64748b', Prospect:'#3b82f6', Bloqueado:'#ef4444' };
 
   document.getElementById('cli-grid').innerHTML = !src.length
     ? '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--tx3)">Nenhum cliente encontrado</div>'
     : src.map(function(c){
-    var cor  = segColors[c.seg] || '#8a95b0';
+    var cor  = segColors[c.seg] || '#64748b';
     var sta  = c.status || 'Ativo';
-    var corSta = statusColors[sta] || '#8a95b0';
+    var corSta = statusColors[sta] || '#64748b';
     var ini  = (c.nome||'?').slice(0,2).toUpperCase();
     var tipo = c.tipo === 'pf' ? '👤' : '🏢';
     var doc  = c.doc ? ('<div class="cad-detail">📄 <span style="font-family:monospace;font-size:10px">'+c.doc+'</span></div>') : '';
-        + (c.tel||c.wpp ? '<button class="btn btn-sm" onclick="wppAbrirCliente('+c.id+')" style="background:#f0fdf4;color:#25d366;border-color:#bbf7d0">💬</button>' : '')
+        + (c.tel||c.wpp ? '<button class="btn btn-sm" onclick="wppAbrirCliente('+c.id+')" style="background:rgba(37,211,102,.12);color:#25d366;border-color:rgba(37,211,102,.3)">💬</button>' : '')
     var tel  = c.tel && c.tel !== c.wpp ? ('<div class="cad-detail">📞 <span>'+c.tel+'</span></div>') : '';
     var emailEl = c.email ? ('<div class="cad-detail">✉ <span style="color:var(--blue)">'+c.email+'</span></div>') : '';
     var endEl   = (c.cidade||c.end) ? ('<div class="cad-detail">📍 <span>'+[c.end,c.num,c.cidade,c.uf].filter(Boolean).join(', ')+'</span></div>') : '';
@@ -1244,7 +1244,7 @@ function renderClientes(){
       + (c.obs ? '<div style="font-size:10px;color:var(--tx3);margin-top:4px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.obs+'</div>' : '')
       + '<div class="cad-actions">'
         + '<button class="btn btn-sm" onclick="editarCliente('+c.id+')" style="flex:1">Editar</button>'
-        + (c.tel||c.wpp ? '<button class="btn btn-sm" onclick="wppAbrirCliente('+c.id+')" style="background:#f0fdf4;color:#25d366;border-color:#bbf7d0">💬</button>' : '')
+        + (c.tel||c.wpp ? '<button class="btn btn-sm" onclick="wppAbrirCliente('+c.id+')" style="background:rgba(37,211,102,.12);color:#25d366;border-color:rgba(37,211,102,.3)">💬</button>' : '')
         + '<button class="btn-danger2" onclick="excluirCliente('+c.id+')">✕</button>'
       + '</div>'
     + '</div>';
@@ -1265,8 +1265,8 @@ window.mcSetTipo = function(tipo) {
   // Botões
   var btnPJ = document.getElementById('mc-tab-pj');
   var btnPF = document.getElementById('mc-tab-pf');
-  if (btnPJ) { btnPJ.style.background = isPJ ? 'var(--blue)' : '#fff'; btnPJ.style.color = isPJ ? '#fff' : 'var(--tx2)'; btnPJ.style.borderColor = isPJ ? 'var(--blue)' : 'rgba(26,32,53,.15)'; }
-  if (btnPF) { btnPF.style.background = !isPJ ? 'var(--blue)' : '#fff'; btnPF.style.color = !isPJ ? '#fff' : 'var(--tx2)'; btnPF.style.borderColor = !isPJ ? 'var(--blue)' : 'rgba(26,32,53,.15)'; }
+  if (btnPJ) { btnPJ.style.background = isPJ ? 'var(--blue)' : '#fff'; btnPJ.style.color = isPJ ? '#fff' : 'var(--tx2)'; btnPJ.style.borderColor = isPJ ? 'var(--blue)' : 'rgba(255,255,255,.15)'; }
+  if (btnPF) { btnPF.style.background = !isPJ ? 'var(--blue)' : '#fff'; btnPF.style.color = !isPJ ? '#fff' : 'var(--tx2)'; btnPF.style.borderColor = !isPJ ? 'var(--blue)' : 'rgba(255,255,255,.15)'; }
 
   // Labels
   var lNome = document.getElementById('mc-label-nome');
@@ -1639,8 +1639,8 @@ function mcRenderHistorico() {
   var resumoEl = document.getElementById('mc-hist-resumo');
   if (resumoEl) {
     resumoEl.innerHTML = [
-      { lbl:'Total', val:total,       cor:'#2b7fff', ico:'📋' },
-      { lbl:'Finalizados', val:finalizados, cor:'#1a9e5c', ico:'✅' },
+      { lbl:'Total', val:total,       cor:'#3b82f6', ico:'📋' },
+      { lbl:'Finalizados', val:finalizados, cor:'#22c55e', ico:'✅' },
       { lbl:'Pendentes',   val:pendentes + agendados, cor:'#e07b20', ico:'⏳' },
     ].map(function(m){
       return '<div style="background:'+m.cor+'0f;border:1px solid '+m.cor+'22;border-radius:10px;padding:10px 12px;text-align:center">'
@@ -1664,19 +1664,19 @@ function mcRenderHistorico() {
   }
 
   var statusCores = {
-    'Pendente':'#e07b20','Agendado':'#2b7fff',
-    'Finalizado c/ Sucesso':'#1a9e5c','Finalizado c/ Ressalvas':'#c88a10',
-    'Finalizado s/ Sucesso':'#d63030'
+    'Pendente':'#f59e0b','Agendado':'#3b82f6',
+    'Finalizado c/ Sucesso':'#22c55e','Finalizado c/ Ressalvas':'#f59e0b',
+    'Finalizado s/ Sucesso':'#ef4444'
   };
 
   listaEl.innerHTML = ats.map(function(r){
-    var cor  = statusCores[r.status] || '#8a95b0';
+    var cor  = statusCores[r.status] || '#64748b';
     var data = r.agend || r.data || '—';
     return '<div onclick="editRow('+r.cod+');fecharModal(\'modal-cliente\')" style="'
       + 'display:flex;align-items:flex-start;gap:10px;padding:10px 12px;'
-      + 'background:#fff;border:1px solid rgba(26,32,53,.07);border-radius:10px;'
+      + 'background:#0e1727;border:1px solid rgba(255,255,255,.07);border-radius:10px;'
       + 'cursor:pointer;transition:all .15s;border-left:3px solid '+cor+'"'
-      + ' onmouseover="this.style.background=\'#f4f6ff\'" onmouseout="this.style.background=\'#fff\'">'
+      + ' onmouseover="this.style.background=\'rgba(59,130,246,.08)\'" onmouseout="this.style.background=\'#0e1727\'">'
       + '<div style="min-width:0;flex:1">'
         + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
           + '<span style="font-size:11px;font-weight:700;color:var(--tx2)">#'+r.cod+'</span>'
@@ -1723,9 +1723,9 @@ function mcRenderFinanceiro() {
   var resumoEl = document.getElementById('mc-fin-resumo');
   if (resumoEl) {
     resumoEl.innerHTML = [
-      { lbl:'Total recebido',    val:fmt(totalRec), cor:'#1a9e5c', ico:'💰' },
+      { lbl:'Total recebido',    val:fmt(totalRec), cor:'#22c55e', ico:'💰' },
       { lbl:'Em aberto',         val:fmt(emAberto), cor:'#e07b20', ico:'⏳' },
-      { lbl:'Limite disponível', val: cli.finLimite ? fmt(parseFloat((cli.finLimite||'0').replace(',','.'))-emAberto) : '—', cor:'#2b7fff', ico:'🔒' },
+      { lbl:'Limite disponível', val: cli.finLimite ? fmt(parseFloat((cli.finLimite||'0').replace(',','.'))-emAberto) : '—', cor:'#3b82f6', ico:'🔒' },
     ].map(function(m){
       return '<div style="background:'+m.cor+'0f;border:1px solid '+m.cor+'22;border-radius:10px;padding:12px;text-align:center">'
         + '<div style="font-size:18px;margin-bottom:4px">'+m.ico+'</div>'
@@ -1744,8 +1744,8 @@ function mcRenderFinanceiro() {
       lanEl.innerHTML = lans.slice(0,15).map(function(l){
         var isPago = l.status === 'Pago';
         var isRec  = l.tipo === 'receber';
-        var cor = isPago ? '#8a95b0' : (isRec ? '#1a9e5c' : '#d63030');
-        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#f8faff;border-radius:8px;border-left:2px solid '+cor+'">'
+        var cor = isPago ? '#64748b' : (isRec ? '#22c55e' : '#ef4444');
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--card2);border-radius:8px;border-left:2px solid '+cor+'">'
           + '<div style="flex:1;min-width:0">'
             + '<div style="font-size:11px;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(l.descricao||'—')+'</div>'
             + '<div style="font-size:10px;color:var(--tx3)">'+(l.vencimento||'')+'</div>'
@@ -1797,7 +1797,7 @@ function renderOperadores(){
           <div class="cad-name">${o.nome}</div>
           <div style="font-size:11px;color:var(--tx2)">${o.cargo}</div>
         </div>
-        <span class="badge" style="margin-left:auto;${o.status==='Ativo'?'background:rgba(26,158,92,.12);color:#1a9e5c;border:1px solid rgba(26,158,92,.2)':'background:rgba(214,48,48,.12);color:#d63030;border:1px solid rgba(214,48,48,.2)'}">${o.status}</span>
+        <span class="badge" style="margin-left:auto;${o.status==='Ativo'?'background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.2)':'background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2)'}">${o.status}</span>
       </div>
       ${o.tel?`<div class="cad-detail">📞 <span>${o.tel}</span></div>`:''}
       ${o.email?`<div class="cad-detail">✉ <span style="color:var(--blue)">${o.email}</span></div>`:''}
@@ -1969,7 +1969,7 @@ function renderPainel(){
     return`<div style="margin-bottom:13px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div class="opa" style="background:${o.cor}18;color:${o.cor};border-color:${o.cor}30">${opInitials(o.nome)}</div><span style="font-size:12px;flex:1;color:var(--tx2)">${o.nome}</span><span style="font-size:12px;font-weight:600;color:var(--tx)">${cnt}</span></div><div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${o.cor}"></div></div></div>`;
   }).join('');
   const cc={};records.forEach(r=>{if(r.cliente)cc[r.cliente]=(cc[r.cliente]||0)+1;});
-  document.getElementById('top-clientes').innerHTML=Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid rgba(26,32,53,.07)"><div class="opa" style="width:28px;height:28px;font-size:10px">${n.slice(0,2).toUpperCase()}</div><span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span><span class="badge bi">${c}</span></div>`).join('');
+  document.getElementById('top-clientes').innerHTML=Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.07)"><div class="opa" style="width:28px;height:28px;font-size:10px">${n.slice(0,2).toUpperCase()}</div><span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span><span class="badge bi">${c}</span></div>`).join('');
 }
 
 // HIST
@@ -1985,11 +1985,11 @@ function renderHistorico(){
   if(actF)src=src.filter(h=>h.action===actF);
   document.getElementById('hist-count').textContent=src.length+' evento'+(src.length!==1?'s':'');
   if(!src.length){document.getElementById('hist-timeline').innerHTML='<div class="empty">Nenhuma alteração encontrada.</div>';return;}
-  const ac={criado:'#1a9e5c',editado:'#2b7fff'};
+  const ac={criado:'#22c55e',editado:'#3b82f6'};
   const al={criado:'Atendimento criado',editado:'Atendimento editado'};
   document.getElementById('hist-timeline').innerHTML='<div style="padding-top:8px">'+src.map((h,i)=>`
     <div class="hitem">
-      <div class="hdotcol"><div class="hdot" style="background:${ac[h.action]||'#8a95b0'}"></div>${i<src.length-1?'<div class="hline"></div>':''}</div>
+      <div class="hdotcol"><div class="hdot" style="background:${ac[h.action]||'#64748b'}"></div>${i<src.length-1?'<div class="hline"></div>':''}</div>
       <div class="hbody">
         <div class="haction">${al[h.action]||h.action} <span style="font-size:12px;font-weight:400;color:var(--tx2)">— #${h.cod}</span></div>
         <div style="display:flex;align-items:center;gap:6px;margin-top:3px;font-size:11px;color:var(--tx2)"><div class="opa">${opInitials(h.op)}</div><span>${h.op}</span><span>·</span><span>${h.date} às ${h.time}</span></div>
@@ -2017,46 +2017,46 @@ setTimeout(abrirResumo,400);
 // ── LOGIN ──
 (function(){
   const USERS=[
-    {user:'admin',pass:'admin',nome:'Administrador',cargo:'Gerente',cor:'#2b7fff'},
+    {user:'admin',pass:'admin',nome:'Administrador',cargo:'Gerente',cor:'#3b82f6'},
   ];
 window.USERS = USERS;
 
   // build login screen
   const loginHTML=`
-  <div id="login-screen" style="position:fixed;inset:0;background:linear-gradient(135deg,#1a2035 0%,#2b4a9a 60%,#3a8bf5 100%);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:'Plus Jakarta Sans',sans-serif">
-    <div style="position:absolute;top:-80px;right:-80px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
-    <div style="position:absolute;bottom:-60px;left:-60px;width:220px;height:220px;border-radius:50%;background:rgba(43,127,255,.08)"></div>
-    <div style="background:rgba(255,255,255,.96);border-radius:20px;width:380px;max-width:95vw;box-shadow:0 32px 80px rgba(26,32,53,.4);overflow:hidden;position:relative">
-      <div style="background:linear-gradient(135deg,#2b7fff 0%,#1a2035 100%);padding:32px 32px 28px;position:relative;overflow:hidden">
+  <div id="login-screen" style="position:fixed;inset:0;background:linear-gradient(135deg,#070c18 0%,#0a1330 60%,#0d1a3d 100%);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:'Plus Jakarta Sans',sans-serif">
+    <div style="position:absolute;top:-80px;right:-80px;width:320px;height:320px;border-radius:50%;background:rgba(59,130,246,.06)"></div>
+    <div style="position:absolute;bottom:-60px;left:-60px;width:220px;height:220px;border-radius:50%;background:rgba(59,130,246,.08)"></div>
+    <div style="background:#111a2e;border:1px solid rgba(255,255,255,.08);border-radius:20px;width:380px;max-width:95vw;box-shadow:0 32px 80px rgba(0,0,0,.55);overflow:hidden;position:relative">
+      <div style="background:linear-gradient(135deg,#3b82f6 0%,#0a1330 100%);padding:32px 32px 28px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;color:#fff;letter-spacing:-.5px;position:relative">Sis<span style="color:#6b9fff">Vip</span></div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;color:#fff;letter-spacing:-.5px;position:relative">Sis<span style="color:#a5c9ff">Vip</span></div>
         <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;text-transform:uppercase;letter-spacing:.1em;position:relative">Sistema de Atendimentos</div>
       </div>
       <div style="padding:28px 32px 32px">
-        <div style="font-size:15px;font-weight:600;color:#1a2035;margin-bottom:20px">Entrar na sua conta</div>
+        <div style="font-size:15px;font-weight:600;color:#e7ecf5;margin-bottom:20px">Entrar na sua conta</div>
         <div style="margin-bottom:14px">
-          <label style="font-size:10px;font-weight:600;color:#4a5570;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:5px">Usuário</label>
-          <input id="li-user" type="text" placeholder="Digite seu usuário..." style="width:100%;padding:10px 13px;font-size:13px;border:1px solid rgba(26,32,53,.15);border-radius:8px;background:#fff;color:#1a2035;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:all .15s" onfocus="this.style.borderColor='#2b7fff';this.style.boxShadow='0 0 0 3px rgba(43,127,255,.1)'" onblur="this.style.borderColor='rgba(26,32,53,.15)';this.style.boxShadow='none'" onkeydown="if(event.key==='Enter')document.getElementById('li-pass').focus()">
+          <label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:5px">Usuário</label>
+          <input id="li-user" type="text" placeholder="Digite seu usuário..." style="width:100%;padding:10px 13px;font-size:13px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:all .15s" onfocus="this.style.borderColor='#3b82f6';this.style.boxShadow='0 0 0 3px rgba(59,130,246,.18)'" onblur="this.style.borderColor='rgba(255,255,255,.12)';this.style.boxShadow='none'" onkeydown="if(event.key==='Enter')document.getElementById('li-pass').focus()">
         </div>
         <div style="margin-bottom:20px">
-          <label style="font-size:10px;font-weight:600;color:#4a5570;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:5px">Senha</label>
+          <label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:5px">Senha</label>
           <div style="position:relative">
-            <input id="li-pass" type="password" placeholder="Digite sua senha..." style="width:100%;padding:10px 40px 10px 13px;font-size:13px;border:1px solid rgba(26,32,53,.15);border-radius:8px;background:#fff;color:#1a2035;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:all .15s" onfocus="this.style.borderColor='#2b7fff';this.style.boxShadow='0 0 0 3px rgba(43,127,255,.1)'" onblur="this.style.borderColor='rgba(26,32,53,.15)';this.style.boxShadow='none'" onkeydown="if(event.key==='Enter')fazerLogin()">
-            <span onclick="toggleSenha()" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;color:#8a95b0;user-select:none" id="li-eye">👁</span>
+            <input id="li-pass" type="password" placeholder="Digite sua senha..." style="width:100%;padding:10px 40px 10px 13px;font-size:13px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:all .15s" onfocus="this.style.borderColor='#3b82f6';this.style.boxShadow='0 0 0 3px rgba(59,130,246,.18)'" onblur="this.style.borderColor='rgba(255,255,255,.12)';this.style.boxShadow='none'" onkeydown="if(event.key==='Enter')fazerLogin()">
+            <span onclick="toggleSenha()" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;color:#64748b;user-select:none" id="li-eye">👁</span>
           </div>
         </div>
-        <div id="li-error" style="display:none;background:#fee2e2;border:1px solid rgba(214,48,48,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#d63030;margin-bottom:14px">Usuário ou senha incorretos.</div>
-        <button onclick="fazerLogin()" style="width:100%;padding:12px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#2b7fff 0%,#1a6ef0 100%);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;box-shadow:0 4px 14px rgba(43,127,255,.4)" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(43,127,255,.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(43,127,255,.4)'">Entrar</button>
+        <div id="li-error" style="display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 13px;font-size:12px;color:#f87171;margin-bottom:14px">Usuário ou senha incorretos.</div>
+        <button onclick="fazerLogin()" style="width:100%;padding:12px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;box-shadow:0 4px 14px rgba(59,130,246,.45)" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(59,130,246,.55)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(59,130,246,.45)'">Entrar</button>
         <div style="text-align:center;margin-top:12px">
           <button onclick="abrirRecuperarSenha()" type="button"
-            style="background:none;border:none;color:#2b7fff;font-size:12px;cursor:pointer;
+            style="background:none;border:none;color:#60a5fa;font-size:12px;cursor:pointer;
                    font-family:'Plus Jakarta Sans',sans-serif;text-decoration:underline;
                    text-underline-offset:2px;opacity:.8">
             🔑 Esqueci minha senha
           </button>
         </div>
-        <div style="margin-top:16px;padding:10px 13px;background:#f0f6ff;border-radius:8px;font-size:11px;color:#4a5570;line-height:1.6">
-          <strong style="color:#2b7fff">Acesso inicial:</strong> usuário <code style="background:#e0edff;padding:1px 5px;border-radius:4px;color:#2b7fff">admin</code> — senha <code style="background:#e0edff;padding:1px 5px;border-radius:4px;color:#2b7fff">admin</code>
+        <div style="margin-top:16px;padding:10px 13px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:8px;font-size:11px;color:#94a3b8;line-height:1.6">
+          <strong style="color:#60a5fa">Acesso inicial:</strong> usuário <code style="background:rgba(59,130,246,.18);padding:1px 5px;border-radius:4px;color:#60a5fa">admin</code> — senha <code style="background:rgba(59,130,246,.18);padding:1px 5px;border-radius:4px;color:#60a5fa">admin</code>
         </div>
       </div>
     </div>
@@ -2104,7 +2104,7 @@ function mostrarBloqueio(id){
   // flash red on sidebar item
   document.querySelectorAll('.sb-item').forEach(el=>{
     if(el.textContent.trim().toLowerCase().includes(id)){
-      el.style.background='rgba(214,48,48,.15)';
+      el.style.background='rgba(239,68,68,.15)';
       setTimeout(()=>el.style.background='',800);
     }
   });
@@ -2136,13 +2136,13 @@ permPage.innerHTML=`
 <div class="panel">
   <div class="panel-header">
     <span class="panel-title">Permissões por Usuário</span>
-    <span class="badge bi" id="perm-saved-badge" style="display:none;background:rgba(26,158,92,.18);color:#1a9e5c;border-color:rgba(26,158,92,.25)">✓ Salvo</span>
+    <span class="badge bi" id="perm-saved-badge" style="display:none;background:rgba(34,197,94,.18);color:#22c55e;border-color:rgba(34,197,94,.25)">✓ Salvo</span>
   </div>
   <!-- tabs de usuários -->
-  <div id="perm-user-tabs" style="display:flex;gap:0;border-bottom:1px solid rgba(26,32,53,.08);background:rgba(255,255,255,.5);overflow-x:auto"></div>
+  <div id="perm-user-tabs" style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);overflow-x:auto"></div>
   <!-- grid de permissões -->
   <div id="perm-grid" style="padding:20px 18px"></div>
-  <div style="padding:14px 18px;border-top:1px solid rgba(26,32,53,.07);display:flex;gap:10px;justify-content:flex-end;background:rgba(255,255,255,.4)">
+  <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);display:flex;gap:10px;justify-content:flex-end;background:rgba(255,255,255,.02)">
     <button class="btn btn-sm" onclick="resetarPermissoes()">Restaurar padrão</button>
     <button class="btn btn-p btn-sm" onclick="salvarPermissoes()">Salvar Permissões</button>
   </div>
@@ -2155,9 +2155,9 @@ function renderPermissoes(){
   // tabs
   const allUsers = Object.keys(window.userPermissions);
   document.getElementById('perm-user-tabs').innerHTML = allUsers.map(u=>{
-    const op = operadores.find(o=>o.nome.toLowerCase().includes(u)) || {cor:'#8a95b0'};
+    const op = operadores.find(o=>o.nome.toLowerCase().includes(u)) || {cor:'#64748b'};
     const isAdmin = u==='admin';
-    return`<button onclick="setPermTab('${u}')" style="padding:11px 18px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;border-bottom:2px solid ${u===permUserAtivo?op.cor:'transparent'};color:${u===permUserAtivo?op.cor:'#4a5570'};transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px">
+    return`<button onclick="setPermTab('${u}')" style="padding:11px 18px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;border-bottom:2px solid ${u===permUserAtivo?op.cor:'transparent'};color:${u===permUserAtivo?op.cor:'#94a3b8'};transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px">
       <div style="width:8px;height:8px;border-radius:50%;background:${op.cor}"></div>
       ${u.charAt(0).toUpperCase()+u.slice(1)}${isAdmin?` <span class="badge bd-" style="font-size:9px">admin</span>`:''}
     </button>`;
@@ -2169,19 +2169,19 @@ function renderPermissoes(){
   const grupos = [...new Set(TODAS_PERMISSOES.map(p=>p.grupo))];
 
   document.getElementById('perm-grid').innerHTML = `
-    ${isAdmin?`<div style="background:rgba(43,127,255,.08);border:1px solid rgba(43,127,255,.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#2b7fff;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🔐</span> O administrador possui todas as permissões e não pode ser restringido.</div>`:''}
+    ${isAdmin?`<div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#60a5fa;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🔐</span> O administrador possui todas as permissões e não pode ser restringido.</div>`:''}
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
       ${grupos.map(grupo=>{
         const items = TODAS_PERMISSOES.filter(p=>p.grupo===grupo);
-        return`<div style="background:#fff;border:1px solid rgba(26,32,53,.08);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(26,32,53,.06)">
-          <div style="padding:10px 14px;background:rgba(43,127,255,.06);border-bottom:1px solid rgba(26,32,53,.06);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#4a5570">${grupo}</div>
+        return`<div style="background:var(--card2);border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.2)">
+          <div style="padding:10px 14px;background:rgba(59,130,246,.08);border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8">${grupo}</div>
           <div style="padding:8px 0">
             ${items.map(p=>`
-              <label style="display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:${isAdmin?'default':'pointer'};transition:background .1s;${isAdmin?'':''}hover:background:rgba(43,127,255,.04)" onmouseover="${isAdmin?'':'this.style.background=\"rgba(43,127,255,.04)\"'}" onmouseout="${isAdmin?'':'this.style.background=\"\"'}">
+              <label style="display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:${isAdmin?'default':'pointer'};transition:background .1s;${isAdmin?'':''}hover:background:rgba(59,130,246,.08)" onmouseover="${isAdmin?'':'this.style.background=\"rgba(59,130,246,.08)\"'}" onmouseout="${isAdmin?'':'this.style.background=\"\"'}">
                 <div style="position:relative;flex-shrink:0">
-                  <input type="checkbox" id="perm-${p.key}" ${perms[p.key]?'checked':''} ${isAdmin?'disabled':''} onchange="updatePermPreview('${p.key}',this.checked)" style="width:16px;height:16px;accent-color:#2b7fff;cursor:${isAdmin?'default':'pointer'}">
+                  <input type="checkbox" id="perm-${p.key}" ${perms[p.key]?'checked':''} ${isAdmin?'disabled':''} onchange="updatePermPreview('${p.key}',this.checked)" style="width:16px;height:16px;accent-color:#3b82f6;cursor:${isAdmin?'default':'pointer'}">
                 </div>
-                <span style="font-size:12px;color:${isAdmin?'#8a95b0':'#1a2035'}">${p.label}</span>
+                <span style="font-size:12px;color:${isAdmin?'#64748b':'#e7ecf5'}">${p.label}</span>
                 ${p.key==='ver_todos'?`<span class="badge bg" style="margin-left:auto;font-size:9px">visibilidade</span>`:''}
                 ${p.key==='gerenciar_permissoes'?`<span class="badge bd-" style="margin-left:auto;font-size:9px">admin</span>`:''}
               </label>`).join('')}
@@ -2189,7 +2189,7 @@ function renderPermissoes(){
         </div>`;
       }).join('')}
     </div>
-    <div style="margin-top:16px;padding:12px 16px;background:rgba(43,127,255,.06);border:1px solid rgba(43,127,255,.15);border-radius:10px;font-size:12px;color:#2b7fff">
+    <div style="margin-top:16px;padding:12px 16px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;font-size:12px;color:#60a5fa">
       <strong>Resumo:</strong> ${permUserAtivo.charAt(0).toUpperCase()+permUserAtivo.slice(1)} tem <strong id="perm-count">${Object.values(perms).filter(Boolean).length}</strong> de ${TODAS_PERMISSOES.length} permissões ativas.
     </div>`;
 }
@@ -2305,8 +2305,8 @@ function statusBadge(s){
   return`<span class="badge ${m[s]||'bg'}">${l[s]||s}</span>`;
 }
 function formaBadge(f){
-  const c={PIX:'#25d366',Boleto:'#f59e0b',TED:'#7b5af5',Cartão:'#2b7fff',Débito:'#e07b20'};
-  const cor=c[f]||'#8a95b0';
+  const c={PIX:'#25d366',Boleto:'#f59e0b',TED:'#7b5af5',Cartão:'#3b82f6',Débito:'#e07b20'};
+  const cor=c[f]||'#64748b';
   return`<span style="font-size:10px;padding:2px 7px;border-radius:8px;background:${cor}18;color:${cor};border:1px solid ${cor}30;font-weight:500">${f}</span>`;
 }
 
@@ -2389,7 +2389,7 @@ window.renderDashboard = function(){
       recEl.innerHTML = '<div style="color:var(--tx3);font-size:12px">Nenhum atendimento</div>';
     } else {
       recEl.innerHTML = ultimos.map(function(r){
-        var sc = r.status==='Pendente'?'#c88a10': r.status&&r.status.startsWith('Finalizado')?'#1a9e5c':'#2b7fff';
+        var sc = r.status==='Pendente'?'#f59e0b': r.status&&r.status.startsWith('Finalizado')?'#22c55e':'#3b82f6';
         return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">'
           +'<span style="font-size:11px;color:var(--tx3);min-width:28px">#'+r.cod+'</span>'
           +'<span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.cliente||'—')+'</span>'
@@ -2557,41 +2557,41 @@ modalLanc.innerHTML=`
       <div class="fgroup full"><label class="flabel">Observações</label><input class="finput" id="ml-obs" placeholder="Opcional..."></div>
     </div>
     <!-- PIX / BOLETO PREVIEW -->
-    <div id="ml-pix-section" style="display:none;margin-top:16px;padding:16px;background:#f0fdf4;border:1px solid rgba(37,211,102,.2);border-radius:12px">
-      <div style="font-size:12px;font-weight:600;color:#15803d;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+    <div id="ml-pix-section" style="display:none;margin-top:16px;padding:16px;background:rgba(34,197,94,.08);border:1px solid rgba(37,211,102,.25);border-radius:12px">
+      <div style="font-size:12px;font-weight:600;color:#4ade80;margin-bottom:10px;display:flex;align-items:center;gap:6px">
         <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#25d366"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
         QR Code PIX — Pré-visualização
       </div>
       <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
         <div id="ml-qrcode" style="background:#fff;padding:8px;border-radius:8px;border:1px solid rgba(37,211,102,.3)"></div>
         <div style="flex:1;min-width:180px">
-          <div style="font-size:11px;color:#4a5570;margin-bottom:6px"><strong>Chave PIX:</strong> ${(configBanco && configBanco.pixChave)||''}</div>
-          <div style="font-size:11px;color:#4a5570;margin-bottom:6px"><strong>Beneficiário:</strong> ${(configBanco && configBanco.nome)||''}</div>
-          <div style="font-size:11px;color:#4a5570;margin-bottom:10px"><strong>Valor:</strong> <span id="ml-pix-valor" style="color:#15803d;font-weight:600">R$ 0,00</span></div>
-          <div style="font-size:10px;background:#fff;padding:8px;border-radius:6px;border:1px solid rgba(37,211,102,.2);word-break:break-all;color:#4a5570;max-height:60px;overflow-y:auto" id="ml-pix-payload"></div>
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px"><strong>Chave PIX:</strong> ${(configBanco && configBanco.pixChave)||''}</div>
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:6px"><strong>Beneficiário:</strong> ${(configBanco && configBanco.nome)||''}</div>
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:10px"><strong>Valor:</strong> <span id="ml-pix-valor" style="color:#4ade80;font-weight:600">R$ 0,00</span></div>
+          <div style="font-size:10px;background:#0e1727;padding:8px;border-radius:6px;border:1px solid rgba(37,211,102,.25);word-break:break-all;color:#94a3b8;max-height:60px;overflow-y:auto" id="ml-pix-payload"></div>
           <button onclick="copiarPix()" class="btn btn-sm" style="margin-top:8px;background:#25d366;color:#fff;border-color:#25d366;font-size:11px">📋 Copiar código PIX</button>
         </div>
       </div>
     </div>
-    <div id="ml-boleto-section" style="display:none;margin-top:16px;padding:16px;background:#fffbf0;border:1px solid rgba(245,158,11,.2);border-radius:12px">
-      <div style="font-size:12px;font-weight:600;color:#92400e;margin-bottom:10px">📄 Dados do Boleto</div>
-      <div style="font-size:11px;color:#4a5570;line-height:2;background:#fff;padding:10px;border-radius:8px;border:1px solid rgba(245,158,11,.2)">
+    <div id="ml-boleto-section" style="display:none;margin-top:16px;padding:16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:12px">
+      <div style="font-size:12px;font-weight:600;color:#fbbf24;margin-bottom:10px">📄 Dados do Boleto</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:2;background:#0e1727;padding:10px;border-radius:8px;border:1px solid rgba(245,158,11,.2)">
         <div><strong>Banco:</strong> Nubank (Nu Pagamentos S.A.) — 260</div>
         <div><strong>Beneficiário:</strong> <span id="bl-nome"></span></div>
         <div><strong>CNPJ:</strong> <span id="bl-cnpj"></span></div>
         <div><strong>Agência/Conta:</strong> <span id="bl-agconta"></span></div>
-        <div><strong>Valor:</strong> <span id="bl-valor" style="font-weight:600;color:#92400e"></span></div>
+        <div><strong>Valor:</strong> <span id="bl-valor" style="font-weight:600;color:#fbbf24"></span></div>
         <div><strong>Vencimento:</strong> <span id="bl-venc"></span></div>
-        <div style="margin-top:8px;padding:8px;background:#fffbf0;border-radius:6px;border:1px dashed rgba(245,158,11,.4)">
-          <div style="font-size:10px;color:#92400e;font-weight:600;margin-bottom:3px">Linha digitável (simulada):</div>
-          <div style="font-family:monospace;font-size:11px;letter-spacing:.5px;color:#1a2035" id="bl-linha"></div>
+        <div style="margin-top:8px;padding:8px;background:rgba(245,158,11,.1);border-radius:6px;border:1px dashed rgba(245,158,11,.4)">
+          <div style="font-size:10px;color:#fbbf24;font-weight:600;margin-bottom:3px">Linha digitável (simulada):</div>
+          <div style="font-family:monospace;font-size:11px;letter-spacing:.5px;color:#e7ecf5" id="bl-linha"></div>
         </div>
       </div>
       <div style="margin-top:10px;display:flex;gap:8px">
         <button onclick="imprimirBoleto()" class="btn btn-sm" style="background:#f59e0b;color:#fff;border-color:#f59e0b;font-size:11px">🖨 Imprimir Boleto</button>
         <button onclick="copiarLinha()" class="btn btn-sm" style="font-size:11px">📋 Copiar linha</button>
       </div>
-      <div style="margin-top:8px;font-size:10px;color:#92400e;background:rgba(245,158,11,.08);padding:6px 10px;border-radius:6px">⚠️ Para boleto registrado com confirmação automática, conecte a API Nubank PJ.</div>
+      <div style="margin-top:8px;font-size:10px;color:#fbbf24;background:rgba(245,158,11,.08);padding:6px 10px;border-radius:6px">⚠️ Para boleto registrado com confirmação automática, conecte a API Nubank PJ.</div>
     </div>
   </div>
   <div class="modal-footer">
@@ -2664,7 +2664,7 @@ function atualizarPix(){
   qrEl.innerHTML='';
   try{
     new QRCode(qrEl,{text:payload,width:120,height:120,colorDark:'#1a2035',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
-  }catch(e){qrEl.innerHTML='<div style="font-size:10px;color:#8a95b0;padding:8px">QR Code indisponível</div>';}
+  }catch(e){qrEl.innerHTML='<div style="font-size:10px;color:#64748b;padding:8px">QR Code indisponível</div>';}
 }
 
 function atualizarBoleto(){
@@ -2790,13 +2790,13 @@ window.renderReceber=function(){
     <div class="mc"><div class="ml">Total a Receber</div><div class="mv">${fmtMoeda(total)}</div><div class="ms">${src.length} lançamentos</div></div>
     <div class="mc"><div class="ml">Recebido</div><div class="mv">${fmtMoeda(recebido)}</div><div class="ms"><span class="bw-sm">${total?Math.round(recebido/total*100):0}%</span></div></div>
     <div class="mc"><div class="ml">Em Aberto</div><div class="mv">${fmtMoeda(aberto)}</div><div class="ms"><span class="bw-sm">pendente</span></div></div>
-    <div class="mc"><div class="ml">Vencido</div><div class="mv">${fmtMoeda(vencido)}</div><div class="ms"><span class="bw-sm" style="background:rgba(214,48,48,.2);color:#d63030">atenção</span></div></div>`;
+    <div class="mc"><div class="ml">Vencido</div><div class="mv">${fmtMoeda(vencido)}</div><div class="ms"><span class="bw-sm" style="background:rgba(239,68,68,.2);color:#ef4444">atenção</span></div></div>`;
   document.getElementById('rec-tbody').innerHTML=!src.length
     ?'<tr><td colspan="7"><div class="empty">Nenhum lançamento encontrado</div></td></tr>'
     :src.map(l=>`<tr>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-weight:500">${l.descricao}</td>
       <td style="color:var(--tx2);font-size:11px">${l.cliente||'—'}</td>
-      <td style="font-weight:600;color:${l.tipo==='receber'?'#1a9e5c':'#d63030'}">${fmtMoeda(l.valor)}</td>
+      <td style="font-weight:600;color:${l.tipo==='receber'?'#22c55e':'#ef4444'}">${fmtMoeda(l.valor)}</td>
       <td style="color:var(--tx2);font-size:12px">${l.venc}</td>
       <td>${formaBadge(l.forma)}</td>
       <td>${statusBadge(l.status)}</td>
@@ -2828,7 +2828,7 @@ window.renderPagar=function(){
     :src.map(l=>`<tr>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-weight:500">${l.descricao}</td>
       <td style="color:var(--tx2);font-size:11px">${l.cliente||'—'}</td>
-      <td style="font-weight:600;color:#d63030">${fmtMoeda(l.valor)}</td>
+      <td style="font-weight:600;color:#ef4444">${fmtMoeda(l.valor)}</td>
       <td style="color:var(--tx2);font-size:12px">${l.venc}</td>
       <td>${formaBadge(l.forma)}</td>
       <td>${statusBadge(l.status)}</td>
@@ -2858,7 +2858,7 @@ window.renderFluxo=function(){
   document.getElementById('flx-entradas').textContent = fmtMoeda(entradas);
   document.getElementById('flx-saidas').textContent   = fmtMoeda(saidas);
   document.getElementById('flx-saldo').textContent    = fmtMoeda(saldo);
-  document.getElementById('flx-saldo-status').innerHTML = `<span class="bw-sm" style="${saldo>=0?'background:rgba(26,158,92,.2);color:#1a9e5c':'background:rgba(214,48,48,.2);color:#d63030'}">${saldo>=0?'positivo':'negativo'}</span>`;
+  document.getElementById('flx-saldo-status').innerHTML = `<span class="bw-sm" style="${saldo>=0?'background:rgba(34,197,94,.2);color:#22c55e':'background:rgba(239,68,68,.2);color:#ef4444'}">${saldo>=0?'positivo':'negativo'}</span>`;
 
   // ── GRÁFICO: agrupar por semana do mês atual ──
   const cb = document.getElementById('chart-fluxo');
@@ -2891,7 +2891,7 @@ window.renderFluxo=function(){
   // linhas de grade + eixo Y
   [0,.5,1].forEach(f=>{
     const y=pad.t+iH*f;
-    ctx.strokeStyle='rgba(26,32,53,.06)'; ctx.lineWidth=1;
+    ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
     ctx.fillStyle='rgba(74,85,112,.55)'; ctx.font='9px Plus Jakarta Sans,sans-serif'; ctx.textAlign='right';
     ctx.fillText('R$'+String(Math.round(maxV*(1-f))).replace(/\B(?=(\d{3})+(?!\d))/g,'.'), pad.l-4, y+3);
@@ -2903,7 +2903,7 @@ window.renderFluxo=function(){
     // entrada
     const hE = (entSem[i]/maxV)*iH;
     if(hE>0){
-      ctx.fillStyle='rgba(26,158,92,.8)';
+      ctx.fillStyle='rgba(34,197,94,.8)';
       const r=4;
       ctx.beginPath();
       ctx.moveTo(x-barW-3+r, pad.t+iH-hE);
@@ -2914,16 +2914,16 @@ window.renderFluxo=function(){
       ctx.lineTo(x-barW-3, pad.t+iH-hE+r);
       ctx.quadraticCurveTo(x-barW-3, pad.t+iH-hE, x-barW-3+r, pad.t+iH-hE);
       ctx.closePath(); ctx.fill();
-      ctx.fillStyle='rgba(26,158,92,.9)'; ctx.font='bold 9px Plus Jakarta Sans,sans-serif'; ctx.textAlign='center';
+      ctx.fillStyle='rgba(34,197,94,.9)'; ctx.font='bold 9px Plus Jakarta Sans,sans-serif'; ctx.textAlign='center';
       ctx.fillText('R$'+Math.round(entSem[i]).toLocaleString('pt-BR'), x-barW/2-3, pad.t+iH-hE-4);
     } else {
-      ctx.fillStyle='rgba(26,32,53,.06)';
+      ctx.fillStyle='rgba(255,255,255,.06)';
       ctx.fillRect(x-barW-3, pad.t+iH-3, barW, 3);
     }
     // saída
     const hS = (saiSem[i]/maxV)*iH;
     if(hS>0){
-      ctx.fillStyle='rgba(214,48,48,.75)';
+      ctx.fillStyle='rgba(239,68,68,.75)';
       const r=4;
       ctx.beginPath();
       ctx.moveTo(x+3+r, pad.t+iH-hS);
@@ -2934,10 +2934,10 @@ window.renderFluxo=function(){
       ctx.lineTo(x+3, pad.t+iH-hS+r);
       ctx.quadraticCurveTo(x+3, pad.t+iH-hS, x+3+r, pad.t+iH-hS);
       ctx.closePath(); ctx.fill();
-      ctx.fillStyle='rgba(214,48,48,.9)'; ctx.font='bold 9px Plus Jakarta Sans,sans-serif'; ctx.textAlign='center';
+      ctx.fillStyle='rgba(239,68,68,.9)'; ctx.font='bold 9px Plus Jakarta Sans,sans-serif'; ctx.textAlign='center';
       ctx.fillText('R$'+Math.round(saiSem[i]).toLocaleString('pt-BR'), x+barW/2+3, pad.t+iH-hS-4);
     } else {
-      ctx.fillStyle='rgba(26,32,53,.06)';
+      ctx.fillStyle='rgba(255,255,255,.06)';
       ctx.fillRect(x+3, pad.t+iH-3, barW, 3);
     }
     // label semana
@@ -2946,10 +2946,10 @@ window.renderFluxo=function(){
   });
 
   // legenda
-  ctx.fillStyle='rgba(26,158,92,.8)'; ctx.fillRect(pad.l, H-6, 10, 6);
+  ctx.fillStyle='rgba(34,197,94,.8)'; ctx.fillRect(pad.l, H-6, 10, 6);
   ctx.fillStyle='rgba(74,85,112,.7)'; ctx.font='9px Plus Jakarta Sans,sans-serif'; ctx.textAlign='left';
   ctx.fillText('Entradas', pad.l+13, H-1);
-  ctx.fillStyle='rgba(214,48,48,.7)'; ctx.fillRect(pad.l+70, H-6, 10, 6);
+  ctx.fillStyle='rgba(239,68,68,.7)'; ctx.fillRect(pad.l+70, H-6, 10, 6);
   ctx.fillStyle='rgba(74,85,112,.7)'; ctx.fillText('Saídas', pad.l+83, H-1);
 
   // ── CATEGORIAS: calcular dinamicamente pelo motivo/descricao ──
@@ -2967,7 +2967,7 @@ window.renderFluxo=function(){
     catMap[cat] = (catMap[cat]||0) + l.valor;
   });
 
-  const cores=['#7b5af5','#e07b20','#2b7fff','#1a9e5c','#d63030','#8a95b0'];
+  const cores=['#7b5af5','#e07b20','#3b82f6','#22c55e','#ef4444','#64748b'];
   const cats = Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([label,val],i)=>({label,val,cor:cores[i%cores.length]}));
   const totalCat = cats.reduce((a,c)=>a+c.val,0)||1;
 
@@ -2980,7 +2980,7 @@ window.renderFluxo=function(){
           <span style="color:var(--tx2)">${c.label}</span>
           <span style="font-weight:600;color:var(--tx)">${fmtMoeda(c.val)}</span>
         </div>
-        <div style="height:5px;background:rgba(26,32,53,.08);border-radius:3px;overflow:hidden">
+        <div style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">
           <div style="height:100%;width:${Math.round(c.val/totalCat*100)}%;background:${c.cor};border-radius:3px"></div>
         </div>
       </div>`).join('');
@@ -2997,7 +2997,7 @@ window.renderFluxo=function(){
         <tbody>${prox.map(l=>`<tr>
           <td>${l.tipo==='receber'?'<span class="badge bs">Receber</span>':'<span class="badge bd-">Pagar</span>'}</td>
           <td style="font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis">${l.descricao}</td>
-          <td style="font-weight:600;color:${l.tipo==='receber'?'#1a9e5c':'#d63030'}">${fmtMoeda(l.valor)}</td>
+          <td style="font-weight:600;color:${l.tipo==='receber'?'#22c55e':'#ef4444'}">${fmtMoeda(l.valor)}</td>
           <td style="color:var(--tx2);font-size:12px">${l.venc}</td>
           <td>${statusBadge(l.status)}</td>
         </tr>`).join('')}</tbody>
@@ -3021,9 +3021,9 @@ window.renderExtrato=function(){
   const totalSai=src.filter(l=>l.tipo==='pagar').reduce((a,l)=>a+l.valor,0);
   const saldo=totalEnt-totalSai;
   document.getElementById('ext-kpis').innerHTML=`
-    <div class="mc"><div class="ml">Entradas</div><div class="mv">${fmtMoeda(totalEnt)}</div><div class="ms"><span class="bw-sm" style="background:rgba(26,158,92,.2);color:#1a9e5c">créditos</span></div></div>
-    <div class="mc"><div class="ml">Saídas</div><div class="mv">${fmtMoeda(totalSai)}</div><div class="ms"><span class="bw-sm" style="background:rgba(214,48,48,.2);color:#d63030">débitos</span></div></div>
-    <div class="mc"><div class="ml">Saldo do período</div><div class="mv">${fmtMoeda(saldo)}</div><div class="ms"><span class="bw-sm" style="${saldo>=0?'background:rgba(26,158,92,.2);color:#1a9e5c':'background:rgba(214,48,48,.2);color:#d63030'}">${saldo>=0?'positivo':'negativo'}</span></div></div>`;
+    <div class="mc"><div class="ml">Entradas</div><div class="mv">${fmtMoeda(totalEnt)}</div><div class="ms"><span class="bw-sm" style="background:rgba(34,197,94,.2);color:#22c55e">créditos</span></div></div>
+    <div class="mc"><div class="ml">Saídas</div><div class="mv">${fmtMoeda(totalSai)}</div><div class="ms"><span class="bw-sm" style="background:rgba(239,68,68,.2);color:#ef4444">débitos</span></div></div>
+    <div class="mc"><div class="ml">Saldo do período</div><div class="mv">${fmtMoeda(saldo)}</div><div class="ms"><span class="bw-sm" style="${saldo>=0?'background:rgba(34,197,94,.2);color:#22c55e':'background:rgba(239,68,68,.2);color:#ef4444'}">${saldo>=0?'positivo':'negativo'}</span></div></div>`;
   document.getElementById('ext-count').textContent=src.length+' registro'+(src.length!==1?'s':'');
   document.getElementById('ext-tbody').innerHTML=!src.length
     ?'<tr><td colspan="7"><div class="empty">Nenhuma movimentação no período</div></td></tr>'
@@ -3033,11 +3033,11 @@ window.renderExtrato=function(){
       <td style="color:var(--tx2);font-size:11px">${l.cliente||'—'}</td>
       <td>${formaBadge(l.forma)}</td>
       <td>${l.tipo==='receber'?'<span class="badge bs">Entrada</span>':'<span class="badge bd-">Saída</span>'}</td>
-      <td style="font-weight:700;color:${l.tipo==='receber'?'#1a9e5c':'#d63030'}">${l.tipo==='receber'?'+':'−'} ${fmtMoeda(l.valor)}</td>
+      <td style="font-weight:700;color:${l.tipo==='receber'?'#22c55e':'#ef4444'}">${l.tipo==='receber'?'+':'−'} ${fmtMoeda(l.valor)}</td>
       <td>${statusBadge(l.status)}</td>
     </tr>`).join('');
   document.getElementById('ext-total-row').innerHTML=`
-    <span class="pag-info">Entradas: <strong style="color:#1a9e5c">${fmtMoeda(totalEnt)}</strong> &nbsp;|&nbsp; Saídas: <strong style="color:#d63030">${fmtMoeda(totalSai)}</strong> &nbsp;|&nbsp; Saldo: <strong style="color:${saldo>=0?'#1a9e5c':'#d63030'}">${fmtMoeda(saldo)}</strong></span>`;
+    <span class="pag-info">Entradas: <strong style="color:#22c55e">${fmtMoeda(totalEnt)}</strong> &nbsp;|&nbsp; Saídas: <strong style="color:#ef4444">${fmtMoeda(totalSai)}</strong> &nbsp;|&nbsp; Saldo: <strong style="color:${saldo>=0?'#22c55e':'#ef4444'}">${fmtMoeda(saldo)}</strong></span>`;
 };
 
 // ── HOOK SWITCH PAGE ──
@@ -3123,42 +3123,42 @@ PAGE_TITLES['configuracoes'] = 'Configurações';
 // ── ESTILOS EXTRAS ──
 const styleEl = document.createElement('style');
 styleEl.textContent = `
-  .cfg-tabs { display:flex; gap:0; border-bottom:1px solid rgba(26,32,53,.08); background:rgba(255,255,255,.5); overflow-x:auto; }
+  .cfg-tabs { display:flex; gap:0; border-bottom:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.02); overflow-x:auto; }
   .cfg-tab { padding:11px 18px; font-size:12px; font-weight:500; border:none; background:none; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; color:var(--tx2); border-bottom:2px solid transparent; transition:all .15s; white-space:nowrap; display:flex; align-items:center; gap:7px; }
-  .cfg-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
-  .cfg-tab:hover:not(.active) { color:var(--tx); background:rgba(43,127,255,.04); }
+  .cfg-tab.active { color:var(--blue-light); border-bottom-color:var(--blue); }
+  .cfg-tab:hover:not(.active) { color:var(--tx); background:rgba(59,130,246,.06); }
   .cfg-tab-icon { font-size:14px; }
   .cfg-section { margin-bottom:24px; }
-  .cfg-section-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--tx2); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(26,32,53,.07); display:flex; align-items:center; gap:8px; }
+  .cfg-section-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--tx2); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; gap:8px; }
   .cfg-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .cfg-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
   .cfg-full { grid-column:1/-1; }
   .cfg-field { display:flex; flex-direction:column; gap:5px; }
   .cfg-label { font-size:10px; font-weight:600; color:var(--tx2); text-transform:uppercase; letter-spacing:.07em; }
-  .cfg-input { padding:8px 11px; font-size:13px; border:1px solid rgba(26,32,53,.13); border-radius:var(--r); background:#fff; color:var(--tx); font-family:'Plus Jakarta Sans',sans-serif; outline:none; transition:all .15s; }
+  .cfg-input { padding:8px 11px; font-size:13px; border:1px solid rgba(255,255,255,.1); border-radius:var(--r); background:var(--card2); color:var(--tx); font-family:'Plus Jakarta Sans',sans-serif; outline:none; transition:all .15s; }
   .cfg-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-glow); }
-  .cfg-input:disabled { background:rgba(26,32,53,.04); color:var(--tx2); cursor:not-allowed; }
+  .cfg-input:disabled { background:rgba(255,255,255,.03); color:var(--tx2); cursor:not-allowed; }
   .cfg-input::placeholder { color:var(--tx3); }
-  .cfg-select { padding:8px 11px; font-size:13px; border:1px solid rgba(26,32,53,.13); border-radius:var(--r); background:#fff; color:var(--tx); font-family:'Plus Jakarta Sans',sans-serif; outline:none; cursor:pointer; }
+  .cfg-select { padding:8px 11px; font-size:13px; border:1px solid rgba(255,255,255,.1); border-radius:var(--r); background:var(--card2); color:var(--tx); font-family:'Plus Jakarta Sans',sans-serif; outline:none; cursor:pointer; }
   .cfg-textarea { resize:vertical; min-height:80px; line-height:1.5; }
-  .cfg-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#fff; border:1px solid rgba(26,32,53,.08); border-radius:var(--r); }
+  .cfg-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--card2); border:1px solid rgba(255,255,255,.07); border-radius:var(--r); }
   .cfg-toggle-label { font-size:12px; color:var(--tx); }
   .cfg-toggle-sub { font-size:11px; color:var(--tx2); margin-top:2px; }
   .cfg-toggle { position:relative; width:38px; height:22px; flex-shrink:0; }
   .cfg-toggle input { opacity:0; width:0; height:0; }
-  .cfg-toggle-slider { position:absolute; inset:0; background:rgba(26,32,53,.15); border-radius:22px; transition:.3s; cursor:pointer; }
-  .cfg-toggle-slider::before { content:''; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.3s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .cfg-toggle-slider { position:absolute; inset:0; background:rgba(255,255,255,.15); border-radius:22px; transition:.3s; cursor:pointer; }
+  .cfg-toggle-slider::before { content:''; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.3s; box-shadow:0 1px 3px rgba(0,0,0,.35); }
   .cfg-toggle input:checked+.cfg-toggle-slider { background:var(--blue); }
   .cfg-toggle input:checked+.cfg-toggle-slider::before { transform:translateX(16px); }
-  .pix-card { background:#fff; border:1px solid rgba(26,32,53,.1); border-radius:var(--rl); padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:10px; transition:all .15s; }
-  .pix-card:hover { box-shadow:0 3px 10px rgba(26,32,53,.1); }
-  .pix-card.active-key { border-color:rgba(37,211,102,.3); background:#f0fdf4; }
+  .pix-card { background:var(--card2); border:1px solid var(--card-border); border-radius:var(--rl); padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:10px; transition:all .15s; }
+  .pix-card:hover { box-shadow:0 3px 10px rgba(0,0,0,.25); }
+  .pix-card.active-key { border-color:rgba(37,211,102,.35); background:rgba(37,211,102,.07); }
   .pix-card.inactive-key { opacity:.6; }
   .pix-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
   .pix-tipo-badge { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; padding:2px 7px; border-radius:8px; }
-  .cfg-save-bar { padding:14px 20px; border-top:1px solid rgba(26,32,53,.07); display:flex; align-items:center; gap:10px; justify-content:flex-end; background:rgba(255,255,255,.4); }
-  .cfg-info-box { background:rgba(43,127,255,.06); border:1px solid rgba(43,127,255,.15); border-radius:10px; padding:12px 14px; font-size:12px; color:var(--tx2); display:flex; gap:10px; align-items:flex-start; }
-  .cfg-warn-box { background:rgba(245,158,11,.06); border:1px solid rgba(245,158,11,.2); border-radius:10px; padding:12px 14px; font-size:12px; color:#92400e; display:flex; gap:10px; align-items:flex-start; }
+  .cfg-save-bar { padding:14px 20px; border-top:1px solid rgba(255,255,255,.06); display:flex; align-items:center; gap:10px; justify-content:flex-end; background:rgba(255,255,255,.02); }
+  .cfg-info-box { background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.2); border-radius:10px; padding:12px 14px; font-size:12px; color:var(--tx2); display:flex; gap:10px; align-items:flex-start; }
+  .cfg-warn-box { background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.25); border-radius:10px; padding:12px 14px; font-size:12px; color:#fbbf24; display:flex; gap:10px; align-items:flex-start; }
   .nubank-badge { display:inline-flex; align-items:center; gap:6px; background:#820AD1; color:#fff; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
   @media(max-width:640px){ .cfg-grid{grid-template-columns:1fr} .cfg-grid-3{grid-template-columns:1fr} }
 `;
@@ -3181,7 +3181,7 @@ cfgPage.innerHTML = `
   </div>
   <div id="cfg-content" style="padding:20px 22px"></div>
   <div class="cfg-save-bar">
-    <span id="cfg-saved-msg" style="font-size:12px;color:#1a9e5c;display:none">✓ Configurações salvas!</span>
+    <span id="cfg-saved-msg" style="font-size:12px;color:#22c55e;display:none">✓ Configurações salvas!</span>
     <button class="btn btn-sm" onclick="resetCfgTab()">Descartar</button>
     <button class="btn btn-p btn-sm" onclick="salvarConfig()">Salvar alterações</button>
   </div>
@@ -3258,17 +3258,17 @@ function renderCfgContent(tab){
             <div onclick="selecionarBanco('${b.nome}','${b.cod}','${b.cor}')"
               id="banco-card-${b.cod}"
               style="
-                border:2px solid ${b.nome===bancoAtual?b.cor:'rgba(26,32,53,.1)'};
+                border:2px solid ${b.nome===bancoAtual?b.cor:'rgba(255,255,255,.1)'};
                 border-radius:12px;padding:12px 14px;cursor:pointer;
-                background:${b.nome===bancoAtual?b.cor+'10':'#fff'};
+                background:${b.nome===bancoAtual?b.cor+'1a':'var(--card2)'};
                 transition:all .18s;text-align:center;
               "
-              onmouseover="if('${b.nome}'!==document.getElementById('banco-selecionado-nome').value){this.style.borderColor='${b.cor}';this.style.background='${b.cor}10'}"
-              onmouseout="if('${b.nome}'!==document.getElementById('banco-selecionado-nome').value){this.style.borderColor='rgba(26,32,53,.1)';this.style.background='#fff'}">
+              onmouseover="if('${b.nome}'!==document.getElementById('banco-selecionado-nome').value){this.style.borderColor='${b.cor}';this.style.background='${b.cor}1a'}"
+              onmouseout="if('${b.nome}'!==document.getElementById('banco-selecionado-nome').value){this.style.borderColor='rgba(255,255,255,.1)';this.style.background='var(--card2)'}">
               <div style="font-size:22px;margin-bottom:5px">${b.icon}</div>
               <div style="font-size:12px;font-weight:600;color:var(--tx)">${b.nome}</div>
               <div style="font-size:10px;color:var(--tx2)">Cód. ${b.cod}</div>
-              ${b.api?'<div style="font-size:9px;margin-top:4px;padding:2px 6px;background:rgba(26,158,92,.1);color:#1a9e5c;border-radius:6px;display:inline-block">API disponível</div>':''}
+              ${b.api?'<div style="font-size:9px;margin-top:4px;padding:2px 6px;background:rgba(34,197,94,.1);color:#22c55e;border-radius:6px;display:inline-block">API disponível</div>':''}
             </div>`).join('')}
         </div>
         <input type="hidden" id="banco-selecionado-nome" value="${bancoAtual}">
@@ -3278,7 +3278,7 @@ function renderCfgContent(tab){
         <div class="cfg-section-title">📋 Dados da Conta</div>
         <div class="cfg-grid">
           <div class="cfg-field"><label class="cfg-label">Banco Selecionado</label>
-            <input class="cfg-input" id="b-banco-display" value="${bancoAtual}" disabled style="background:rgba(26,32,53,.04)">
+            <input class="cfg-input" id="b-banco-display" value="${bancoAtual}" disabled style="background:rgba(255,255,255,.04)">
           </div>
           <div class="cfg-field"><label class="cfg-label">Tipo de Conta</label>
             <select class="cfg-select" id="b-tipo">
@@ -3336,12 +3336,12 @@ function renderCfgContent(tab){
         <div id="pix-chaves-list">
           ${chaves.map(([k,pix],i)=>`
             <div class="pix-card ${pix.ativa?'active-key':'inactive-key'}" id="pixcard-${k}">
-              <div class="pix-icon" style="background:${pix.ativa?'rgba(37,211,102,.12)':'rgba(26,32,53,.06)'}">
+              <div class="pix-icon" style="background:${pix.ativa?'rgba(37,211,102,.12)':'rgba(255,255,255,.06)'}">
                 ${tipoIcon[pix.tipo]||'🔑'}
               </div>
               <div style="flex:1;min-width:0">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-                  <span class="pix-tipo-badge" style="background:${pix.ativa?'rgba(37,211,102,.15)':'rgba(26,32,53,.08)'};color:${pix.ativa?'#15803d':'#8a95b0'}">${tipoLabel[pix.tipo]||pix.tipo}</span>
+                  <span class="pix-tipo-badge" style="background:${pix.ativa?'rgba(37,211,102,.15)':'rgba(255,255,255,.08)'};color:${pix.ativa?'#15803d':'#64748b'}">${tipoLabel[pix.tipo]||pix.tipo}</span>
                   ${pix.ativa?'<span class="badge bs" style="font-size:9px">Ativa</span>':'<span class="badge bg" style="font-size:9px">Inativa</span>'}
                 </div>
                 <input class="cfg-input" id="pix-val-${k}" value="${pix.valor}" placeholder="${pix.tipo==='email'?'seu@email.com':pix.tipo==='cnpj'?'00.000.000/0001-00':pix.tipo==='celular'?'+55 (00) 00000-0000':'Chave aleatória gerada pelo banco'}" style="font-size:12px;padding:6px 10px;${!pix.ativa?'opacity:.5':''}">
@@ -3434,7 +3434,7 @@ function renderCfgContent(tab){
       <div class="cfg-section">
         <div class="cfg-section-title">🎨 Logo no Boleto</div>
         <div style="display:flex;align-items:center;gap:14px">
-          <div style="width:80px;height:40px;background:rgba(26,32,53,.06);border-radius:8px;border:1px dashed rgba(26,32,53,.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--tx3)">Logo</div>
+          <div style="width:80px;height:40px;background:rgba(255,255,255,.06);border-radius:8px;border:1px dashed rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--tx3)">Logo</div>
           <div>
             <button class="btn btn-sm">📤 Carregar logo</button>
             <div style="font-size:10px;color:var(--tx3);margin-top:4px">PNG ou JPG, máx. 200x80px</div>
@@ -3505,22 +3505,22 @@ function renderCfgContent(tab){
     TODAS_P.forEach(function(p){ if(grupos.indexOf(p.grupo)<0) grupos.push(p.grupo); });
     var isAdmin  = (ativo === 'admin');
     var cores = {
-      admin:'#d63030', kleber:'#2b7fff', ana:'#7b5af5',
-      carlos:'#e07b20', fernanda:'#1a9e5c'
+      admin:'#ef4444', kleber:'#3b82f6', ana:'#7b5af5',
+      carlos:'#e07b20', fernanda:'#22c55e'
     };
 
     el.innerHTML=`
       <div class="cfg-section">
         <div class="cfg-section-title">🔐 Permissões por Usuário</div>
         <!-- tabs de usuário -->
-        <div style="display:flex;gap:0;border-bottom:1px solid rgba(26,32,53,.08);margin-bottom:16px;overflow-x:auto" id="perm-user-tabs2">
+        <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:16px;overflow-x:auto" id="perm-user-tabs2">
           ${allUsers.map(u=>{
             const op=(operadores||[]).find(o=>o.nome.toLowerCase().includes(u));
-            const cor=(op && op.cor)||cores[u]||'#8a95b0';
+            const cor=(op && op.cor)||cores[u]||'#64748b';
             return`<button onclick="window.permUserAtivo='${u}';setCfgTab('permissoes')"
               style="padding:9px 16px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;
               font-family:'Plus Jakarta Sans',sans-serif;border-bottom:2px solid ${u===ativo?cor:'transparent'};
-              color:${u===ativo?cor:'#4a5570'};transition:all .15s;white-space:nowrap;
+              color:${u===ativo?cor:'#94a3b8'};transition:all .15s;white-space:nowrap;
               display:flex;align-items:center;gap:6px">
               <div style="width:8px;height:8px;border-radius:50%;background:${cor}"></div>
               ${u.charAt(0).toUpperCase()+u.slice(1)}
@@ -3533,22 +3533,22 @@ function renderCfgContent(tab){
           </button>
         </div>
 
-        ${isAdmin?`<div style="background:rgba(43,127,255,.08);border:1px solid rgba(43,127,255,.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#2b7fff;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🔐</span> O administrador possui todas as permissões e não pode ser restringido.</div>`:''}
+        ${isAdmin?`<div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#60a5fa;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🔐</span> O administrador possui todas as permissões e não pode ser restringido.</div>`:''}
 
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
           ${grupos.map(grupo=>{
             const items=TODAS_P.filter(p=>p.grupo===grupo);
-            return`<div style="background:#fff;border:1px solid rgba(26,32,53,.08);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(26,32,53,.06)">
-              <div style="padding:10px 14px;background:rgba(43,127,255,.06);border-bottom:1px solid rgba(26,32,53,.06);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#4a5570">${grupo}</div>
+            return`<div style="background:var(--card2);border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.2)">
+              <div style="padding:10px 14px;background:rgba(59,130,246,.08);border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8">${grupo}</div>
               <div style="padding:8px 0">
                 ${items.map(p=>`
                   <label style="display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:${isAdmin?'default':'pointer'};transition:background .1s"
-                    onmouseover="${isAdmin?'':'this.style.background=\"rgba(43,127,255,.04)\"'}"
+                    onmouseover="${isAdmin?'':'this.style.background=\"rgba(59,130,246,.08)\"'}"
                     onmouseout="${isAdmin?'':'this.style.background=\"\"'}">
                     <input type="checkbox" id="perm2-${p.id}" ${perms[p.id]?'checked':''} ${isAdmin?'disabled':''}
                       onchange="window.updatePermPreview('${p.id}',this.checked)"
                       style="width:15px;height:15px;accent-color:var(--blue);cursor:${isAdmin?'default':'pointer'}">
-                    <span style="font-size:12px;color:${isAdmin?'#8a95b0':'var(--tx)'}">${p.label}</span>
+                    <span style="font-size:12px;color:${isAdmin?'#64748b':'var(--tx)'}">${p.label}</span>
                     ${p.id==='ver_todos'?'<span class="badge bg" style="margin-left:auto;font-size:9px">visibilidade</span>':''}
                     ${p.id==='gerenciar_permissoes'?'<span class="badge bd-" style="margin-left:auto;font-size:9px">admin</span>':''}
                   </label>`).join('')}
@@ -3557,7 +3557,7 @@ function renderCfgContent(tab){
           }).join('')}
         </div>
 
-        <div style="margin-top:14px;padding:12px 16px;background:rgba(43,127,255,.06);border:1px solid rgba(43,127,255,.15);border-radius:10px;font-size:12px;color:#2b7fff">
+        <div style="margin-top:14px;padding:12px 16px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;font-size:12px;color:#3b82f6">
           <strong>${ativo.charAt(0).toUpperCase()+ativo.slice(1)}</strong> tem
           <strong id="perm-count2">${Object.values(perms).filter(Boolean).length}</strong> de ${TODAS_P.length} permissões ativas.
         </div>
@@ -3609,15 +3609,15 @@ function renderCfgContent(tab){
         <div class="cfg-section-title">🎨 Aparência</div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px" id="tema-options">
           ${[
-            {key:'azul',label:'Azul Royal',cor1:'#2b7fff',cor2:'#3a8bf5'},
-            {key:'roxo',label:'Roxo',cor1:'#7b5af5',cor2:'#a78bfa'},
-            {key:'verde',label:'Verde',cor1:'#1a9e5c',cor2:'#34d399'},
-            {key:'cinza',label:'Cinza',cor1:'#475569',cor2:'#64748b'},
-            {key:'laranja',label:'Laranja',cor1:'#e07b20',cor2:'#fb923c'},
+            {key:'azul',label:'Azul Royal',cor1:'#3b82f6',cor2:'#60a5fa'},
+            {key:'roxo',label:'Roxo',cor1:'#8b5cf6',cor2:'#a78bfa'},
+            {key:'verde',label:'Verde',cor1:'#22c55e',cor2:'#4ade80'},
+            {key:'cinza',label:'Cinza',cor1:'#64748b',cor2:'#94a3b8'},
+            {key:'laranja',label:'Laranja',cor1:'#f97316',cor2:'#fb923c'},
           ].map(t=>`
             <div onclick="aplicarTema('${t.key}')" style="cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid ${t.key==='azul'?'var(--blue)':'transparent'};transition:all .15s;width:80px" id="tema-${t.key}">
               <div style="height:28px;background:linear-gradient(135deg,${t.cor1},${t.cor2})"></div>
-              <div style="padding:4px 6px;font-size:10px;font-weight:500;text-align:center;background:#fff;color:var(--tx)">${t.label}</div>
+              <div style="padding:4px 6px;font-size:10px;font-weight:500;text-align:center;background:var(--card2);color:var(--tx)">${t.label}</div>
             </div>`).join('')}
         </div>
       </div>
@@ -3640,9 +3640,9 @@ function renderCfgContent(tab){
           <button class="btn btn-sm" onclick="exportarDados()">📤 Exportar todos os dados (JSON)</button>
           <button class="btn btn-sm" onclick="notify('Funcionalidade em breve')">📥 Importar dados</button>
           <button class="btn btn-sm btn-danger" onclick="if(confirm('Limpar todos os dados?'))notify('Dados limpos')">🗑 Limpar dados</button>
-                  <button class="btn btn-sm" onclick="window.sisvipExport()" style="background:#f0fdf4;color:#1a9e5c;border-color:#bbf7d0">📥 Exportar backup</button>
-                  <button class="btn btn-sm" onclick="window.sisvipImport()" style="background:#eff6ff;color:#2b7fff;border-color:#bfdbfe">📤 Importar backup</button>
-                  <button class="btn btn-sm" onclick="window.sisvipClear()" style="background:#fff5f5;color:#d63030;border-color:#fecaca">🗑 Apagar tudo</button>
+                  <button class="btn btn-sm" onclick="window.sisvipExport()" style="background:rgba(34,197,94,.1);color:#4ade80;border-color:rgba(34,197,94,.3)">📥 Exportar backup</button>
+                  <button class="btn btn-sm" onclick="window.sisvipImport()" style="background:rgba(59,130,246,.1);color:#60a5fa;border-color:rgba(59,130,246,.3)">📤 Importar backup</button>
+                  <button class="btn btn-sm" onclick="window.sisvipClear()" style="background:rgba(239,68,68,.1);color:#f87171;border-color:rgba(239,68,68,.3)">🗑 Apagar tudo</button>
         </div>
         <div style="margin-top:12px;font-size:11px;color:var(--tx3)">Versão ${c.sistema.versao} · SisVip © 2026</div>
       </div>`;
@@ -3674,11 +3674,11 @@ window.copiarQrStatic=function(){ navigator.clipboard.writeText(qrStaticPayload)
 
 // ── TEMA ──
 const TEMAS = {
-  azul:    { bg:'#3a8bf5', bg2:'#2f7de8', blue:'#2b7fff', blue2:'#1a6ef0', blueL:'#4a95ff' },
-  roxo:    { bg:'#7b5af5', bg2:'#6a4adc', blue:'#7b5af5', blue2:'#6a4adc', blueL:'#a78bfa' },
-  verde:   { bg:'#1a9e5c', bg2:'#158a4e', blue:'#1a9e5c', blue2:'#158a4e', blueL:'#34d399' },
-  cinza:   { bg:'#475569', bg2:'#334155', blue:'#475569', blue2:'#334155', blueL:'#64748b' },
-  laranja: { bg:'#e07b20', bg2:'#c96d18', blue:'#e07b20', blue2:'#c96d18', blueL:'#fb923c' },
+  azul:    { bg:'#0a0f1e', bg2:'#0d1730', blue:'#3b82f6', blue2:'#2563eb', blueL:'#60a5fa' },
+  roxo:    { bg:'#0f0d1f', bg2:'#171335', blue:'#8b5cf6', blue2:'#7c3aed', blueL:'#a78bfa' },
+  verde:   { bg:'#08140f', bg2:'#0b1f16', blue:'#22c55e', blue2:'#16a34a', blueL:'#4ade80' },
+  cinza:   { bg:'#0d1117', bg2:'#161b22', blue:'#64748b', blue2:'#475569', blueL:'#94a3b8' },
+  laranja: { bg:'#170f08', bg2:'#231708', blue:'#f97316', blue2:'#ea580c', blueL:'#fb923c' },
 };
 window.aplicarTema = function(key){
   const t=TEMAS[key]; if(!t) return;
@@ -3808,12 +3808,12 @@ window.resetCfgTab = function(){ renderCfgContent(cfgTabAtiva); notify('Alteraç
           '<div id="li-error" style="display:none;color:#f75f5f;font-size:11px;',
             'text-align:center">Usuário ou senha inválidos</div>',
           '<button onclick="fazerLogin()" style="padding:11px;font-size:13px;font-weight:700;',
-            'background:linear-gradient(135deg,#2b7fff,#1a6ef0);color:#fff;border:none;',
+            'background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;',
             'border-radius:8px;cursor:pointer;font-family:inherit;',
-            'box-shadow:0 4px 14px rgba(43,127,255,.4)">Entrar</button>',
+            'box-shadow:0 4px 14px rgba(59,130,246,.4)">Entrar</button>',
             '<div style="text-align:center;margin-top:10px">',
             '<button onclick="abrirRecuperarSenha()" type="button" style="background:none;border:none;',
-            'color:#2b7fff;font-size:12px;cursor:pointer;font-family:inherit;',
+            'color:#3b82f6;font-size:12px;cursor:pointer;font-family:inherit;',
             'text-decoration:underline;text-underline-offset:2px;opacity:.8">',
             '🔑 Esqueci minha senha</button></div>',
         '</div>',
@@ -3937,7 +3937,7 @@ window.gerarQrStatic = function(){
   try{
     new QRCode(qrEl, {text:payload, width:150, height:150, colorDark:'#1a2035', colorLight:'#fff', correctLevel:QRCode.CorrectLevel.M});
   } catch(e){
-    qrEl.innerHTML = '<div style="padding:20px;font-size:11px;color:#8a95b0">QR Code indisponível</div>';
+    qrEl.innerHTML = '<div style="padding:20px;font-size:11px;color:#64748b">QR Code indisponível</div>';
   }
   const prev = document.getElementById('qr-static-preview');
   if(prev) prev.style.display = 'block';
@@ -3974,8 +3974,8 @@ window.selecionarBanco = function(nome, cod, cor){
 
   // resetar visual de todos os cards
   document.querySelectorAll('[id^="banco-card-"]').forEach(card => {
-    card.style.borderColor = 'rgba(26,32,53,.1)';
-    card.style.background  = '#fff';
+    card.style.borderColor = 'rgba(255,255,255,.1)';
+    card.style.background  = 'var(--card2)';
   });
 
   // destacar selecionado
@@ -3993,14 +3993,14 @@ window.selecionarBanco = function(nome, cod, cor){
   if(apiInfo && apiTexto){
     if(temApi){
       apiInfo.style.display = 'flex';
-      apiInfo.style.background = 'rgba(43,127,255,.06)';
-      apiInfo.style.borderColor = 'rgba(43,127,255,.15)';
+      apiInfo.style.background = 'rgba(59,130,246,.06)';
+      apiInfo.style.borderColor = 'rgba(59,130,246,.15)';
       apiTexto.innerHTML = `<strong style="color:var(--tx)">Integração via API disponível para ${nome}</strong><br>
         Configure as credenciais abaixo para cobranças com confirmação automática de pagamento.`;
     } else {
       apiInfo.style.background = 'rgba(245,158,11,.06)';
       apiInfo.style.borderColor = 'rgba(245,158,11,.2)';
-      apiTexto.innerHTML = `<strong style="color:#92400e">${nome} — API em breve</strong><br>
+      apiTexto.innerHTML = `<strong style="color:#fbbf24">${nome} — API em breve</strong><br>
         Este banco ainda não possui integração via API configurada. Você pode usar PIX manual e boleto local.`;
     }
   }
@@ -4264,21 +4264,21 @@ try{
 
   function _mostrarAvisoPopup(url) {
     var av = document.createElement('div');
-    av.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(26,32,53,.65);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
+    av.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(4,7,15,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
     // Guardar URL no elemento para evitar escaping problemático
     av.dataset.wppUrl = url;
-    av.innerHTML = '<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:400px;width:94%;text-align:center;box-shadow:0 32px 80px rgba(26,32,53,.35)">'
+    av.innerHTML = '<div style="background:#111a2e;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px 24px;max-width:400px;width:94%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.55)">'
       + '<div style="font-size:36px;margin-bottom:10px">🔒</div>'
-      + '<div style="font-size:16px;font-weight:700;color:#1a2035;margin-bottom:6px">Pop-up bloqueado pelo navegador</div>'
-      + '<div style="font-size:12px;color:#4a5570;line-height:1.8;margin-bottom:16px;background:#f8f9fc;padding:12px;border-radius:10px;text-align:left">'
+      + '<div style="font-size:16px;font-weight:700;color:#e7ecf5;margin-bottom:6px">Pop-up bloqueado pelo navegador</div>'
+      + '<div style="font-size:12px;color:#94a3b8;line-height:1.8;margin-bottom:16px;background:rgba(255,255,255,.04);padding:12px;border-radius:10px;text-align:left">'
       + '<b>Como liberar:</b><br>'
       + '① Clique no ícone <b>🔒</b> ou <b>⚠️</b> na barra de endereço<br>'
       + '② Selecione <b>Permissões do site</b> → <b>Pop-ups</b><br>'
       + '③ Escolha <b>Permitir</b> e recarregue a página<br><br>'
-      + '<span style="color:#888;font-size:11px">Ou clique em <b>Abrir mesmo assim</b> abaixo</span>'
+      + '<span style="color:#64748b;font-size:11px">Ou clique em <b>Abrir mesmo assim</b> abaixo</span>'
       + '</div>'
       + '<div style="display:flex;gap:8px;justify-content:center">'
-      + '<button onclick="wppFecharAviso(this)" style="padding:9px 18px;font-size:12px;font-weight:600;background:#f0f2f5;color:#4a5570;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Fechar</button>'
+      + '<button onclick="wppFecharAviso(this)" style="padding:9px 18px;font-size:12px;font-weight:600;background:rgba(255,255,255,.06);color:#94a3b8;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Fechar</button>'
       + '<button onclick="wppFecharAbrirAviso(this)" style="padding:9px 18px;font-size:12px;font-weight:600;background:#25d366;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit">💬 Abrir mesmo assim</button>'
       + '</div></div>';
     av.addEventListener('click', function(e){ if(e.target===av) av.remove(); });
@@ -4538,12 +4538,12 @@ try{
 .wpp-btn-connect:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(37,211,102,.5); }
 .wpp-btn-disconnect {
   width: 200px; padding: 9px; font-size: 12px; font-weight: 600;
-  background: rgba(214,48,48,.1); color: #f75f5f;
-  border: 1px solid rgba(214,48,48,.25); border-radius: 12px;
+  background: rgba(239,68,68,.1); color: #f75f5f;
+  border: 1px solid rgba(239,68,68,.25); border-radius: 12px;
   cursor: pointer; font-family: inherit; margin-top: 8px;
   transition: all .2s; display: none;
 }
-.wpp-btn-disconnect:hover { background: rgba(214,48,48,.18); }
+.wpp-btn-disconnect:hover { background: rgba(239,68,68,.18); }
 
 /* Fechar */
 #wpp-close-btn {
@@ -4814,9 +4814,9 @@ function wppRenderQR(texto){
   function tentar(n){
     if(typeof QRCode!=='undefined'){
       try{ new QRCode(canv,{text:texto,width:196,height:196,colorDark:'#111b21',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.L}); }
-      catch(e){ canv.innerHTML='<div style="font-size:10px;color:#d63030;text-align:center">Erro QR: '+e.message+'</div>'; }
+      catch(e){ canv.innerHTML='<div style="font-size:10px;color:#ef4444;text-align:center">Erro QR: '+e.message+'</div>'; }
     } else if(n<20){ setTimeout(function(){tentar(n+1);},200); }
-    else { canv.innerHTML='<div style="font-size:10px;color:#d63030;text-align:center">Lib QR não carregada</div>'; }
+    else { canv.innerHTML='<div style="font-size:10px;color:#ef4444;text-align:center">Lib QR não carregada</div>'; }
   }
   tentar(0);
 }
@@ -4957,7 +4957,7 @@ function wppErro(msg){
   clearInterval(window.WPP.pollInt);
   wppStatus('error');
   var inner=document.getElementById('wpp-qr-inner');
-  if(inner)inner.innerHTML='<div style="text-align:center;padding:12px"><div style="font-size:24px;margin-bottom:8px">⚠️</div><div style="font-size:11px;color:#d63030;line-height:1.5;max-width:160px">'+msg+'</div></div>';
+  if(inner)inner.innerHTML='<div style="text-align:center;padding:12px"><div style="font-size:24px;margin-bottom:8px">⚠️</div><div style="font-size:11px;color:#ef4444;line-height:1.5;max-width:160px">'+msg+'</div></div>';
   var btnC=document.getElementById('WM_btnC');
   if(btnC){btnC.disabled=false;btnC.style.display='flex';btnC.innerHTML='Tentar novamente';}
   var timerWrap=document.getElementById('WM_timerWrap'); if(timerWrap)timerWrap.style.display='none';
@@ -5133,11 +5133,11 @@ window.wppFecharAviso = function(btn){ var el=btn.closest('div[style*="position:
 
 .wpp-sp-btn-red {
   width: 100%; padding: 10px; font-size: 13px; font-weight: 600;
-  background: rgba(214,48,48,.1); color: #f75f5f;
-  border: 1px solid rgba(214,48,48,.2); border-radius: 12px;
+  background: rgba(239,68,68,.1); color: #f75f5f;
+  border: 1px solid rgba(239,68,68,.2); border-radius: 12px;
   cursor: pointer; font-family: inherit; transition: all .2s; display: none;
 }
-.wpp-sp-btn-red:hover { background: rgba(214,48,48,.18); }
+.wpp-sp-btn-red:hover { background: rgba(239,68,68,.18); }
 
 /* Timer */
 .wpp-sp-timer-wrap { width: 100%; display: none; }
@@ -5331,7 +5331,7 @@ window.wppFecharAviso = function(btn){ var el=btn.closest('div[style*="position:
         <button class="wpp-sp-btn-green" onclick="wppSpSalvar()">💾 Salvar configuração</button>
         <div id="wpp-sp-cfg-msg" style="font-size:11px;color:rgba(255,255,255,.25);min-height:16px"></div>
 
-        <div style="margin-top:8px;padding:12px;background:rgba(43,127,255,.08);border:1px solid rgba(43,127,255,.15);border-radius:10px">
+        <div style="margin-top:8px;padding:12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:10px">
           <div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.6">
             <strong style="color:rgba(255,255,255,.6)">Como instalar a Evolution API:</strong><br>
             No seu servidor, execute:<br>
@@ -5580,7 +5580,7 @@ function wppSpErro(msg){
   if(window.WPP)clearInterval(window.WPP.pollInt);
   wppSpStatus('error');
   var inner=document.getElementById('wpp-sp-qr-inner');
-  if(inner)inner.innerHTML='<div style="text-align:center;padding:12px"><div style="font-size:24px;margin-bottom:8px">⚠️</div><div style="font-size:10px;color:#d63030;line-height:1.5;max-width:160px">'+msg+'</div></div>';
+  if(inner)inner.innerHTML='<div style="text-align:center;padding:12px"><div style="font-size:24px;margin-bottom:8px">⚠️</div><div style="font-size:10px;color:#ef4444;line-height:1.5;max-width:160px">'+msg+'</div></div>';
   var wrap=document.getElementById('wpp-sp-timer-wrap');if(wrap)wrap.style.display='none';
   var btn=document.getElementById('wpp-sp-btn-c');if(btn){btn.disabled=false;btn.style.display='flex';btn.innerHTML='Tentar novamente';}
 }
@@ -5920,10 +5920,10 @@ window._wppWin = null; // referência à janela aberta
 #modal-cliente-rapido .modal { width: 560px; }
 .busca-result-item {
   display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 16px; cursor: pointer; border-bottom: 1px solid rgba(26,32,53,.06);
+  padding: 12px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,.06);
   transition: background .12s;
 }
-.busca-result-item:hover { background: rgba(43,127,255,.05); }
+.busca-result-item:hover { background: rgba(59,130,246,.08); }
 .busca-result-item:last-child { border-bottom: none; }
 .busca-result-icon {
   width: 36px; height: 36px; border-radius: 10px;
@@ -5943,8 +5943,8 @@ window._wppWin = null; // referência à janela aberta
       <div style="display:flex;align-items:center;width:100%;gap:10px">
         <span class="modal-title">Cadastrar Cliente Rápido</span>
         <button type="button" onclick="fecharModal('modal-cliente-rapido');setTimeout(function(){abrirBuscaClienteWeb();},150)"
-          style="margin-left:auto;padding:5px 12px;font-size:11px;font-weight:600;background:rgba(43,127,255,.1);
-                 color:var(--blue);border:1px solid rgba(43,127,255,.2);border-radius:8px;cursor:pointer;
+          style="margin-left:auto;padding:5px 12px;font-size:11px;font-weight:600;background:rgba(59,130,246,.1);
+                 color:var(--blue);border:1px solid rgba(59,130,246,.2);border-radius:8px;cursor:pointer;
                  font-family:inherit;white-space:nowrap" title="Buscar CNPJ na internet">
           🔍 Buscar na web
         </button>
@@ -6048,7 +6048,7 @@ window._wppWin = null; // referência à janela aberta
       <div style="font-size:11px;color:var(--tx2);margin-top:4px">Verifique o CNPJ/CEP e tente novamente</div>
     </div>
 
-    <div style="padding:12px 20px;border-top:1px solid rgba(26,32,53,.07);display:flex;gap:8px;justify-content:space-between;align-items:center">
+    <div style="padding:12px 20px;border-top:1px solid rgba(255,255,255,.07);display:flex;gap:8px;justify-content:space-between;align-items:center">
       <span style="font-size:10px;color:var(--tx3)">Fontes: ReceitaWS · ViaCEP · CNPJ.ws</span>
       <button class="btn btn-sm" onclick="fecharModal('modal-busca-web')">Fechar</button>
     </div>
@@ -6084,7 +6084,7 @@ window.crpBuscaInput = function(val){
   if(!hint) return;
   if(nums.length === 14){
     hint.textContent = '✅ CNPJ completo — clique Buscar ou pressione Enter';
-    hint.style.color = '#1a9e5c';
+    hint.style.color = '#22c55e';
   } else if(nums.length > 0){
     hint.textContent = '⌨️ ' + nums.length + ' de 14 dígitos';
     hint.style.color = 'var(--tx3)';
@@ -6160,7 +6160,7 @@ function _crpPreencher(d, fonte){
   var cnae = est.atividade_principal && est.atividade_principal[0];
   if(cnae && cnae.descricao) _crpSetSeg(cnae.descricao);
 
-  if(hint){ hint.textContent='✅ Dados preenchidos via '+fonte+'!'; hint.style.color='#1a9e5c'; }
+  if(hint){ hint.textContent='✅ Dados preenchidos via '+fonte+'!'; hint.style.color='#22c55e'; }
 }
 
 function _crpPreencherBrasil(d){
@@ -6183,7 +6183,7 @@ function _crpPreencherBrasil(d){
 
   if(d.cnae_fiscal_descricao) _crpSetSeg(d.cnae_fiscal_descricao);
 
-  if(hint){ hint.textContent='✅ Dados preenchidos via BrasilAPI!'; hint.style.color='#1a9e5c'; }
+  if(hint){ hint.textContent='✅ Dados preenchidos via BrasilAPI!'; hint.style.color='#22c55e'; }
 }
 
 function _crpSetSeg(desc){
@@ -6627,7 +6627,7 @@ window.buscaWebSelecionarItem = function(idx){
 
     var nome  = opFound ? opFound.nome  : 'Administrador';
     var cargo = opFound ? opFound.cargo : 'Gerente';
-    var cor   = opFound ? opFound.cor   : '#2b7fff';
+    var cor   = opFound ? opFound.cor   : '#3b82f6';
     var ini   = nome.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
 
     if (!window.userPermissions) window.userPermissions = {};
@@ -6959,7 +6959,7 @@ window.wppAbrirCliente = function(id) {
     var ind = document.getElementById('save-indicator');
     if(!ind) return;
     ind.textContent = ok ? '💾 Salvo' : '⚠️ Erro ao salvar';
-    ind.style.color = ok ? '#1a9e5c' : '#d63030';
+    ind.style.color = ok ? '#22c55e' : '#ef4444';
     ind.style.opacity = '1';
     setTimeout(function(){ ind.style.opacity = '0'; }, 2500);
   }
@@ -7136,14 +7136,14 @@ window.abrirRecuperarSenha = function(){
 
   var overlay = document.createElement('div');
   overlay.id = 'modal-recuperar-senha';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(26,32,53,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(255,255,255,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
   overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
 
   // Montar HTML interno sem concatenação problemática
   var html = '';
-  html += '<div style="background:#fff;border-radius:20px;width:400px;max-width:94vw;box-shadow:0 32px 80px rgba(26,32,53,.35);overflow:hidden">';
+  html += '<div style="background:#111a2e;border:1px solid rgba(255,255,255,.08);border-radius:20px;width:400px;max-width:94vw;box-shadow:0 32px 80px rgba(0,0,0,.55);overflow:hidden">';
   // Header
-  html += '<div style="background:linear-gradient(135deg,#2b7fff,#1a6ef0);padding:22px 24px;display:flex;align-items:center;justify-content:space-between">';
+  html += '<div style="background:linear-gradient(135deg,#3b82f6,#2563eb);padding:22px 24px;display:flex;align-items:center;justify-content:space-between">';
   html += '<div><div style="font-size:16px;font-weight:700;color:#fff">🔑 Recuperar Senha</div>';
   html += '<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px">Redefina a senha de acesso</div></div>';
   html += '<button type="button" onclick="fecharModalRecuperar()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;font-family:inherit;line-height:1">✕</button>';
@@ -7152,34 +7152,34 @@ window.abrirRecuperarSenha = function(){
   html += '<div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px">';
   // Select usuário
   html += '<div>';
-  html += '<label style="font-size:10px;font-weight:600;color:#4a5570;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Usuário</label>';
-  html += '<select id="rec-usuario" style="width:100%;padding:10px 12px;font-size:13px;border:1px solid rgba(26,32,53,.15);border-radius:8px;background:#fff;color:#1a2035;font-family:inherit;box-sizing:border-box">';
+  html += '<label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Usuário</label>';
+  html += '<select id="rec-usuario" style="width:100%;padding:10px 12px;font-size:13px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:inherit;box-sizing:border-box">';
   html += '<option value="">Selecione o usuário...</option>';
   html += '<option value="admin">admin (Administrador)</option>';
   html += '</select></div>';
   // Nova senha
   html += '<div>';
-  html += '<label style="font-size:10px;font-weight:600;color:#4a5570;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Nova Senha</label>';
+  html += '<label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Nova Senha</label>';
   html += '<div style="position:relative">';
   html += '<input id="rec-nova-senha" type="password" placeholder="Digite a nova senha..." autocomplete="new-password" ';
-  html += 'style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(26,32,53,.15);border-radius:8px;background:#fff;color:#1a2035;font-family:inherit;box-sizing:border-box">';
+  html += 'style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:inherit;box-sizing:border-box">';
   html += '<span onclick="recToggleSenha("rec-nova-senha")" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.5;user-select:none">👁</span>';
   html += '</div></div>';
   // Confirmar senha
   html += '<div>';
-  html += '<label style="font-size:10px;font-weight:600;color:#4a5570;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Confirmar Nova Senha</label>';
+  html += '<label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Confirmar Nova Senha</label>';
   html += '<div style="position:relative">';
   html += '<input id="rec-conf-senha" type="password" placeholder="Repita a nova senha..." autocomplete="new-password" ';
   html += 'onkeydown="recEnterSenha(event)" ';
-  html += 'style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(26,32,53,.15);border-radius:8px;background:#fff;color:#1a2035;font-family:inherit;box-sizing:border-box">';
+  html += 'style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:inherit;box-sizing:border-box">';
   html += '<span onclick="recToggleSenha("rec-conf-senha")" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.5;user-select:none">👁</span>';
   html += '</div></div>';
   // Mensagem
   html += '<div id="rec-msg" style="display:none;padding:10px 12px;border-radius:8px;font-size:12px;font-weight:500"></div>';
   // Botões
   html += '<div style="display:flex;gap:8px;justify-content:flex-end">';
-  html += '<button type="button" onclick="fecharModalRecuperar()" style="padding:10px 20px;font-size:13px;font-weight:600;background:#f0f2f5;color:#4a5570;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Cancelar</button>';
-  html += '<button type="button" onclick="confirmarRecuperarSenha()" style="padding:10px 20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#2b7fff,#1a6ef0);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(43,127,255,.35)">✓ Redefinir Senha</button>';
+  html += '<button type="button" onclick="fecharModalRecuperar()" style="padding:10px 20px;font-size:13px;font-weight:600;background:rgba(255,255,255,.06);color:#94a3b8;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Cancelar</button>';
+  html += '<button type="button" onclick="confirmarRecuperarSenha()" style="padding:10px 20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(59,130,246,.4)">✓ Redefinir Senha</button>';
   html += '</div>';
   html += '</div></div>';
 
@@ -7209,9 +7209,9 @@ window.confirmarRecuperarSenha = function(){
   var showMsg = function(texto, tipo){
     if(!msg) return;
     msg.style.display  = 'block';
-    msg.style.background = tipo==='ok' ? '#f0fdf4' : '#fff5f5';
-    msg.style.border     = '1px solid ' + (tipo==='ok' ? '#bbf7d0' : '#fecaca');
-    msg.style.color      = tipo==='ok' ? '#166534' : '#991b1b';
+    msg.style.background = tipo==='ok' ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)';
+    msg.style.border     = '1px solid ' + (tipo==='ok' ? 'rgba(34,197,94,.35)' : 'rgba(239,68,68,.35)');
+    msg.style.color      = tipo==='ok' ? '#4ade80' : '#f87171';
     msg.textContent      = texto;
   };
 
