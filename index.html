@@ -6029,7 +6029,7 @@ window._wppWin = null; // referência à janela aberta
       </div>
       <!-- Busca inline por CNPJ -->
       <div style="display:flex;gap:8px;align-items:center;width:100%;padding-bottom:12px">
-        <input id="crp-busca" class="finput" placeholder="Cole o CNPJ (14 dígitos) para preencher automaticamente..."
+        <input id="crp-busca" class="finput" placeholder="Cole o CNPJ (14 dígitos) ou CPF (11 dígitos) para preencher automaticamente..."
           style="flex:1;font-size:12px" oninput="crpBuscaInput(this.value)"
           onkeydown="if(event.key==='Enter')crpBuscar()">
         <button type="button" onclick="crpBuscar()"
@@ -6163,11 +6163,14 @@ window.crpBuscaInput = function(val){
   if(nums.length === 14){
     hint.textContent = '✅ CNPJ completo — clique Buscar ou pressione Enter';
     hint.style.color = '#22c55e';
+  } else if(nums.length === 11){
+    hint.textContent = '✅ CPF completo — clique Buscar ou pressione Enter';
+    hint.style.color = '#22c55e';
   } else if(nums.length > 0){
-    hint.textContent = '⌨️ ' + nums.length + ' de 14 dígitos';
+    hint.textContent = '⌨️ ' + nums.length + ' dígitos (CNPJ tem 14, CPF tem 11)';
     hint.style.color = 'var(--tx3)';
   } else {
-    hint.textContent = 'Digite o CNPJ (somente números) para preencher automaticamente';
+    hint.textContent = 'Digite o CNPJ ou CPF (somente números) para preencher automaticamente';
     hint.style.color = 'var(--tx3)';
   }
 };
@@ -6180,8 +6183,30 @@ window.crpBuscar = function(){
 
   if(!hint){ console.warn('[crpBuscar] crp-busca-status não encontrado'); }
 
+  if(nums.length === 11){
+    // ── CPF: só existe busca no cadastro local (não há API pública de CPF) ──
+    var achado = (window.clientes||[]).find(function(c){
+      return (c.doc||'').replace(/\D/g,'') === nums;
+    });
+    var docFmt = nums.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
+    if(achado){
+      var set = function(id,v){ var el=document.getElementById(id); if(el&&v) el.value=v; };
+      set('crp-nome',  achado.nome);
+      set('crp-tel',   achado.tel);
+      set('crp-email', achado.email);
+      set('crp-doc',   docFmt);
+      set('crp-end',   achado.end);
+      if(achado.seg) _crpSetSeg(achado.seg);
+      if(hint){ hint.textContent='✅ Cliente já cadastrado — dados carregados abaixo.'; hint.style.color='#22c55e'; }
+    }else{
+      var docEl = document.getElementById('crp-doc'); if(docEl) docEl.value = docFmt;
+      if(hint){ hint.textContent='⚠️ CPF não encontrado no cadastro. Preencha os dados abaixo.'; hint.style.color='var(--tx3)'; }
+    }
+    return;
+  }
+
   if(nums.length !== 14){
-    if(hint){ hint.textContent = '⚠️ CNPJ deve ter 14 dígitos (atual: '+nums.length+')'; hint.style.color='var(--danger)'; }
+    if(hint){ hint.textContent = '⚠️ CNPJ tem 14 dígitos · CPF tem 11 dígitos (digitado: '+nums.length+')'; hint.style.color='var(--danger)'; }
     return;
   }
 
