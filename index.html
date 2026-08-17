@@ -2092,9 +2092,6 @@ window.USERS = USERS;
             🔑 Esqueci minha senha
           </button>
         </div>
-        <div style="margin-top:16px;padding:10px 13px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:8px;font-size:11px;color:#94a3b8;line-height:1.6">
-          <strong style="color:#60a5fa">Acesso inicial:</strong> usuário <code style="background:rgba(59,130,246,.18);padding:1px 5px;border-radius:4px;color:#60a5fa">admin</code> — senha <code style="background:rgba(59,130,246,.18);padding:1px 5px;border-radius:4px;color:#60a5fa">admin</code>
-        </div>
       </div>
     </div>
   </div>`;
@@ -6628,18 +6625,23 @@ window.buscaWebSelecionarItem = function(idx){
     if (!uEl || !pEl) return;
     var u = uEl.value.trim().toLowerCase();
     var p = pEl.value.trim();
-    if (!u || !p) {
+
+    // Verificar senhas customizadas (definidas via Recuperar Senha / cadastro)
+    var _sc = {};
+    try { _sc = JSON.parse(localStorage.getItem('sisvip_senhas')||'{}'); } catch(e){}
+
+    // Primeiro acesso: admin ainda não definiu senha própria — pode entrar em branco.
+    var adminSemSenha = (u === 'admin' && !_sc['admin']);
+    window.adminPrecisaDefinirSenha = adminSemSenha;
+
+    if (!u || (!p && !adminSemSenha)) {
       var errEl = document.getElementById('li-error');
       if (errEl) errEl.style.display = 'block';
       return;
     }
 
-    // Verificar senhas customizadas (definidas via Recuperar Senha)
-    var _sc = {};
-    try { _sc = JSON.parse(localStorage.getItem('sisvip_senhas')||'{}'); } catch(e){}
-
-    // Verificar admin (senha padrão 'admin' ou customizada)
-    var ok = (u === 'admin' && p === (_sc['admin'] || 'admin'));
+    // Verificar admin (só aceita a senha customizada, uma vez definida)
+    var ok = adminSemSenha || (u === 'admin' && p === _sc['admin']);
     var opFound = null;
 
     // Verificar operadores cadastrados
@@ -6712,6 +6714,13 @@ window.buscaWebSelecionarItem = function(idx){
     }
 
     setTimeout(function(){ if(typeof abrirResumo==='function') abrirResumo(); }, 450);
+
+    // Primeiro acesso do admin (ainda sem senha própria): pedir para criar uma agora.
+    if (adminSemSenha) {
+      setTimeout(function(){
+        if (typeof window.abrirRecuperarSenha === 'function') window.abrirRecuperarSenha('admin', true);
+      }, 900);
+    }
   };
 
   // ── 3. toggleSenha ──
@@ -7176,7 +7185,7 @@ window.recToggleSenha = function(id){
   el.type = el.type === 'password' ? 'text' : 'password';
 };
 
-window.abrirRecuperarSenha = function(preselect){
+window.abrirRecuperarSenha = function(preselect, primeiroAcesso){
   window.fecharModalRecuperar();
 
   var overlay = document.createElement('div');
@@ -7184,13 +7193,18 @@ window.abrirRecuperarSenha = function(preselect){
   overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(255,255,255,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
   overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
 
+  var tituloModal    = primeiroAcesso ? '🔐 Crie sua senha' : '🔑 Recuperar Senha';
+  var subtituloModal = primeiroAcesso ? 'Você entrou sem senha — defina uma agora' : 'Redefina a senha de acesso';
+  var textoBotaoOk   = primeiroAcesso ? '✓ Salvar Senha' : '✓ Redefinir Senha';
+  var textoCancelar  = primeiroAcesso ? 'Definir mais tarde' : 'Cancelar';
+
   // Montar HTML interno sem concatenação problemática
   var html = '';
   html += '<div style="background:#111a2e;border:1px solid rgba(255,255,255,.08);border-radius:20px;width:400px;max-width:94vw;box-shadow:0 32px 80px rgba(0,0,0,.55);overflow:hidden">';
   // Header
   html += '<div style="background:linear-gradient(135deg,#3b82f6,#2563eb);padding:22px 24px;display:flex;align-items:center;justify-content:space-between">';
-  html += '<div><div style="font-size:16px;font-weight:700;color:#fff">🔑 Recuperar Senha</div>';
-  html += '<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px">Redefina a senha de acesso</div></div>';
+  html += '<div><div style="font-size:16px;font-weight:700;color:#fff">'+tituloModal+'</div>';
+  html += '<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px">'+subtituloModal+'</div></div>';
   html += '<button type="button" onclick="fecharModalRecuperar()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;font-family:inherit;line-height:1">✕</button>';
   html += '</div>';
   // Body
@@ -7223,8 +7237,8 @@ window.abrirRecuperarSenha = function(preselect){
   html += '<div id="rec-msg" style="display:none;padding:10px 12px;border-radius:8px;font-size:12px;font-weight:500"></div>';
   // Botões
   html += '<div style="display:flex;gap:8px;justify-content:flex-end">';
-  html += '<button type="button" onclick="fecharModalRecuperar()" style="padding:10px 20px;font-size:13px;font-weight:600;background:rgba(255,255,255,.06);color:#94a3b8;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Cancelar</button>';
-  html += '<button type="button" onclick="confirmarRecuperarSenha()" style="padding:10px 20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(59,130,246,.4)">✓ Redefinir Senha</button>';
+  html += '<button type="button" onclick="fecharModalRecuperar()" style="padding:10px 20px;font-size:13px;font-weight:600;background:rgba(255,255,255,.06);color:#94a3b8;border:none;border-radius:10px;cursor:pointer;font-family:inherit">'+textoCancelar+'</button>';
+  html += '<button type="button" onclick="confirmarRecuperarSenha()" style="padding:10px 20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(59,130,246,.4)">'+textoBotaoOk+'</button>';
   html += '</div>';
   html += '</div></div>';
 
