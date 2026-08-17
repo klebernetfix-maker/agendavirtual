@@ -580,7 +580,7 @@ function getSbNav(){
 <div class="modal-overlay" id="modal-resumo" style="display:none">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">Bom dia, Kleber ☀️</div>
+      <div class="modal-title">Olá 👋</div>
       <div class="modal-sub" id="modal-data-str"></div>
     </div>
     <div class="modal-body" id="modal-body"></div>
@@ -1002,9 +1002,19 @@ function renderAlertBar(id){
   document.getElementById(id).innerHTML=h;
 }
 
+function saudacaoPorHorario(){
+  const h=new Date().getHours();
+  if(h>=5&&h<12)return{txt:'Bom dia',ico:'☀️'};
+  if(h>=12&&h<18)return{txt:'Boa tarde',ico:'🌤️'};
+  return{txt:'Boa noite',ico:'🌙'};
+}
+
 function abrirResumo(){
   const at=getAtrasados(),hp=getHojePend();
   const prox=records.filter(r=>r.agend&&isAfterToday(r.agend)&&!r.status.startsWith('Finalizado')).sort((a,b)=>cmpDate(a.agend,b.agend)).slice(0,4);
+  const sd=saudacaoPorHorario();
+  const nomeEl=document.querySelector('#modal-resumo .modal-title');
+  if(nomeEl)nomeEl.textContent=sd.txt+(window.currentUserNome?', '+window.currentUserNome:'')+' '+sd.ico;
   document.getElementById('modal-data-str').textContent=DIAS[TODAY_OBJ.getDay()]+', '+fmtDate(TODAY_OBJ);
   let h='';
   if(at.length){h+=`<div class="rsec"><div class="rsec-label">Atrasados (${at.length})</div>`;at.forEach(r=>{h+=`<div class="ri danger"><div style="flex:1"><div style="font-size:13px;font-weight:500">${r.cliente||'Sem cliente'}</div><div style="font-size:11px;color:var(--danger);margin-top:2px">Agendado para ${r.agend} · ${r.op}</div></div><button class="btn btn-sm btn-danger" onclick="editRow(${r.cod});fecharModal('modal-resumo')">Finalizar</button></div>`;});h+='</div>';}
@@ -6629,6 +6639,7 @@ window.buscaWebSelecionarItem = function(idx){
     var cargo = opFound ? opFound.cargo : 'Gerente';
     var cor   = opFound ? opFound.cor   : '#3b82f6';
     var ini   = nome.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+    window.currentUserNome = nome.split(' ')[0];
 
     if (!window.userPermissions) window.userPermissions = {};
     if (!window.userPermissions[u]) {
