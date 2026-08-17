@@ -1357,36 +1357,73 @@ window.mcBuscarDoc = function() {
       if (btn) { btn.textContent='Buscar'; btn.disabled=false; }
     }
 
-    function preencher(d) {
-      var nome  = d.razao_social  || d.nome        || '';
-      var fant  = d.nome_fantasia || d.fantasia     || '';
-      var tel   = d.ddd_telefone_1 ? '('+d.ddd_telefone_1+') '+(d.telefone_1||d.telefone||'') : (d.telefone||'');
-      var cep   = (d.cep||'').replace(/\D/g,'');
-      var end   = d.logradouro || '';
-      var num   = d.numero     || '';
-      var bairro= d.bairro     || '';
-      var cidade= d.municipio  || d.municipio_nome  || '';
-      var uf    = d.uf         || '';
-      var email = d.email      || '';
-      var cnae  = d.cnae_fiscal_descricao || (d.atividade_principal&&d.atividade_principal[0]&&d.atividade_principal[0].text) || '';
+    function preencher(raw) {
+      // publica.cnpj.ws aninha os dados de estabelecimento; BrasilAPI vem tudo no nível raiz.
+      var est = raw.estabelecimento || null;
+      var nome, tel, cep, end, num, complemento, bairro, cidade, uf, email, cnae, ie, cnpjFmt, resp, cargo;
+
+      if (est) {
+        nome  = raw.razao_social || '';
+        tel   = est.ddd1 ? '('+est.ddd1+') '+(est.telefone1||'') : '';
+        cep   = est.cep || '';
+        end   = (est.tipo_logradouro ? est.tipo_logradouro+' ' : '') + (est.logradouro||'');
+        num   = est.numero || '';
+        complemento = est.complemento || '';
+        bairro = est.bairro || '';
+        cidade = (est.cidade && est.cidade.nome) || '';
+        uf     = (est.estado && est.estado.sigla) || '';
+        email  = est.email || '';
+        cnae   = (est.atividade_principal && est.atividade_principal.descricao) || '';
+        var ies = est.inscricoes_estaduais || [];
+        var ieAtiva = ies.filter(function(i){ return i.ativo; })[0] || ies[0];
+        ie = ieAtiva ? ieAtiva.inscricao_estadual : '';
+        cnpjFmt = est.cnpj || raw.cnpj_raiz || nums;
+        var socio = (raw.socios||[])[0];
+        resp  = (socio && socio.tipo==='Pessoa Física') ? socio.nome : '';
+        cargo = (socio && socio.qualificacao_socio && socio.qualificacao_socio.descricao) ? socio.qualificacao_socio.descricao.trim() : '';
+      } else {
+        nome  = raw.razao_social || raw.nome || '';
+        tel   = raw.ddd_telefone_1 ? '('+raw.ddd_telefone_1.slice(0,2)+') '+raw.ddd_telefone_1.slice(2) : (raw.telefone||'');
+        cep   = raw.cep || '';
+        end   = raw.logradouro || '';
+        num   = raw.numero || '';
+        complemento = raw.complemento || '';
+        bairro = raw.bairro || '';
+        cidade = raw.municipio || raw.municipio_nome || '';
+        uf     = raw.uf || '';
+        email  = raw.email || '';
+        cnae   = raw.cnae_fiscal_descricao || (raw.atividade_principal&&raw.atividade_principal[0]&&raw.atividade_principal[0].text) || '';
+        ie     = ''; // BrasilAPI não retorna Inscrição Estadual
+        cnpjFmt = raw.cnpj || nums;
+        var qsa = (raw.qsa||[])[0];
+        resp  = (qsa && qsa.nome_socio) || '';
+        cargo = (qsa && qsa.qualificacao_socio) || '';
+      }
+
+      cep = (cep||'').replace(/\D/g,'');
 
       var set = function(id,v){ var e=document.getElementById(id); if(e&&v) e.value=v.trim(); };
       set('mc-nome',   nome);
-      set('mc-doc',    (d.cnpj||nums).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5'));
+      set('mc-doc',    cnpjFmt.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5'));
+      set('mc-ie',     ie);
       set('mc-email',  email);
       set('mc-tel',    tel);
       set('mc-cep',    cep.replace(/^(\d{5})(\d{3})$/,'$1-$2'));
-      set('mc-end',    end);
+      set('mc-end',    end + (complemento ? ' - '+complemento : ''));
       set('mc-num',    num);
       set('mc-bairro', bairro);
       set('mc-cidade', cidade);
+      set('mc-contato', resp);
+      set('mc-cargo',   cargo);
       var ufEl = document.getElementById('mc-uf'); if(ufEl&&uf) ufEl.value=uf;
       var segEl = document.getElementById('mc-seg');
       if (segEl && cnae) {
         var seg = mcDetectarSegmento(cnae);
         segEl.value = seg;
       }
-      restore('✅ Dados preenchidos automaticamente! Confira e ajuste se necessário.');
+      restore(ie
+        ? '✅ Dados preenchidos automaticamente (incluindo Inscrição Estadual)! Confira e ajuste se necessário.'
+        : '✅ Dados preenchidos automaticamente! Confira e ajuste se necessário.');
     }
 
     // Tentativa 1: publica.cnpj.ws
