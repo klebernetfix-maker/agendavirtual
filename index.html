@@ -7299,8 +7299,19 @@ window.recToggleSenha = function(id){
 };
 
 // ── Config de e-mail (EmailJS), lida/gravada em Configurações → Sistema ──
+// Valores padrão já configurados (conta EmailJS do Kleber) — usados até que
+// alguém salve uma configuração diferente pela tela de Configurações.
+var EMAIL_CFG_PADRAO = {
+  adminEmail: 'kleber.netfix@gmail.com',
+  serviceId:  'service_6zd4h7k',
+  templateId: 'template_rfmj1gt',
+  publicKey:  'NsV0ZOnGUmXtLA7q7'
+};
 window.getEmailCfg = function(){
-  try { return JSON.parse(localStorage.getItem('sisvip_email_cfg')||'{}'); } catch(e){ return {}; }
+  try {
+    var salvo = JSON.parse(localStorage.getItem('sisvip_email_cfg')||'{}');
+    return (salvo && salvo.serviceId) ? salvo : EMAIL_CFG_PADRAO;
+  } catch(e){ return EMAIL_CFG_PADRAO; }
 };
 window.sisvipEmailCfg = window.getEmailCfg();
 
