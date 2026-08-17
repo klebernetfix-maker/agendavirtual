@@ -6371,23 +6371,46 @@ window.buscarClienteWeb = function(){
   }
 
   function mapCNPJ(d, fonte){
-    // Normalizar campos de diferentes APIs
-    var nome  = d.razao_social  || d.nome        || '';
-    var fant  = d.nome_fantasia || d.fantasia     || '';
-    var cnpj  = d.cnpj          || valor;
-    var tel   = d.ddd_telefone_1 ? '('+d.ddd_telefone_1+') '+d.telefone_1
-                : (d.telefone || '');
-    var email = d.email || '';
-    var end   = [
-      d.logradouro, d.numero, d.complemento,
-      d.bairro, d.municipio||d.municipio_nome, d.uf
-    ].filter(Boolean).join(', ');
-    var cnae  = d.cnae_fiscal_descricao
-             || (d.atividade_principal && d.atividade_principal[0] && d.atividade_principal[0].text)
-             || d.cnae_descricao || '';
+    // publica.cnpj.ws aninha os dados em "estabelecimento"; BrasilAPI e
+    // ReceitaWS trazem tudo no nível raiz — tratar os dois formatos.
+    var est = d.estabelecimento || null;
+
+    var nome, fant, cnpj, tel, email, end, cnae, ie;
+
+    if (est) {
+      nome  = d.razao_social || '';
+      fant  = est.nome_fantasia || '';
+      cnpj  = est.cnpj || valor;
+      tel   = est.ddd1 ? '('+est.ddd1+') '+(est.telefone1||'') : '';
+      email = est.email || '';
+      end   = [
+        (est.tipo_logradouro?est.tipo_logradouro+' ':'')+(est.logradouro||''), est.numero, est.complemento,
+        est.bairro, (est.cidade&&est.cidade.nome), (est.estado&&est.estado.sigla)
+      ].filter(Boolean).join(', ');
+      cnae  = (est.atividade_principal && est.atividade_principal.descricao) || '';
+      var ies = est.inscricoes_estaduais || [];
+      var ieAtiva = ies.filter(function(i){ return i.ativo; })[0] || ies[0];
+      ie = ieAtiva ? ieAtiva.inscricao_estadual : '';
+    } else {
+      nome  = d.razao_social  || d.nome        || '';
+      fant  = d.nome_fantasia || d.fantasia     || '';
+      cnpj  = d.cnpj          || valor;
+      tel   = d.ddd_telefone_1 ? '('+d.ddd_telefone_1.slice(0,2)+') '+d.ddd_telefone_1.slice(2)
+                  : (d.telefone || '');
+      email = d.email || '';
+      end   = [
+        d.logradouro, d.numero, d.complemento,
+        d.bairro, d.municipio||d.municipio_nome, d.uf
+      ].filter(Boolean).join(', ');
+      cnae  = d.cnae_fiscal_descricao
+               || (d.atividade_principal && d.atividade_principal[0] && d.atividade_principal[0].text)
+               || d.cnae_descricao || '';
+      ie = '';
+    }
+
     return {
       icone:'🏢', nome:nome, fantasia:fant,
-      doc:cnpj, tel:tel, email:email, end:end,
+      doc:cnpj, tel:tel, email:email, end:end, ie:ie,
       seg: buscaDetectarSegmento(cnae), fonte:fonte, raw:d
     };
   }
@@ -6556,6 +6579,7 @@ window.buscaWebSelecionarItem = function(idx){
     email: it.email,
     seg:   it.seg||'Comércio',
     doc:   it.doc,
+    ie:    it.ie||'',
     end:   it.end,
     obs:   'Importado de '+it.fonte,
   };
