@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SisVip — Atendimentos</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
@@ -3713,6 +3714,28 @@ function renderCfgContent(tab){
         </div>
       </div>
       <div class="cfg-section">
+        <div class="cfg-section-title">📧 Recuperação de senha por e-mail</div>
+        <div class="cfg-info-box" style="margin-bottom:12px">
+          <span style="font-size:16px">ℹ️</span>
+          <span>Sem isso configurado, "Esqueci minha senha" continua funcionando do jeito simples de sempre (troca direta). Com isso configurado, o sistema manda um código de 6 dígitos por e-mail antes de liberar a troca — mais seguro. Crie uma conta grátis em <a href="https://www.emailjs.com" target="_blank" style="color:var(--blue-light)">emailjs.com</a> para pegar as 3 chaves abaixo.</span>
+        </div>
+        <div class="cfg-grid">
+          <div class="cfg-field cfg-full"><label class="cfg-label">E-mail do administrador (para receber o código)</label><input class="cfg-input" id="email-admin" placeholder="seu@email.com" value="${(window.sisvipEmailCfg&&window.sisvipEmailCfg.adminEmail)||''}"></div>
+          <div class="cfg-field"><label class="cfg-label">Service ID (EmailJS)</label><input class="cfg-input" id="email-service" placeholder="service_xxxxxxx" value="${(window.sisvipEmailCfg&&window.sisvipEmailCfg.serviceId)||''}"></div>
+          <div class="cfg-field"><label class="cfg-label">Template ID (EmailJS)</label><input class="cfg-input" id="email-template" placeholder="template_xxxxxxx" value="${(window.sisvipEmailCfg&&window.sisvipEmailCfg.templateId)||''}"></div>
+          <div class="cfg-field cfg-full"><label class="cfg-label">Public Key (EmailJS)</label><input class="cfg-input" id="email-pubkey" placeholder="chave pública" value="${(window.sisvipEmailCfg&&window.sisvipEmailCfg.publicKey)||''}"></div>
+        </div>
+        <div class="cfg-info-box" style="margin-top:12px;background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)">
+          <span style="font-size:16px">📝</span>
+          <span>No template do EmailJS, use estas variáveis: <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px">{{to_email}}</code> <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px">{{nome_usuario}}</code> <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px">{{codigo}}</code></span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-p btn-sm" onclick="salvarEmailCfg()">💾 Salvar</button>
+          <button class="btn btn-sm" onclick="testarEnvioEmail()">✉️ Enviar e-mail de teste</button>
+        </div>
+        <div id="email-cfg-msg" style="font-size:12px;margin-top:8px;min-height:16px"></div>
+      </div>
+      <div class="cfg-section">
         <div class="cfg-section-title">💾 Dados</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-sm" onclick="exportarDados()">📤 Exportar todos os dados (JSON)</button>
@@ -7258,7 +7281,9 @@ window.wppAbrirCliente = function(id) {
 // ════════════════════════════════════════════════════
 
 window.recEnterSenha = function(e){
-  if(e && e.key==='Enter') window.confirmarRecuperarSenha();
+  if(!e || e.key !== 'Enter') return;
+  if(window._recEtapa === 'codigo') window.recVerificarESalvar();
+  else if(window._recEtapa === 'direto') window.confirmarRecuperarSenha();
 };
 
 window.fecharModalRecuperar = function(){
@@ -7273,8 +7298,167 @@ window.recToggleSenha = function(id){
   el.type = el.type === 'password' ? 'text' : 'password';
 };
 
+// ── Config de e-mail (EmailJS), lida/gravada em Configurações → Sistema ──
+window.getEmailCfg = function(){
+  try { return JSON.parse(localStorage.getItem('sisvip_email_cfg')||'{}'); } catch(e){ return {}; }
+};
+window.sisvipEmailCfg = window.getEmailCfg();
+
+function emailCfgCompleta(cfg){
+  return !!(cfg && cfg.serviceId && cfg.templateId && cfg.publicKey);
+}
+
+function enviarCodigoPorEmail(destEmail, nomeUsuario, codigo, cfgOverride){
+  var cfg = cfgOverride || window.getEmailCfg();
+  if(typeof emailjs === 'undefined') return Promise.reject(new Error('Biblioteca de e-mail não carregou'));
+  return emailjs.send(cfg.serviceId, cfg.templateId, {
+    to_email: destEmail, nome_usuario: nomeUsuario, codigo: codigo
+  }, { publicKey: cfg.publicKey });
+}
+
+window.salvarEmailCfg = function(){
+  var cfg = {
+    adminEmail: ((document.getElementById('email-admin')||{}).value||'').trim(),
+    serviceId:  ((document.getElementById('email-service')||{}).value||'').trim(),
+    templateId: ((document.getElementById('email-template')||{}).value||'').trim(),
+    publicKey:  ((document.getElementById('email-pubkey')||{}).value||'').trim()
+  };
+  try { localStorage.setItem('sisvip_email_cfg', JSON.stringify(cfg)); } catch(e){}
+  window.sisvipEmailCfg = cfg;
+  var msg = document.getElementById('email-cfg-msg');
+  if(msg){ msg.style.color='#4ade80'; msg.textContent='✅ Configuração salva!'; }
+  if(typeof notify==='function') notify('✅ Configuração de e-mail salva');
+};
+
+window.testarEnvioEmail = function(){
+  var cfg = {
+    adminEmail: ((document.getElementById('email-admin')||{}).value||'').trim(),
+    serviceId:  ((document.getElementById('email-service')||{}).value||'').trim(),
+    templateId: ((document.getElementById('email-template')||{}).value||'').trim(),
+    publicKey:  ((document.getElementById('email-pubkey')||{}).value||'').trim()
+  };
+  var msg = document.getElementById('email-cfg-msg');
+  var setMsg = function(cor, texto){ if(msg){ msg.style.color=cor; msg.textContent=texto; } };
+  if(!emailCfgCompleta(cfg)){ setMsg('#f87171','⚠️ Preencha Service ID, Template ID e Public Key primeiro.'); return; }
+  if(!cfg.adminEmail){ setMsg('#f87171','⚠️ Preencha o e-mail do administrador primeiro.'); return; }
+  setMsg('#94a3b8','⏳ Enviando e-mail de teste...');
+  var codigoTeste = String(Math.floor(100000+Math.random()*900000));
+  enviarCodigoPorEmail(cfg.adminEmail, 'Teste', codigoTeste, cfg)
+    .then(function(){ setMsg('#4ade80','✅ E-mail de teste enviado! Confira sua caixa de entrada (código: '+codigoTeste+').'); })
+    .catch(function(err){ setMsg('#f87171','❌ Falha ao enviar: '+((err&&(err.text||err.message))||'verifique as chaves')); });
+};
+
+function recFindEmailDoUsuario(user){
+  if(user === 'admin'){
+    var cfg = window.getEmailCfg();
+    return cfg.adminEmail || '';
+  }
+  var op = (window.operadores||[]).find(function(o){ return o.nome === user; });
+  return (op && op.email) ? op.email : '';
+}
+
+function recShowMsg(texto, tipo){
+  var msg = document.getElementById('rec-msg');
+  if(!msg) return;
+  msg.style.display  = 'block';
+  msg.style.background = tipo==='ok' ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)';
+  msg.style.border     = '1px solid ' + (tipo==='ok' ? 'rgba(34,197,94,.35)' : 'rgba(239,68,68,.35)');
+  msg.style.color      = tipo==='ok' ? '#4ade80' : '#f87171';
+  msg.textContent      = texto;
+}
+
+var CAMPOS_SENHA_HTML =
+    '<div><label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Nova Senha</label>'+
+    '<div style="position:relative"><input id="rec-nova-senha" type="password" placeholder="Digite a nova senha..." autocomplete="new-password" style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:inherit;box-sizing:border-box">'+
+    '<span onclick="recToggleSenha(\'rec-nova-senha\')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.5;user-select:none">👁</span></div></div>'+
+    '<div><label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Confirmar Nova Senha</label>'+
+    '<div style="position:relative"><input id="rec-conf-senha" type="password" placeholder="Repita a nova senha..." autocomplete="new-password" onkeydown="recEnterSenha(event)" style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:inherit;box-sizing:border-box">'+
+    '<span onclick="recToggleSenha(\'rec-conf-senha\')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.5;user-select:none">👁</span></div></div>';
+
+// Mostra os campos de nova senha direto (primeiro acesso, admin já logado, ou fallback sem e-mail)
+window.recMostrarCamposSenha = function(textoBotao){
+  var area = document.getElementById('rec-dynamic-area');
+  if(!area) return;
+  area.innerHTML = CAMPOS_SENHA_HTML;
+  window._recEtapa = 'direto';
+  var btn = document.getElementById('rec-btn-primario');
+  if(btn) btn.textContent = textoBotao || '✓ Redefinir Senha';
+  var senhaEl = document.getElementById('rec-nova-senha');
+  if(senhaEl) senhaEl.focus();
+};
+
+// Mostra o campo de código (etapa 2, depois do e-mail enviado)
+window.recMostrarCampoCodigo = function(){
+  var area = document.getElementById('rec-dynamic-area');
+  if(!area) return;
+  area.innerHTML =
+    '<div><label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Código recebido por e-mail</label>'+
+    '<input id="rec-codigo" type="text" inputmode="numeric" maxlength="6" placeholder="000000" onkeydown="recEnterSenha(event)" style="width:100%;padding:10px 12px;font-size:18px;letter-spacing:.3em;text-align:center;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:inherit;box-sizing:border-box"></div>'+
+    CAMPOS_SENHA_HTML +
+    '<div style="font-size:11px;color:#94a3b8">Não recebeu? <a href="#" onclick="event.preventDefault();window.recEnviarCodigo(true)" style="color:#60a5fa">Reenviar código</a> · <a href="#" onclick="event.preventDefault();window.recMostrarCamposSenha(\'✓ Redefinir Senha\')" style="color:#94a3b8">Trocar sem e-mail</a></div>';
+  window._recEtapa = 'codigo';
+  var btn = document.getElementById('rec-btn-primario');
+  if(btn) btn.textContent = '✓ Verificar e Salvar';
+  var cEl = document.getElementById('rec-codigo');
+  if(cEl) cEl.focus();
+};
+
+window.recEnviarCodigo = function(reenvio){
+  var user = (document.getElementById('rec-usuario')||{value:''}).value;
+  var email = recFindEmailDoUsuario(user);
+  var codigo = String(Math.floor(100000+Math.random()*900000));
+  window._recCodigoEsperado = codigo;
+  window._recCodigoExpira   = Date.now() + 10*60*1000;
+  recShowMsg(reenvio ? '⏳ Reenviando código...' : '⏳ Enviando código para '+email+'...', 'ok');
+  var btn = document.getElementById('rec-btn-primario'); if(btn) btn.disabled = true;
+  enviarCodigoPorEmail(email, user==='admin' ? 'Administrador' : user, codigo)
+    .then(function(){
+      recShowMsg('✅ Código enviado para '+email+'. Confira sua caixa de entrada (e o spam).', 'ok');
+      window.recMostrarCampoCodigo();
+    })
+    .catch(function(){
+      recShowMsg('❌ Não foi possível enviar o e-mail. Você pode trocar a senha sem verificação abaixo.', 'erro');
+      window.recMostrarCamposSenha('✓ Redefinir Senha');
+    })
+    .then(function(){ if(btn) btn.disabled = false; });
+};
+
+window.recVerificarESalvar = function(){
+  var codigo = ((document.getElementById('rec-codigo')||{value:''}).value||'').trim();
+  if(!codigo){ recShowMsg('⚠️ Digite o código recebido', 'erro'); return; }
+  if(Date.now() > (window._recCodigoExpira||0)){ recShowMsg('⚠️ Código expirado. Clique em "Reenviar código".', 'erro'); return; }
+  if(codigo !== window._recCodigoEsperado){ recShowMsg('⚠️ Código incorreto', 'erro'); return; }
+  window.confirmarRecuperarSenha();
+};
+
+window.recPrimaryAction = function(){
+  var etapa = window._recEtapa;
+  if(etapa === 'codigo'){ window.recVerificarESalvar(); return; }
+  if(etapa === 'direto'){ window.confirmarRecuperarSenha(); return; }
+
+  // etapa 'select': decide se pede e-mail ou vai direto
+  var user = (document.getElementById('rec-usuario')||{value:''}).value;
+  if(!user){ recShowMsg('⚠️ Selecione o usuário', 'erro'); return; }
+
+  // Admin já autenticado resetando senha de alguém (ou primeiro acesso) não precisa de e-mail —
+  // só o "Esqueci minha senha" da tela de login (ninguém logado ainda) usa verificação.
+  var jaAutenticado = window._recPrimeiroAcesso || !!window.currentUser;
+  var cfg   = window.getEmailCfg();
+  var email = recFindEmailDoUsuario(user);
+
+  if(!jaAutenticado && emailCfgCompleta(cfg) && email){
+    window.recEnviarCodigo(false);
+  } else {
+    window.recMostrarCamposSenha('✓ Redefinir Senha');
+  }
+};
+
 window.abrirRecuperarSenha = function(preselect, primeiroAcesso){
   window.fecharModalRecuperar();
+  window._recPrimeiroAcesso  = !!primeiroAcesso;
+  window._recEtapa           = 'select';
+  window._recCodigoEsperado  = null;
+  window._recCodigoExpira    = 0;
 
   var overlay = document.createElement('div');
   overlay.id = 'modal-recuperar-senha';
@@ -7283,7 +7467,6 @@ window.abrirRecuperarSenha = function(preselect, primeiroAcesso){
 
   var tituloModal    = primeiroAcesso ? '🔐 Crie sua senha' : '🔑 Recuperar Senha';
   var subtituloModal = primeiroAcesso ? 'Você entrou sem senha — defina uma agora' : 'Redefina a senha de acesso';
-  var textoBotaoOk   = primeiroAcesso ? '✓ Salvar Senha' : '✓ Redefinir Senha';
   var textoCancelar  = primeiroAcesso ? 'Definir mais tarde' : 'Cancelar';
 
   // Montar HTML interno sem concatenação problemática
@@ -7304,29 +7487,14 @@ window.abrirRecuperarSenha = function(preselect, primeiroAcesso){
   html += '<option value="">Selecione o usuário...</option>';
   html += '<option value="admin">admin (Administrador)</option>';
   html += '</select></div>';
-  // Nova senha
-  html += '<div>';
-  html += '<label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Nova Senha</label>';
-  html += '<div style="position:relative">';
-  html += '<input id="rec-nova-senha" type="password" placeholder="Digite a nova senha..." autocomplete="new-password" ';
-  html += 'style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:inherit;box-sizing:border-box">';
-  html += '<span onclick="recToggleSenha("rec-nova-senha")" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.5;user-select:none">👁</span>';
-  html += '</div></div>';
-  // Confirmar senha
-  html += '<div>';
-  html += '<label style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px">Confirmar Nova Senha</label>';
-  html += '<div style="position:relative">';
-  html += '<input id="rec-conf-senha" type="password" placeholder="Repita a nova senha..." autocomplete="new-password" ';
-  html += 'onkeydown="recEnterSenha(event)" ';
-  html += 'style="width:100%;padding:10px 40px 10px 12px;font-size:13px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#0e1727;color:#e7ecf5;font-family:inherit;box-sizing:border-box">';
-  html += '<span onclick="recToggleSenha("rec-conf-senha")" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.5;user-select:none">👁</span>';
-  html += '</div></div>';
+  // Área dinâmica (campos de senha ou código, preenchida depois)
+  html += '<div id="rec-dynamic-area"></div>';
   // Mensagem
   html += '<div id="rec-msg" style="display:none;padding:10px 12px;border-radius:8px;font-size:12px;font-weight:500"></div>';
   // Botões
   html += '<div style="display:flex;gap:8px;justify-content:flex-end">';
   html += '<button type="button" onclick="fecharModalRecuperar()" style="padding:10px 20px;font-size:13px;font-weight:600;background:rgba(255,255,255,.06);color:#94a3b8;border:none;border-radius:10px;cursor:pointer;font-family:inherit">'+textoCancelar+'</button>';
-  html += '<button type="button" onclick="confirmarRecuperarSenha()" style="padding:10px 20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(59,130,246,.4)">'+textoBotaoOk+'</button>';
+  html += '<button type="button" id="rec-btn-primario" onclick="window.recPrimaryAction()" style="padding:10px 20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(59,130,246,.4)">Continuar</button>';
   html += '</div>';
   html += '</div></div>';
 
@@ -7343,10 +7511,13 @@ window.abrirRecuperarSenha = function(preselect, primeiroAcesso){
       opt.textContent = op.nome + (op.cargo ? ' ('+op.cargo+')' : '');
       sel.appendChild(opt);
     });
-    if(preselect){
+    if(primeiroAcesso){
+      // Primeiro acesso do admin: pula direto pros campos de senha, sem e-mail.
+      sel.value = preselect || 'admin';
+      window.recMostrarCamposSenha('✓ Salvar Senha');
+    } else if(preselect){
       sel.value = preselect;
-      var senhaEl = document.getElementById('rec-nova-senha');
-      if(senhaEl) senhaEl.focus();
+      sel.focus();
     } else {
       sel.focus();
     }
