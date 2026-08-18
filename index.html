@@ -642,6 +642,10 @@ function getSbNav(){
             style="padding:8px 16px;font-size:12px;font-weight:600;background:var(--blue);color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s;flex-shrink:0">
             Buscar
           </button>
+          <button type="button" onclick="digisacAbrirBuscaContato()" title="Buscar contato no Digisac"
+            style="padding:8px 12px;font-size:12px;font-weight:600;background:rgba(37,211,102,.12);color:#25d366;border:1px solid rgba(37,211,102,.3);border-radius:var(--r);cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">
+            💬 Digisac
+          </button>
         </div>
         <div id="mc-busca-status" style="font-size:11px;color:var(--tx3);margin-top:5px;min-height:14px"></div>
       </div>
@@ -7595,6 +7599,294 @@ window.confirmarRecuperarSenha = function(){
 };
 
 // Senhas customizadas verificadas diretamente no fazerLogin (FinalFix)
+</script>
+
+<script>
+// ════════════════════════════════════════════════════
+//  DIGISAC — Conexão de WhatsApp (substitui a Evolution API)
+// ════════════════════════════════════════════════════
+
+window.getDigisacCfg = function(){
+  try { return JSON.parse(localStorage.getItem('sisvip_digisac_cfg')||'{}') || {}; }
+  catch(e){ return {}; }
+};
+
+function digisacCfgCompleta(cfg){
+  return !!(cfg && cfg.baseUrl && cfg.token);
+}
+
+function digisacApi(path, method, body){
+  var cfg = window.getDigisacCfg();
+  if(!digisacCfgCompleta(cfg)) return Promise.reject(new Error('Digisac não configurado'));
+  var url = cfg.baseUrl.replace(/\/$/,'') + path;
+  var opts = { method: method||'GET', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+cfg.token } };
+  if(body) opts.body = JSON.stringify(body);
+  return fetch(url, opts).then(function(r){
+    return r.text().then(function(t){
+      var data; try{ data = t ? JSON.parse(t) : {}; }catch(e){ data = {}; }
+      if(!r.ok){ var err = new Error((data&&data.message)||('HTTP '+r.status)); err.status=r.status; throw err; }
+      return data;
+    });
+  });
+}
+
+// ── Painel de configuração ──
+window.abrirDigisacPanel = function(){
+  var existente = document.getElementById('modal-digisac'); if(existente) existente.remove();
+  var cfg = window.getDigisacCfg();
+
+  var overlay = document.createElement('div');
+  overlay.id = 'modal-digisac';
+  overlay.className = 'modal-overlay';
+  overlay.style.display = 'flex';
+  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+
+  overlay.innerHTML =
+    '<div class="modal" style="width:460px">'
+      + '<div class="modal-header"><div class="modal-title">💬 WhatsApp — Digisac</div>'
+      + '<div class="modal-sub">Conecte sua conta Digisac pra enviar mensagens direto do SisVip</div></div>'
+      + '<div class="modal-body">'
+        + '<div class="fgroup" style="margin-bottom:12px"><label class="flabel">URL base da API</label>'
+        + '<input class="finput" id="dg-url" placeholder="https://sua-empresa.digisac.co/api/v1" value="'+(cfg.baseUrl||'')+'" style="width:100%;box-sizing:border-box"></div>'
+        + '<div class="fgroup" style="margin-bottom:12px"><label class="flabel">Token de acesso pessoal</label>'
+        + '<div style="position:relative"><input class="finput" id="dg-token" type="password" placeholder="Cole o token gerado no Digisac" value="'+(cfg.token||'')+'" style="width:100%;box-sizing:border-box;padding-right:34px">'
+        + '<span onclick="recToggleSenha(\'dg-token\')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;opacity:.5;user-select:none">👁</span></div></div>'
+        + '<button class="btn btn-sm" onclick="digisacTestarConexoes()" style="margin-bottom:10px">🔄 Buscar conexões de WhatsApp</button>'
+        + '<div id="dg-status" style="font-size:12px;color:var(--tx3);margin-bottom:10px;min-height:16px"></div>'
+        + '<div id="dg-conexoes"></div>'
+      + '</div>'
+      + '<div class="modal-footer">'
+        + '<button class="btn btn-sm" onclick="document.getElementById(\'modal-digisac\').remove()">Fechar</button>'
+        + '<button class="btn btn-p btn-sm" onclick="digisacSalvarCfg()">💾 Salvar</button>'
+      + '</div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+  window._digisacServicos = null;
+
+  if(digisacCfgCompleta(cfg)) setTimeout(window.digisacTestarConexoes, 150);
+};
+
+window.digisacTestarConexoes = function(){
+  var url = (document.getElementById('dg-url')||{value:''}).value.trim();
+  var token = (document.getElementById('dg-token')||{value:''}).value.trim();
+  var status = document.getElementById('dg-status');
+  var setStatus = function(cor, texto){ if(status){ status.style.color=cor; status.textContent=texto; } };
+  if(!url || !token){ setStatus('#f87171','⚠️ Preencha a URL e o token primeiro.'); return; }
+  setStatus('var(--tx3)','⏳ Buscando conexões...');
+
+  fetch(url.replace(/\/$/,'')+'/services?perPage=50', { headers: { 'Authorization':'Bearer '+token } })
+    .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+    .then(function(res){
+      if(!res.ok) throw new Error('Falha na autenticação');
+      var lista = (res.data.data||[]).filter(function(s){ return s.type==='whatsapp'; });
+      window._digisacServicos = lista;
+      if(!lista.length){ setStatus('#fbbf24','Nenhuma conexão de WhatsApp encontrada nessa conta.'); return; }
+      setStatus('#4ade80','✅ '+lista.length+' conexão(ões) encontrada(s) — escolha a padrão abaixo.');
+      var cfg = window.getDigisacCfg();
+      var box = document.getElementById('dg-conexoes');
+      if(box){
+        box.innerHTML = lista.map(function(s){
+          var conectado = s.data && s.data.status && s.data.status.isConnected;
+          var checked = cfg.serviceId===s.id ? 'checked' : '';
+          return '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--card-border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:var(--card2)">'
+            + '<input type="radio" name="dg-service" value="'+s.id+'" '+checked+' style="accent-color:var(--blue)">'
+            + '<span style="flex:1;font-size:13px;color:var(--tx)">'+window.esc(s.name)+'</span>'
+            + '<span class="badge '+(conectado?'bs':'bd-')+'">'+(conectado?'Conectado':'Desconectado')+'</span>'
+          + '</label>';
+        }).join('');
+      }
+    })
+    .catch(function(){ setStatus('#f87171','❌ Não consegui conectar — confira a URL e o token.'); });
+};
+
+window.digisacSalvarCfg = function(){
+  var url = (document.getElementById('dg-url')||{value:''}).value.trim().replace(/\/$/,'');
+  var token = (document.getElementById('dg-token')||{value:''}).value.trim();
+  var status = document.getElementById('dg-status');
+  var setStatus = function(cor, texto){ if(status){ status.style.color=cor; status.textContent=texto; } };
+  if(!url || !token){ setStatus('#f87171','⚠️ Preencha a URL e o token.'); return; }
+  var sel = document.querySelector('input[name="dg-service"]:checked');
+  var serviceId = sel ? sel.value : (window.getDigisacCfg().serviceId||'');
+  var cfg = { baseUrl:url, token:token, serviceId:serviceId };
+  try { localStorage.setItem('sisvip_digisac_cfg', JSON.stringify(cfg)); } catch(e){}
+  if(typeof notify==='function') notify('✅ Configuração do Digisac salva!');
+  var overlay = document.getElementById('modal-digisac'); if(overlay) overlay.remove();
+  if(typeof window.digisacAtualizarStatusSidebar==='function') window.digisacAtualizarStatusSidebar();
+};
+
+// ── Status do dot na sidebar ──
+window.digisacAtualizarStatusSidebar = function(){
+  var cfg = window.getDigisacCfg();
+  var sb = document.getElementById('wpp-sb-dot');
+  if(!digisacCfgCompleta(cfg) || !cfg.serviceId){ if(sb) sb.style.display='none'; return; }
+  digisacApi('/services/'+cfg.serviceId).then(function(res){
+    var s = res.data || res;
+    var conectado = s.data && s.data.status && s.data.status.isConnected;
+    if(sb) sb.style.display = conectado ? 'block' : 'none';
+  }).catch(function(){ if(sb) sb.style.display='none'; });
+};
+
+// ── Enviar mensagem via Digisac ──
+window.digisacEnviarMensagem = function(numero, texto){
+  var cfg = window.getDigisacCfg();
+  if(!digisacCfgCompleta(cfg) || !cfg.serviceId) return Promise.reject(new Error('Configure o Digisac primeiro'));
+  var n = (numero||'').replace(/\D/g,'');
+  if(!n.startsWith('55')) n = '55'+n;
+  return digisacApi('/messages', 'POST', {
+    text: texto, number: n, serviceId: cfg.serviceId, origin: 'bot', dontOpenticket: true
+  });
+};
+
+// ── Substituir abertura de chat de cliente pra usar Digisac quando configurado ──
+window.wppAbrirCliente = function(id) {
+  var c = (window.clientes||[]).find(function(x){ return x.id===id; });
+  if (!c) return;
+  var tel = (c.wpp||c.tel||'').replace(/\D/g,'');
+  if (!tel) { if(typeof notify==='function') notify('Cliente sem telefone cadastrado'); return; }
+  if (!tel.startsWith('55')) tel = '55'+tel;
+
+  var cfg = window.getDigisacCfg();
+  if (digisacCfgCompleta(cfg) && cfg.serviceId) {
+    window.digisacAbrirEnvio(tel, c.nome);
+  } else if (typeof window.wppAbrir === 'function') {
+    window.wppAbrir('https://wa.me/'+tel);
+  } else {
+    window.open('https://wa.me/'+tel, '_blank');
+  }
+};
+
+// ── Modal simples de envio de mensagem ──
+window.digisacAbrirEnvio = function(numero, nome){
+  var existente = document.getElementById('modal-digisac-envio'); if(existente) existente.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'modal-digisac-envio';
+  overlay.className = 'modal-overlay';
+  overlay.style.display = 'flex';
+  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML =
+    '<div class="modal" style="width:400px">'
+      + '<div class="modal-header"><div class="modal-title">💬 Enviar WhatsApp</div>'
+      + '<div class="modal-sub">'+window.esc(nome||numero)+' · via Digisac</div></div>'
+      + '<div class="modal-body">'
+        + '<textarea class="finput" id="dg-msg-texto" rows="4" placeholder="Digite a mensagem..." style="width:100%;box-sizing:border-box;resize:vertical"></textarea>'
+        + '<div id="dg-msg-status" style="font-size:12px;margin-top:8px;min-height:16px"></div>'
+      + '</div>'
+      + '<div class="modal-footer">'
+        + '<button class="btn btn-sm" onclick="document.getElementById(\'modal-digisac-envio\').remove()">Cancelar</button>'
+        + '<button class="btn btn-p btn-sm" onclick="digisacConfirmarEnvio(\''+numero+'\')">✓ Enviar</button>'
+      + '</div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+  setTimeout(function(){ var t=document.getElementById('dg-msg-texto'); if(t) t.focus(); }, 100);
+};
+
+window.digisacConfirmarEnvio = function(numero){
+  var texto = (document.getElementById('dg-msg-texto')||{value:''}).value.trim();
+  var status = document.getElementById('dg-msg-status');
+  var setStatus = function(cor, texto2){ if(status){ status.style.color=cor; status.textContent=texto2; } };
+  if(!texto){ setStatus('#f87171','⚠️ Digite uma mensagem.'); return; }
+  setStatus('var(--tx3)','⏳ Enviando...');
+  window.digisacEnviarMensagem(numero, texto)
+    .then(function(){
+      setStatus('#4ade80','✅ Mensagem enviada!');
+      if(typeof notify==='function') notify('✅ Mensagem enviada via Digisac');
+      setTimeout(function(){ var m=document.getElementById('modal-digisac-envio'); if(m) m.remove(); }, 900);
+    })
+    .catch(function(err){ setStatus('#f87171','❌ Falha ao enviar: '+err.message); });
+};
+
+// ── Buscar contato no Digisac (pra importar no cadastro de Cliente) ──
+window.digisacAbrirBuscaContato = function(){
+  var cfg = window.getDigisacCfg();
+  if(!digisacCfgCompleta(cfg)){
+    if(typeof notify==='function') notify('⚠️ Configure o Digisac primeiro (clique em "WhatsApp Web" na barra lateral)');
+    return;
+  }
+  var existente = document.getElementById('modal-digisac-busca'); if(existente) existente.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'modal-digisac-busca';
+  overlay.className = 'modal-overlay';
+  overlay.style.display = 'flex';
+  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML =
+    '<div class="modal" style="width:480px">'
+      + '<div class="modal-header"><div class="modal-title">💬 Buscar contato no Digisac</div></div>'
+      + '<div class="modal-body">'
+        + '<div style="display:flex;gap:8px">'
+          + '<input class="finput" id="dg-busca-input" placeholder="Nome ou telefone..." style="flex:1" onkeydown="if(event.key===\'Enter\')digisacBuscarContato()">'
+          + '<button class="btn btn-p btn-sm" onclick="digisacBuscarContato()">Buscar</button>'
+        + '</div>'
+        + '<div id="dg-busca-status" style="font-size:11px;color:var(--tx3);margin-top:6px;min-height:14px"></div>'
+        + '<div id="dg-busca-results" style="margin-top:12px;max-height:340px;overflow-y:auto"></div>'
+      + '</div>'
+      + '<div class="modal-footer"><button class="btn btn-sm" onclick="document.getElementById(\'modal-digisac-busca\').remove()">Fechar</button></div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+  setTimeout(function(){ var i=document.getElementById('dg-busca-input'); if(i) i.focus(); }, 100);
+};
+
+window.digisacBuscarContato = function(){
+  var val = (document.getElementById('dg-busca-input')||{value:''}).value.trim();
+  var status = document.getElementById('dg-busca-status');
+  var results = document.getElementById('dg-busca-results');
+  var setStatus = function(texto){ if(status) status.textContent = texto; };
+  if(!val){ setStatus('⚠️ Digite um nome ou telefone'); return; }
+  setStatus('⏳ Buscando...');
+  if(results) results.innerHTML = '';
+
+  var nums = val.replace(/\D/g,'');
+  var pareceTelefone = nums.length >= 8 && nums.length >= val.replace(/\s/g,'').length - 2;
+  var query = pareceTelefone
+    ? 'where[data.number][$iLike]=%25'+encodeURIComponent(nums)+'%25'
+    : 'where[name][$iLike]=%25'+encodeURIComponent(val)+'%25';
+
+  digisacApi('/contacts?'+query+'&perPage=20')
+    .then(function(res){
+      var lista = (res.data||[]).filter(function(c){ return !c.isGroup && !c.isBroadcast; });
+      if(!lista.length){ setStatus('Nenhum contato encontrado.'); return; }
+      setStatus(lista.length+' encontrado(s) de '+res.total+' total.');
+      window._digisacContatos = lista;
+      if(results){
+        results.innerHTML = lista.map(function(c, idx){
+          var numero = (c.data&&c.data.number)||'';
+          return '<div class="busca-result-item" onclick="digisacImportarContato('+idx+')">'
+            + '<div class="busca-result-icon">💬</div>'
+            + '<div style="flex:1;min-width:0">'
+              + '<div class="busca-result-name">'+window.esc(c.name||'Sem nome')+'</div>'
+              + '<div class="busca-result-info">📱 '+numero+(c.note?' &nbsp;·&nbsp; 📄 '+window.esc(c.note):'')+'</div>'
+            + '</div>'
+            + '<span style="font-size:20px;color:var(--blue)">+</span>'
+          + '</div>';
+        }).join('');
+      }
+    })
+    .catch(function(err){ setStatus('❌ Erro: '+err.message); });
+};
+
+window.digisacImportarContato = function(idx){
+  var c = (window._digisacContatos||[])[idx];
+  if(!c) return;
+  var numero = (c.data&&c.data.number)||'';
+  var set = function(id,v){ var e=document.getElementById(id); if(e&&v) e.value=v; };
+  set('mc-nome', c.name||c.internalName||'');
+  set('mc-tel', numero);
+  set('mc-wpp', numero);
+  if(c.note){
+    var docNums = c.note.replace(/\D/g,'');
+    if(docNums.length===14 || docNums.length===11){
+      set('mc-doc', c.note);
+      if(typeof mcSetTipo==='function') mcSetTipo(docNums.length===14?'pj':'pf');
+    }
+  }
+  var m = document.getElementById('modal-digisac-busca'); if(m) m.remove();
+  if(typeof notify==='function') notify('✅ Dados importados do Digisac! Confira e complete o cadastro.');
+};
+
+// ── Repurposar o botão "WhatsApp Web" da barra lateral para abrir a config do Digisac ──
+window.abrirWppWeb = function(){ window.abrirDigisacPanel(); };
+
+// Atualizar o indicador (dot) de conexão ao carregar a página
+setTimeout(function(){ if(typeof window.digisacAtualizarStatusSidebar==='function') window.digisacAtualizarStatusSidebar(); }, 1500);
 </script>
 
 </body>
