@@ -1261,7 +1261,6 @@ function renderClientes(){
     var ini  = (c.nome||'?').slice(0,2).toUpperCase();
     var tipo = c.tipo === 'pf' ? '👤' : '🏢';
     var doc  = c.doc ? ('<div class="cad-detail">📄 <span style="font-family:monospace;font-size:10px">'+c.doc+'</span></div>') : '';
-    var telWpp = c.tel||c.wpp ? '<button class="btn btn-sm" onclick="wppAbrirCliente('+c.id+')" style="background:rgba(37,211,102,.12);color:#25d366;border-color:rgba(37,211,102,.3)">💬</button>' : '';
     var tel  = c.tel && c.tel !== c.wpp ? ('<div class="cad-detail">📞 <span>'+c.tel+'</span></div>') : '';
     var emailEl = c.email ? ('<div class="cad-detail">✉ <span style="color:var(--blue)">'+c.email+'</span></div>') : '';
     var endEl   = (c.cidade||c.end) ? ('<div class="cad-detail">📍 <span>'+[c.end,c.num,c.cidade,c.uf].filter(Boolean).join(', ')+'</span></div>') : '';
@@ -1281,7 +1280,7 @@ function renderClientes(){
           + '</div>'
         + '</div>'
       + '</div>'
-      + doc + contEl + telWpp + tel + emailEl + endEl
+      + doc + contEl + tel + emailEl + endEl
       + (c.obs ? '<div style="font-size:10px;color:var(--tx3);margin-top:4px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.obs+'</div>' : '')
       + '<div class="cad-actions">'
         + '<button class="btn btn-sm" onclick="editarCliente('+c.id+')" style="flex:1">Editar</button>'
