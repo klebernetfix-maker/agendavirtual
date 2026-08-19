@@ -7771,7 +7771,13 @@ window.wppAbrirCliente = function(id) {
 
   var cfg = window.getDigisacCfg();
   if (digisacCfgCompleta(cfg) && cfg.serviceId) {
-    window.digisacAbrirEnvio(tel, c.nome);
+    // Abre direto no chat completo (com histórico), em vez da caixinha simples de envio.
+    if (typeof abrirModalCliente === 'function') {
+      abrirModalCliente(id);
+      setTimeout(function(){ if (typeof mcAba === 'function') mcAba('chat'); }, 0);
+    } else {
+      window.digisacAbrirEnvio(tel, c.nome);
+    }
   } else if (typeof window.wppAbrir === 'function') {
     window.wppAbrir('https://wa.me/'+tel);
   } else {
