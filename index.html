@@ -932,6 +932,7 @@ const TODAY_OBJ=parseDate(TODAY);
 const OP_COLORS_DEF=['#3b82f6','#7b5af5','#e07b20','#22c55e','#ef4444','#f59e0b'];
 const STATUS_COLORS={'Finalizado c/ Sucesso':'#22c55e','Pendente':'#f59e0b','Finalizado c/ Ressalvas':'#f59e0b','Finalizado s/ Sucesso':'#ef4444','Agendado':'#3b82f6'};
 const PAGE_TITLES={'lista':'Atendimentos','novo':'Novo Atendimento','agenda':'Agenda','clientes':'Clientes','operadores':'Operadores','relatorio':'Relatório por Período','painel':'Painel','historico':'Histórico'};
+window.PAGE_TITLES = PAGE_TITLES; // exposto em window: switchPage() lê window.PAGE_TITLES para o título do topo
 const DIAS=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
 function parseDate(s){const[d,m,y]=s.includes('/')?s.split('/'):s.split('-').reverse();return new Date(+y,+m-1,+d)}
