@@ -3767,13 +3767,11 @@ function renderCfgContent(tab){
       <div class="cfg-section">
         <div class="cfg-section-title">💾 Dados</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-sm" onclick="exportarDados()">📤 Exportar todos os dados (JSON)</button>
-          <button class="btn btn-sm" onclick="notify('Funcionalidade em breve')">📥 Importar dados</button>
-          <button class="btn btn-sm btn-danger" onclick="if(confirm('Limpar todos os dados?'))notify('Dados limpos')">🗑 Limpar dados</button>
                   <button class="btn btn-sm" onclick="window.sisvipExport()" style="background:rgba(34,197,94,.1);color:#4ade80;border-color:rgba(34,197,94,.3)">📥 Exportar backup</button>
                   <button class="btn btn-sm" onclick="window.sisvipImport()" style="background:rgba(59,130,246,.1);color:#60a5fa;border-color:rgba(59,130,246,.3)">📤 Importar backup</button>
                   <button class="btn btn-sm" onclick="window.sisvipClear()" style="background:rgba(239,68,68,.1);color:#f87171;border-color:rgba(239,68,68,.3)">🗑 Apagar tudo</button>
         </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--tx3)">💡 Para usar o mesmo cadastro em outro aparelho (ex: celular): exporte o backup aqui, envie o arquivo pra você mesmo (e-mail, WhatsApp Web, Drive...) e importe ele no outro aparelho.</div>
         <div style="margin-top:12px;font-size:11px;color:var(--tx3)">Versão ${c.sistema.versao} · SisVip © 2026</div>
       </div>`;
   }
@@ -3824,13 +3822,6 @@ window.aplicarTema = function(key){
     el.style.borderColor=el.id==='tema-'+key?'var(--blue)':'transparent';
   });
   notify('✓ Tema '+key+' aplicado');
-};
-
-window.exportarDados = function(){
-  const data={lancamentos:window.lancamentos,clientes,operadores,records,appConfig:window.appConfig};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sisvip_backup_'+TODAY+'.json';a.click();
-  notify('✓ Dados exportados!');
 };
 
 // ── SALVAR CONFIG ──
