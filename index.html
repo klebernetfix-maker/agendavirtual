@@ -6946,18 +6946,6 @@ window.buscaWebSelecionarItem = function(idx){
 })();
 </script>
 
-<script>
-// Abrir WhatsApp de um cliente pelo id
-window.wppAbrirCliente = function(id) {
-  var c = (window.clientes||[]).find(function(x){ return x.id===id; });
-  if (!c) return;
-  var tel = (c.wpp||c.tel||'').replace(/\D/g,'');
-  if (!tel) { if(typeof notify==='function') notify('Cliente sem telefone cadastrado'); return; }
-  if (!tel.startsWith('55')) tel = '55'+tel;
-  if (typeof window.wppAbrir === 'function') window.wppAbrir('https://wa.me/'+tel);
-  else window.open('https://wa.me/'+tel, '_blank');
-};
-</script>
 
 <script>
 // ════════════════════════════════════════════════════════════
