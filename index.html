@@ -8013,6 +8013,104 @@ window.abrirWppWeb = function(){ window.abrirDigisacPanel(); };
 
 // Atualizar o indicador (dot) de conexão ao carregar a página
 setTimeout(function(){ if(typeof window.digisacAtualizarStatusSidebar==='function') window.digisacAtualizarStatusSidebar(); }, 1500);
+
+// ════════════════════════════════════════════════════
+//  SINCRONIZAÇÃO AUTOMÁTICA — eventos do Digisac (via
+//  webhook → Cloudflare Worker) viram Atendimentos/Agenda
+// ════════════════════════════════════════════════════
+
+// Endereço do servidor (Cloudflare Worker) que recebe os webhooks do Digisac.
+window.SYNC_WORKER_URL = 'https://sisvip-digisac-sync.kleber-netfix.workers.dev';
+
+function digisacSyncUltimoTimestamp(){
+  try { return Number(localStorage.getItem('sisvip_sync_last')||'0'); } catch(e){ return 0; }
+}
+function digisacSyncSalvarUltimoTimestamp(ts){
+  try { localStorage.setItem('sisvip_sync_last', String(ts)); } catch(e){}
+}
+function digisacSyncProcessados(){
+  try { return JSON.parse(localStorage.getItem('sisvip_sync_processados')||'[]'); } catch(e){ return []; }
+}
+function digisacSyncMarcarProcessado(id){
+  var lista = digisacSyncProcessados();
+  lista.push(id);
+  if(lista.length>300) lista = lista.slice(-300); // limitar crescimento
+  try { localStorage.setItem('sisvip_sync_processados', JSON.stringify(lista)); } catch(e){}
+}
+
+// Contrato esperado no corpo do webhook (configurar no bloco "Enviar Webhook" do
+// robô Digisac): { "tipo":"agendamento", "cliente":"...", "telefone":"...",
+// "data":"AAAA-MM-DD", "hora":"HH:MM", "motivo":"..." }
+function digisacSyncProcessarEvento(body){
+  if(!body || body.tipo !== 'agendamento') return false;
+
+  var cliente   = (body.cliente || body.nome || '').toString().trim();
+  var telefone  = (body.telefone || body.numero || '').toString();
+  var dataIso   = (body.data || '').toString();
+  var hora      = (body.hora || '').toString();
+  var motivo    = (body.motivo || 'Agendamento via Digisac').toString();
+
+  if(!cliente && !telefone) return false;
+
+  var nums = telefone.replace(/\D/g,'');
+  var clienteExistente = (window.clientes||[]).find(function(c){
+    return nums && ((c.tel||'').replace(/\D/g,'')===nums || (c.wpp||'').replace(/\D/g,'')===nums);
+  });
+  var nomeFinal = clienteExistente ? clienteExistente.nome : (cliente || telefone);
+
+  window.records = window.records || [];
+  var novoCod = Math.max.apply(null, [0].concat(window.records.map(function(r){ return r.cod||0; }))) + 1;
+  window.records.push({
+    cod: novoCod,
+    cliente: nomeFinal,
+    contato: '',
+    motivo: motivo,
+    detalhe: 'Criado automaticamente via robô do Digisac',
+    resolucao: '',
+    status: 'Agendado',
+    op: '',
+    forma: 'WhatsApp',
+    data: window.TODAY_REAL || new Date().toLocaleDateString('pt-BR'),
+    agend: (dataIso && typeof isoToDisp==='function') ? isoToDisp(dataIso) : dataIso,
+    agendHora: hora,
+    agendObs: 'Importado automaticamente do Digisac',
+  });
+  if(typeof logHist==='function') logHist('criado', novoCod, 'Digisac (auto)', []);
+  return true;
+}
+
+// Confere o servidor por eventos novos e processa os que forem agendamento.
+window.digisacSyncPoll = function(){
+  if(!window.SYNC_WORKER_URL) return;
+  var desde = digisacSyncUltimoTimestamp();
+  fetch(window.SYNC_WORKER_URL + '/events?since=' + desde)
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      var eventos = res.events || [];
+      if(!eventos.length) return;
+      var processados = digisacSyncProcessados();
+      var novos = 0;
+      eventos.forEach(function(ev){
+        var evId = ev.receivedAt;
+        if(processados.indexOf(evId) !== -1) return;
+        digisacSyncMarcarProcessado(evId);
+        if(digisacSyncProcessarEvento(ev.body)) novos++;
+      });
+      var maxTs = Math.max.apply(null, eventos.map(function(e){ return e.receivedAt; }));
+      if(maxTs) digisacSyncSalvarUltimoTimestamp(maxTs);
+      if(novos>0){
+        if(typeof window.sisvipSave==='function') window.sisvipSave('sync-digisac');
+        if(typeof renderTable==='function') renderTable();
+        if(typeof renderCalendar==='function') renderCalendar();
+        if(typeof notify==='function') notify('📅 '+novos+' novo(s) agendamento(s) importado(s) do Digisac!');
+      }
+    })
+    .catch(function(){ /* silencioso — a próxima checagem resolve sozinha */ });
+};
+
+// Checagem periódica (a cada 30s) enquanto o SisVip estiver aberto no navegador.
+setInterval(function(){ if(typeof window.digisacSyncPoll==='function') window.digisacSyncPoll(); }, 30000);
+setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.digisacSyncPoll(); }, 4000);
 </script>
 
 </body>
