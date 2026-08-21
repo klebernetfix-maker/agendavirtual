@@ -272,6 +272,11 @@ function getSbNav(){
     <div><div class="sb-uname" id="sb-uname-top">—</div><div class="sb-urole" id="sb-urole-top">Faça login</div></div>
   </div>
   <div class="sb-nav">
+    <div class="sb-section">Visão Geral</div>
+    <div class="sb-item" onclick="switchPage('dashboard')" id="sb-dashboard">
+      <svg class="sb-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Dashboard
+    </div>
     <div class="sb-section">Atendimentos</div>
     <div class="sb-item active" onclick="switchPage('lista')">
       <svg class="sb-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
@@ -931,7 +936,7 @@ const TODAY=(function(){var n=new Date();return n.getFullYear()+'-'+String(n.get
 const TODAY_OBJ=parseDate(TODAY);
 const OP_COLORS_DEF=['#3b82f6','#7b5af5','#e07b20','#22c55e','#ef4444','#f59e0b'];
 const STATUS_COLORS={'Finalizado c/ Sucesso':'#22c55e','Pendente':'#f59e0b','Finalizado c/ Ressalvas':'#f59e0b','Finalizado s/ Sucesso':'#ef4444','Agendado':'#3b82f6'};
-const PAGE_TITLES={'lista':'Atendimentos','novo':'Novo Atendimento','agenda':'Agenda','clientes':'Clientes','operadores':'Operadores','relatorio':'Relatório por Período','painel':'Painel','historico':'Histórico'};
+const PAGE_TITLES={'dashboard':'Dashboard','lista':'Atendimentos','novo':'Novo Atendimento','agenda':'Agenda','clientes':'Clientes','operadores':'Operadores','relatorio':'Relatório por Período','painel':'Painel','historico':'Histórico'};
 window.PAGE_TITLES = PAGE_TITLES; // exposto em window: switchPage() lê window.PAGE_TITLES para o título do topo
 const DIAS=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
@@ -2426,33 +2431,15 @@ pageDashboard.innerHTML=`
   <div class="panel-header" style="margin-bottom:20px">
     <span class="panel-title" style="font-size:18px">📊 Dashboard</span>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px">
-    <div class="panel" style="padding:20px;text-align:center">
-      <div style="font-size:32px;font-weight:800;color:var(--blue)" id="dash-total">0</div>
-      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Total de Atendimentos</div>
-    </div>
-    <div class="panel" style="padding:20px;text-align:center">
-      <div style="font-size:32px;font-weight:800;color:var(--success)" id="dash-fin">0</div>
-      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Finalizados</div>
-    </div>
-    <div class="panel" style="padding:20px;text-align:center">
-      <div style="font-size:32px;font-weight:800;color:var(--warning)" id="dash-pend">0</div>
-      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Pendentes</div>
-    </div>
-    <div class="panel" style="padding:20px;text-align:center">
-      <div style="font-size:32px;font-weight:800;color:var(--blue2)" id="dash-agend">0</div>
-      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Agendados</div>
-    </div>
-    <div class="panel" style="padding:20px;text-align:center">
-      <div style="font-size:32px;font-weight:800;color:var(--tx)" id="dash-clientes">0</div>
-      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Clientes Cadastrados</div>
-    </div>
-    <div class="panel" style="padding:20px;text-align:center">
-      <div style="font-size:32px;font-weight:800;color:var(--danger)" id="dash-atraso">0</div>
-      <div style="font-size:12px;color:var(--tx2);margin-top:4px">Em Atraso</div>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+  <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">Visão Executiva</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:26px" id="dash-exec"></div>
+
+  <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">Visão Operacional</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:26px" id="dash-op"></div>
+
+  <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">Visão de Atividade</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
     <div class="panel" style="padding:20px">
       <div style="font-size:13px;font-weight:700;color:var(--tx);margin-bottom:14px">🕐 Últimos Atendimentos</div>
       <div id="dash-recentes" style="display:flex;flex-direction:column;gap:8px"></div>
@@ -2461,29 +2448,160 @@ pageDashboard.innerHTML=`
       <div style="font-size:13px;font-weight:700;color:var(--tx);margin-bottom:14px">📅 Agendados Hoje</div>
       <div id="dash-hoje" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
+    <div class="panel" style="padding:20px">
+      <div style="font-size:13px;font-weight:700;color:var(--tx);margin-bottom:14px">💰 Vencendo em 7 dias</div>
+      <div id="dash-vencendo" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
   </div>
 </div>`;
 mainEl.appendChild(pageDashboard);
 
-window.renderDashboard = function(){
-  var recs   = window.records    || [];
-  var clis   = window.clientes   || [];
-  var hoje   = window.TODAY      || new Date().toISOString().slice(0,10);
-  var total  = recs.length;
-  var fin    = recs.filter(function(r){ return r.status && r.status.startsWith('Finalizado'); }).length;
-  var pend   = recs.filter(function(r){ return r.status === 'Pendente'; }).length;
-  var agend  = recs.filter(function(r){ return r.status === 'Agendado'; }).length;
-  var atraso = recs.filter(function(r){
-    return r.status === 'Agendado' && r.agend && r.agend < hoje;
-  }).length;
+// -- helpers de nível/tendência do dashboard --
+function dashNivelInfo(nivel){
+  return nivel==='ok'      ? {cor:'var(--success)', badge:'bs', label:'No alvo'}
+       : nivel==='alerta'  ? {cor:'var(--warning)', badge:'bw', label:'Atenção'}
+       : nivel==='critico' ? {cor:'var(--danger)',  badge:'bd-',label:'Crítico'}
+       :                     {cor:'var(--blue)',    badge:'bi', label:'Acompanhar'};
+}
+function dashCard(label, valor, meta, nivel, nota){
+  var ni = dashNivelInfo(nivel);
+  return '<div class="mc" style="border-left:3px solid '+ni.cor+'">'
+    +'<div class="ml">'+label+'</div>'
+    +'<div class="mv" style="color:'+ni.cor+';font-size:24px">'+valor+'</div>'
+    +'<div class="ms">Meta: '+meta+' &nbsp;<span class="badge '+ni.badge+'">'+ni.label+'</span></div>'
+    +(nota ? '<div class="ms" style="margin-top:4px">'+nota+'</div>' : '')
+    +'</div>';
+}
+// snapshot diário (localStorage) — usado só pra calcular a variação vs. 7 dias atrás
+function dashHistChave(){ return 'sisvip_dash_hist'; }
+function dashHistCarregar(){
+  try { return JSON.parse(localStorage.getItem(dashHistChave())||'{}'); } catch(e){ return {}; }
+}
+function dashHistSalvar(isoHoje, metrics){
+  var h = dashHistCarregar();
+  h[isoHoje] = metrics;
+  var chaves = Object.keys(h).sort();
+  if(chaves.length>90){ chaves.slice(0, chaves.length-90).forEach(function(k){ delete h[k]; }); }
+  try { localStorage.setItem(dashHistChave(), JSON.stringify(h)); } catch(e){}
+}
+function dashHistDeNDiasAtras(n){
+  var h = dashHistCarregar();
+  for(var tol=0; tol<=3; tol++){
+    var d1=new Date(); d1.setDate(d1.getDate()-n-tol);
+    var iso1=d1.toISOString().slice(0,10);
+    if(h[iso1]) return h[iso1];
+    var d2=new Date(); d2.setDate(d2.getDate()-n+tol);
+    var iso2=d2.toISOString().slice(0,10);
+    if(h[iso2]) return h[iso2];
+  }
+  return null;
+}
+function dashTendencia(atual, anterior, sufixo, menorEhMelhor){
+  if(atual===null || atual===undefined || anterior===null || anterior===undefined) return 'vs. 7 dias atrás: sem histórico ainda';
+  var delta = atual - anterior;
+  if(Math.abs(delta) < 0.05) return 'vs. 7 dias atrás: estável';
+  var melhora = menorEhMelhor ? delta<0 : delta>0;
+  var seta = delta>0 ? '▲' : '▼';
+  var cor  = melhora ? 'var(--success)' : 'var(--danger)';
+  var num  = Math.round(Math.abs(delta)*10)/10;
+  return '<span style="color:'+cor+'">'+seta+' '+num+sufixo+' vs. 7 dias atrás</span>';
+}
 
-  var set = function(id, v){ var el=document.getElementById(id); if(el) el.textContent=v; };
-  set('dash-total',    total);
-  set('dash-fin',      fin);
-  set('dash-pend',     pend);
-  set('dash-agend',    agend);
-  set('dash-clientes', clis.length);
-  set('dash-atraso',   atraso);
+window.renderDashboard = function(){
+  var recs  = window.records     || [];
+  var clis  = window.clientes    || [];
+  var lancs = window.lancamentos || [];
+  var hlog  = window.historyLog  || [];
+
+  var total   = recs.length;
+  var finArr  = recs.filter(function(r){ return r.status && r.status.indexOf('Finalizado')===0; });
+  var sucesso = recs.filter(function(r){ return r.status==='Finalizado c/ Sucesso'; }).length;
+  var pend    = recs.filter(function(r){ return r.status === 'Pendente'; }).length;
+  var agend   = recs.filter(function(r){ return r.status === 'Agendado'; }).length;
+  // usa parseDate/TODAY_OBJ (comparação de datas de verdade, não string) — corrige contagem que antes comparava "dd/mm/aaaa" com "aaaa-mm-dd"
+  var atraso  = recs.filter(function(r){ return r.status === 'Agendado' && r.agend && parseDate(r.agend) < TODAY_OBJ; }).length;
+  var taxaSucesso = finArr.length ? Math.round(sucesso/finArr.length*100) : null;
+
+  // financeiro — contas a receber em aberto/vencidas
+  var receberAberto   = lancs.filter(function(l){ return l.tipo==='receber' && l.status!=='pago'; });
+  var totalAberto     = receberAberto.reduce(function(a,l){ return a+(l.valor||0); },0);
+  var vencidoValor     = receberAberto.filter(function(l){ return l.venc && parseDate(l.venc) < TODAY_OBJ; }).reduce(function(a,l){ return a+(l.valor||0); },0);
+  var vencidoPct       = totalAberto ? (vencidoValor/totalAberto*100) : 0;
+
+  // origem do atendimento
+  var viaWpp = recs.filter(function(r){ return r.forma==='WhatsApp'; }).length;
+  var pctWpp = total ? Math.round(viaWpp/total*100) : 0;
+
+  // tempo médio até finalização (criação → 1º status Finalizado* no histórico)
+  var somaDias=0, cntDias=0;
+  finArr.forEach(function(r){
+    if(!r.data) return;
+    var criacao = parseDate(r.data);
+    var evs = hlog.filter(function(h){
+      return h.cod===r.cod && h.action==='editado' && (h.diffs||[]).some(function(d){ return d.field==='Status' && d.new && d.new.indexOf('Finalizado')===0; });
+    });
+    var fim = evs.length ? parseDate(evs[0].date) : criacao; // historyLog: mais recente primeiro
+    var dias = Math.round((fim-criacao)/86400000);
+    if(dias>=0){ somaDias+=dias; cntDias++; }
+  });
+  var tempoMedio = cntDias ? (somaDias/cntDias) : null;
+
+  // carga por operador (atendimentos em aberto: Pendente + Agendado)
+  var abertos = recs.filter(function(r){ return r.status==='Pendente' || r.status==='Agendado'; });
+  var porOp = {};
+  abertos.forEach(function(r){ if(r.op){ porOp[r.op]=(porOp[r.op]||0)+1; } });
+  var opsComCarga = Object.keys(porOp);
+  var opMax=null, opMaxCnt=0;
+  opsComCarga.forEach(function(o){ if(porOp[o]>opMaxCnt){ opMaxCnt=porOp[o]; opMax=o; } });
+  var mediaCarga = opsComCarga.length ? (abertos.length/opsComCarga.length) : 0;
+  var desvioPct  = (opsComCarga.length>=2 && mediaCarga>0) ? Math.round(((opMaxCnt-mediaCarga)/mediaCarga)*100) : 0;
+
+  // clientes ativos nos últimos 30 dias
+  var limite30 = new Date(TODAY_OBJ); limite30.setDate(limite30.getDate()-30);
+  var ativosSet = {};
+  recs.forEach(function(r){ if(r.data && r.cliente && parseDate(r.data) >= limite30){ ativosSet[r.cliente]=true; } });
+  var clientesAtivos = Object.keys(ativosSet).length;
+
+  // snapshot de hoje (pra dar tendência daqui a 7 dias) + comparação com snapshot de 7 dias atrás
+  dashHistSalvar(new Date().toISOString().slice(0,10), { taxaSucesso:taxaSucesso, atraso:atraso, vencidoValor:vencidoValor, pend:pend });
+  var snap7 = dashHistDeNDiasAtras(7);
+
+  // ── Visão Executiva ──
+  var execEl = document.getElementById('dash-exec');
+  if(execEl){
+    execEl.innerHTML =
+      dashCard('Taxa de Finalização c/ Sucesso',
+        taxaSucesso===null?'—':taxaSucesso+'%', '≥ 85%',
+        taxaSucesso===null?'alerta':(taxaSucesso>=85?'ok':taxaSucesso>=70?'alerta':'critico'),
+        dashTendencia(taxaSucesso, snap7?snap7.taxaSucesso:null, ' p.p.', false))
+    + dashCard('Atendimentos em Atraso',
+        String(atraso), '0',
+        atraso===0?'ok':atraso<=5?'alerta':'critico',
+        dashTendencia(atraso, snap7?snap7.atraso:null, '', true))
+    + dashCard('Vencido a Receber',
+        fmtMoeda(vencidoValor), 'R$ 0,00',
+        vencidoValor===0?'ok':vencidoPct<20?'alerta':'critico',
+        dashTendencia(vencidoValor, snap7?snap7.vencidoValor:null, '', true));
+  }
+
+  // ── Visão Operacional ──
+  var opEl = document.getElementById('dash-op');
+  if(opEl){
+    opEl.innerHTML =
+      dashCard('Fila de Pendentes', String(pend), '< 10',
+        pend<10?'ok':pend<=20?'alerta':'critico',
+        dashTendencia(pend, snap7?snap7.pend:null, '', true))
+    + dashCard('Tempo Médio até Finalização',
+        tempoMedio===null?'—':tempoMedio.toFixed(1)+' dias', '≤ 2 dias',
+        tempoMedio===null?'info':(tempoMedio<=2?'ok':tempoMedio<=4?'alerta':'critico'), null)
+    + dashCard('Via WhatsApp/Digisac', pctWpp+'%', 'acompanhar', 'info',
+        total? (viaWpp+' de '+total+' atendimentos') : null)
+    + dashCard('Carga por Operador', opMax? (opMax+': '+opMaxCnt+' abertos') : '—', 'desvio ≤ 20%',
+        opsComCarga.length<2?'info':(desvioPct<=20?'ok':desvioPct<=40?'alerta':'critico'),
+        opsComCarga.length? ('desvio vs. média: '+desvioPct+'%') : 'nenhum atendimento em aberto com operador atribuído')
+    + dashCard('Clientes Ativos (30d)', String(clientesAtivos), 'crescer', 'info',
+        clis.length? (clientesAtivos+' de '+clis.length+' cadastrados') : null);
+  }
 
   // Últimos 5 atendimentos
   var recEl = document.getElementById('dash-recentes');
@@ -2503,10 +2621,10 @@ window.renderDashboard = function(){
     }
   }
 
-  // Agendados hoje
+  // Agendados hoje — corrige comparação que antes nunca batia (r.agend em "dd/mm/aaaa" vs. hoje em "aaaa-mm-dd")
   var hojeEl = document.getElementById('dash-hoje');
   if(hojeEl){
-    var agendHoje = recs.filter(function(r){ return r.agend === hoje; });
+    var agendHoje = recs.filter(function(r){ return r.agend && isToday(r.agend); });
     if(!agendHoje.length){
       hojeEl.innerHTML = '<div style="color:var(--tx3);font-size:12px">Nenhum agendamento hoje</div>';
     } else {
@@ -2514,7 +2632,26 @@ window.renderDashboard = function(){
         return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">'
           +'<span style="font-size:11px;color:var(--blue);min-width:28px">#'+r.cod+'</span>'
           +'<span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.cliente||'—')+'</span>'
-          +'<span style="font-size:10px;color:var(--tx2)">'+(r.horaIni||'')+'</span>'
+          +'<span style="font-size:10px;color:var(--tx2)">'+(r.agendHora||'')+'</span>'
+          +'</div>';
+      }).join('');
+    }
+  }
+
+  // Vencendo nos próximos 7 dias (Contas a Receber)
+  var venEl = document.getElementById('dash-vencendo');
+  if(venEl){
+    var em7 = new Date(TODAY_OBJ); em7.setDate(em7.getDate()+7);
+    var vencendo = receberAberto.filter(function(l){ return l.venc && parseDate(l.venc)>=TODAY_OBJ && parseDate(l.venc)<=em7; })
+      .sort(function(a,b){ return cmpDate(a.venc,b.venc); }).slice(0,6);
+    if(!vencendo.length){
+      venEl.innerHTML = '<div style="color:var(--tx3);font-size:12px">Nada vencendo nos próximos 7 dias</div>';
+    } else {
+      venEl.innerHTML = vencendo.map(function(l){
+        return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">'
+          +'<span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(l.cliente||l.descricao||'—')+'</span>'
+          +'<span style="font-size:11px;color:var(--tx2)">'+fmtMoeda(l.valor||0)+'</span>'
+          +'<span style="font-size:10px;color:var(--tx3)">'+l.venc+'</span>'
           +'</div>';
       }).join('');
     }
