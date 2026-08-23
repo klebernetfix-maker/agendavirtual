@@ -7388,30 +7388,110 @@ window.buscaWebSelecionarItem = function(idx){
     console.log('[SisVip] Dados limpos');
   };
 
-  // ── Exportar backup JSON ─────────────────────────────────
-  window.sisvipExport = function(){
-    var data = {
-      version:    DATA_VERSION,
-      exportedAt: new Date().toISOString(),
-      records:    window.records    || [],
-      clientes:   window.clientes   || [],
-      operadores: window.operadores || [],
-      lancamentos:window.lancamentos|| [],
-      historyLog: window.historyLog || [],
-      appConfig:  window.appConfig  || {},
+  // ── Criptografia do backup (Web Crypto — a senha nunca sai do navegador) ──
+  function _b64(buf){ return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))); }
+  function _unb64(str){ var bin=atob(str); var arr=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i); return arr.buffer; }
+
+  function _deriveKey(password, saltBuf){
+    return crypto.subtle.importKey('raw', new TextEncoder().encode(password), {name:'PBKDF2'}, false, ['deriveKey'])
+      .then(function(keyMaterial){
+        return crypto.subtle.deriveKey(
+          { name:'PBKDF2', salt:saltBuf, iterations:150000, hash:'SHA-256' },
+          keyMaterial, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+        );
+      });
+  }
+  function _encryptBackup(obj, password){
+    var salt = crypto.getRandomValues(new Uint8Array(16));
+    var iv   = crypto.getRandomValues(new Uint8Array(12));
+    return _deriveKey(password, salt).then(function(key){
+      var plaintext = new TextEncoder().encode(JSON.stringify(obj));
+      return crypto.subtle.encrypt({name:'AES-GCM', iv:iv}, key, plaintext).then(function(cipherBuf){
+        return { v:2, alg:'AES-GCM-PBKDF2', salt:_b64(salt), iv:_b64(iv), data:_b64(cipherBuf) };
+      });
+    });
+  }
+  function _decryptBackup(payload, password){
+    var salt = new Uint8Array(_unb64(payload.salt));
+    var iv   = new Uint8Array(_unb64(payload.iv));
+    return _deriveKey(password, salt).then(function(key){
+      return crypto.subtle.decrypt({name:'AES-GCM', iv:iv}, key, _unb64(payload.data)).then(function(plainBuf){
+        return JSON.parse(new TextDecoder().decode(plainBuf));
+      });
+    });
+  }
+
+  // ── Modal de senha do backup (exportar define, importar confere) ──
+  function _abrirModalSenhaBackup(modo, onConfirm){
+    var existente = document.getElementById('modal-backup-senha'); if(existente) existente.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'modal-backup-senha';
+    overlay.className = 'modal-overlay';
+    overlay.style.display = 'flex';
+    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+    var ehExportar = modo==='exportar';
+    overlay.innerHTML =
+      '<div class="modal" style="width:380px">'
+        + '<div class="modal-header"><div class="modal-title">🔒 '+(ehExportar?'Proteger backup':'Senha do backup')+'</div>'
+        + '<div class="modal-sub">'+(ehExportar
+            ? 'O backup agora inclui as credenciais do Digisac/Sicoob. Defina uma senha para protegê-lo — sem ela, ninguém abre o arquivo.'
+            : 'Digite a senha usada quando esse backup foi exportado.')+'</div></div>'
+        + '<div class="modal-body">'
+          + '<div class="fgroup full"><label class="flabel">Senha</label><input class="finput" id="bks-senha" type="password" placeholder="Digite a senha..."></div>'
+          + (ehExportar ? '<div class="fgroup full"><label class="flabel">Confirmar senha</label><input class="finput" id="bks-senha2" type="password" placeholder="Repita a senha..."></div>' : '')
+          + '<div id="bks-status" style="font-size:12px;margin-top:8px;min-height:16px;color:#f87171"></div>'
+        + '</div>'
+        + '<div class="modal-footer">'
+          + '<button class="btn btn-sm" onclick="document.getElementById(\'modal-backup-senha\').remove()">Cancelar</button>'
+          + '<button class="btn btn-p btn-sm" id="bks-confirmar">'+(ehExportar?'📥 Exportar':'📤 Importar')+'</button>'
+        + '</div>'
+      + '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('bks-confirmar').onclick = function(){
+      var senha = document.getElementById('bks-senha').value;
+      var status = document.getElementById('bks-status');
+      if(!senha || senha.length<4){ status.textContent='Digite uma senha com pelo menos 4 caracteres.'; return; }
+      if(ehExportar){
+        var senha2 = document.getElementById('bks-senha2').value;
+        if(senha!==senha2){ status.textContent='As senhas não conferem.'; return; }
+      }
+      overlay.remove();
+      onConfirm(senha);
     };
-    var json = JSON.stringify(data, null, 2);
-    var blob = new Blob([json], {type:'application/json'});
-    var url  = URL.createObjectURL(blob);
-    var a    = document.createElement('a');
-    a.href   = url;
-    a.download = 'sisvip_backup_' + new Date().toISOString().slice(0,10) + '.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    if(typeof notify === 'function') notify('📥 Backup exportado com sucesso!');
+  }
+
+  // ── Exportar backup JSON (protegido por senha) ────────────
+  window.sisvipExport = function(){
+    _abrirModalSenhaBackup('exportar', function(senha){
+      var data = {
+        version:    DATA_VERSION,
+        exportedAt: new Date().toISOString(),
+        records:    window.records    || [],
+        clientes:   window.clientes   || [],
+        operadores: window.operadores || [],
+        lancamentos:window.lancamentos|| [],
+        historyLog: window.historyLog || [],
+        appConfig:  window.appConfig  || {},
+        digisacCfg: (typeof window.getDigisacCfg==='function') ? window.getDigisacCfg() : null,
+        sicoobCfg:  (typeof window.getSicoobCfg==='function')  ? window.getSicoobCfg()  : null,
+      };
+      _encryptBackup(data, senha).then(function(payload){
+        var json = JSON.stringify(payload);
+        var blob = new Blob([json], {type:'application/json'});
+        var url  = URL.createObjectURL(blob);
+        var a    = document.createElement('a');
+        a.href   = url;
+        a.download = 'sisvip_backup_' + new Date().toISOString().slice(0,10) + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        if(typeof notify === 'function') notify('📥 Backup protegido exportado com sucesso!');
+      }).catch(function(err){
+        if(typeof notify === 'function') notify('❌ Erro ao proteger o backup: '+err.message);
+      });
+    });
   };
 
-  // ── Importar backup JSON ─────────────────────────────────
+  // ── Importar backup JSON (detecta se é protegido por senha ou o formato antigo) ──
   window.sisvipImport = function(){
     var input = document.createElement('input');
     input.type = 'file';
@@ -7421,8 +7501,11 @@ window.buscaWebSelecionarItem = function(idx){
       if(!file) return;
       var reader = new FileReader();
       reader.onload = function(ev){
-        try {
-          var data = JSON.parse(ev.target.result);
+        var raw;
+        try { raw = JSON.parse(ev.target.result); }
+        catch(err){ alert('Arquivo inválido — não é um JSON válido.'); return; }
+
+        function prosseguirComDados(data){
           if(!data.records && !data.clientes){
             alert('Arquivo inválido — não parece ser um backup do SisVip');
             return;
@@ -7439,15 +7522,27 @@ window.buscaWebSelecionarItem = function(idx){
           window.lancamentos = data.lancamentos || [];
           window.historyLog  = data.historyLog  || [];
           if(data.appConfig && window.appConfig) _merge(window.appConfig, data.appConfig);
+          if(data.digisacCfg){ try{ localStorage.setItem('sisvip_digisac_cfg', JSON.stringify(data.digisacCfg)); }catch(e){} }
+          if(data.sicoobCfg){ try{ localStorage.setItem('sisvip_sicoob_cfg', JSON.stringify(data.sicoobCfg)); }catch(e){} }
 
           window.sisvipSave('import');
           if(typeof renderTable    === 'function') renderTable();
           if(typeof renderClientes === 'function') renderClientes();
           if(typeof populateSelects=== 'function') populateSelects();
           if(typeof updateMetrics  === 'function') updateMetrics();
+          if(typeof window.digisacAtualizarStatusSidebar==='function') window.digisacAtualizarStatusSidebar();
           if(typeof notify         === 'function') notify('✅ Backup importado! '+window.records.length+' atendimentos carregados.');
-        } catch(err){
-          alert('Erro ao importar: ' + err.message);
+        }
+
+        if(raw && raw.v===2 && raw.alg && raw.data){
+          _abrirModalSenhaBackup('importar', function(senha){
+            _decryptBackup(raw, senha).then(prosseguirComDados).catch(function(){
+              alert('Senha incorreta ou arquivo corrompido.');
+            });
+          });
+        } else {
+          // backup antigo (formato sem senha) — mantém compatibilidade
+          prosseguirComDados(raw);
         }
       };
       reader.readAsText(file);
@@ -8357,7 +8452,13 @@ setTimeout(function(){ if(typeof window.digisacAtualizarStatusSidebar==='functio
 window.SYNC_WORKER_URL = 'https://sisvip-digisac-sync.kleber-netfix.workers.dev';
 
 function digisacSyncUltimoTimestamp(){
-  try { return Number(localStorage.getItem('sisvip_sync_last')||'0'); } catch(e){ return 0; }
+  // null = este aparelho nunca sincronizou ainda (chave nem existe no localStorage).
+  // Diferente de '0' salvo de propósito — usado pra decidir se deve ou não
+  // reproduzir todo o histórico de eventos antigos (ver digisacSyncPoll).
+  try {
+    var v = localStorage.getItem('sisvip_sync_last');
+    return v===null ? null : Number(v);
+  } catch(e){ return null; }
 }
 function digisacSyncSalvarUltimoTimestamp(ts){
   try { localStorage.setItem('sisvip_sync_last', String(ts)); } catch(e){}
@@ -8417,6 +8518,15 @@ function digisacSyncProcessarEvento(body){
 window.digisacSyncPoll = function(){
   if(!window.SYNC_WORKER_URL) return;
   var desde = digisacSyncUltimoTimestamp();
+  if(desde === null){
+    // Primeira vez que este aparelho sincroniza: NÃO reproduz o histórico
+    // de eventos antigos (isso incluía até eventos de teste enviados há
+    // dias, que reapareciam sozinhos como atendimento fantasma em qualquer
+    // aparelho/navegador novo). A partir de agora, só sincroniza eventos
+    // criados depois deste primeiro carregamento.
+    digisacSyncSalvarUltimoTimestamp(Date.now());
+    return;
+  }
   fetch(window.SYNC_WORKER_URL + '/events?since=' + desde)
     .then(function(r){ return r.json(); })
     .then(function(res){
