@@ -246,13 +246,15 @@ textarea.finput{resize:vertical;min-height:76px;line-height:1.5}
 
 /* Grids responsivos — detalhes no bloco mobile abaixo */
 
-/* ── Impressão do Boleto/Extrato — mostra só a área dedicada, esconde o resto ── */
-#boleto-print-area, #extrato-print-area{ display:none; }
+/* ── Impressão do Boleto/Extrato/Relatório — mostra só a área dedicada, esconde o resto ── */
+#boleto-print-area, #extrato-print-area, #relatorio-print-area{ display:none; }
 @media print{
   body.printing-boleto > *:not(#boleto-print-area){ display:none !important; }
   body.printing-boleto #boleto-print-area{ display:block !important; background:#fff; }
   body.printing-extrato > *:not(#extrato-print-area){ display:none !important; }
   body.printing-extrato #extrato-print-area{ display:block !important; background:#fff; }
+  body.printing-relatorio > *:not(#relatorio-print-area){ display:none !important; }
+  body.printing-relatorio #relatorio-print-area{ display:block !important; background:#fff; }
 }
 </style>
 </head>
@@ -1971,6 +1973,12 @@ function excluirOperador(id){
 }
 
 // RELATÓRIO
+// ── Área dedicada de impressão (mesmo padrão do boleto/extrato) ──
+const relatorioPrintArea = document.createElement('div');
+relatorioPrintArea.id = 'relatorio-print-area';
+relatorioPrintArea.style.display = 'none';
+document.body.appendChild(relatorioPrintArea);
+
 function gerarRelatorio(){
   const de=document.getElementById('rel-de').value;
   const ate=document.getElementById('rel-ate').value;
@@ -2023,9 +2031,63 @@ function gerarRelatorio(){
 function imprimirRelatorio(){
   const de=document.getElementById('rel-de').value;
   const ate=document.getElementById('rel-ate').value;
+  const opF=document.getElementById('rel-op').value;
+  const stF=document.getElementById('rel-status').value;
   if(!de||!ate||document.getElementById('rel-resumo').style.display==='none'){notify('Gere o relatório primeiro');return;}
+  const deDate=parseDate(de),ateDate=parseDate(ate);
+  let src=records.filter(r=>{
+    const d=parseDate(r.data);
+    return d>=deDate&&d<=ateDate;
+  });
+  if(opF)src=src.filter(r=>r.op===opF);
+  if(stF)src=src.filter(r=>r.status===stF);
+  src.sort((a,b)=>cmpDate(a.data,b.data));
+
+  const total=src.length;
+  const fin=src.filter(r=>r.status==='Finalizado c/ Sucesso').length;
+  const pend=src.filter(r=>r.status==='Pendente').length;
+  const ag=src.filter(r=>r.status==='Agendado').length;
+  const periodoTxt=`${isoToDisp(de)} — ${isoToDisp(ate)}${opF?' · '+opF:''}${stF?' · '+stF:''}`;
+
+  const linhas = !src.length
+    ? '<tr><td colspan="7" style="text-align:center;padding:16px;color:#555">Nenhum atendimento encontrado</td></tr>'
+    : src.map(r=>`<tr style="border-bottom:1px solid #ccc">
+        <td style="padding:6px 4px">#${r.cod}</td>
+        <td style="padding:6px 4px">${r.data}</td>
+        <td style="padding:6px 4px">${r.cliente||'—'}</td>
+        <td style="padding:6px 4px">${r.op||'—'}</td>
+        <td style="padding:6px 4px">${r.status||'—'}</td>
+        <td style="padding:6px 4px">${r.motivo||'—'}</td>
+        <td style="padding:6px 4px">${r.forma||'—'}</td>
+      </tr>`).join('');
+
+  const area=document.getElementById('relatorio-print-area');
+  area.innerHTML=`
+    <div style="font-family:Arial,Helvetica,sans-serif;color:#000;padding:24px;max-width:900px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:6px">
+        <div style="font-size:20px;font-weight:700">${(window.configBanco&&window.configBanco.nome)||'Relatório de Atendimentos'}</div>
+        <div style="font-size:11px;color:#333">Emitido em ${new Date().toLocaleDateString('pt-BR')}</div>
+      </div>
+      <div style="font-size:12px;color:#333;margin-bottom:16px">Relatório por Período: ${periodoTxt}</div>
+      <div style="display:flex;gap:24px;font-size:12px;font-weight:700;margin-bottom:16px">
+        <span>Total: ${total}</span>
+        <span>Finalizados c/ sucesso: ${fin}</span>
+        <span>Pendentes/Agendados: ${pend+ag}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="border-bottom:2px solid #000;text-align:left">
+          <th style="padding:6px 4px">Cód.</th><th style="padding:6px 4px">Data</th>
+          <th style="padding:6px 4px">Cliente</th><th style="padding:6px 4px">Operador</th>
+          <th style="padding:6px 4px">Status</th><th style="padding:6px 4px">Motivo</th>
+          <th style="padding:6px 4px">Forma</th>
+        </tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>`;
+  document.body.classList.add('printing-relatorio');
   window.print();
 }
+window.addEventListener('afterprint', function(){ document.body.classList.remove('printing-relatorio'); });
 
 // CALENDAR
 function renderCalendar(){
