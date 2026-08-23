@@ -246,11 +246,13 @@ textarea.finput{resize:vertical;min-height:76px;line-height:1.5}
 
 /* Grids responsivos — detalhes no bloco mobile abaixo */
 
-/* ── Impressão do Boleto — mostra só a área dedicada, esconde o resto ── */
-#boleto-print-area{ display:none; }
+/* ── Impressão do Boleto/Extrato — mostra só a área dedicada, esconde o resto ── */
+#boleto-print-area, #extrato-print-area{ display:none; }
 @media print{
   body.printing-boleto > *:not(#boleto-print-area){ display:none !important; }
   body.printing-boleto #boleto-print-area{ display:block !important; background:#fff; }
+  body.printing-extrato > *:not(#extrato-print-area){ display:none !important; }
+  body.printing-extrato #extrato-print-area{ display:block !important; background:#fff; }
 }
 </style>
 </head>
@@ -2876,6 +2878,12 @@ boletoPrintArea.innerHTML = `
 boletoPrintArea.style.display = 'none';
 document.body.appendChild(boletoPrintArea);
 
+// ── ÁREA DEDICADA DE IMPRESSÃO DO EXTRATO ──
+const extratoPrintArea = document.createElement('div');
+extratoPrintArea.id = 'extrato-print-area';
+extratoPrintArea.style.display = 'none';
+document.body.appendChild(extratoPrintArea);
+
 // ── PIX PAYLOAD (padrão EMV/BACEN) ──
 function gerarPixPayload(chave, nome, valor, cidade, txid){
   function f(id, v){ const len=String(v.length).padStart(2,'0'); return id+len+v; }
@@ -2994,7 +3002,57 @@ window.imprimirBoleto=function(){
   window.print();
 };
 window.addEventListener('afterprint', function(){ document.body.classList.remove('printing-boleto'); });
-window.imprimirExtrato=function(){ window.print(); };
+window.imprimirExtrato=function(){
+  const de=document.getElementById('ext-de').value;
+  const ate=document.getElementById('ext-ate').value;
+  const tipo=document.getElementById('ext-tipo').value;
+  let src=window.lancamentos.filter(l=>l.status==='pago');
+  if(tipo)src=src.filter(l=>l.tipo===tipo);
+  const deD=de?parseDate(de):null;
+  const ateD=ate?parseDate(ate):null;
+  if(deD)src=src.filter(l=>parseDate(l.venc)>=deD);
+  if(ateD)src=src.filter(l=>parseDate(l.venc)<=ateD);
+  src.sort((a,b)=>cmpDate(a.venc,b.venc));
+  const totalEnt=src.filter(l=>l.tipo==='receber').reduce((a,l)=>a+l.valor,0);
+  const totalSai=src.filter(l=>l.tipo==='pagar').reduce((a,l)=>a+l.valor,0);
+  const saldo=totalEnt-totalSai;
+  const periodoTxt=(de?isoToDisp(de):'—')+' até '+(ate?isoToDisp(ate):'—');
+  const linhas = !src.length
+    ? '<tr><td colspan="6" style="text-align:center;padding:16px;color:#555">Nenhuma movimentação no período</td></tr>'
+    : src.map(l=>`<tr style="border-bottom:1px solid #ccc">
+        <td style="padding:6px 4px">${l.venc}</td>
+        <td style="padding:6px 4px">${l.descricao}</td>
+        <td style="padding:6px 4px">${l.cliente||'—'}</td>
+        <td style="padding:6px 4px">${l.forma||'—'}</td>
+        <td style="padding:6px 4px">${l.tipo==='receber'?'Entrada':'Saída'}</td>
+        <td style="padding:6px 4px;text-align:right">${l.tipo==='receber'?'+':'−'} ${fmtMoeda(l.valor)}</td>
+      </tr>`).join('');
+  const area=document.getElementById('extrato-print-area');
+  area.innerHTML=`
+    <div style="font-family:Arial,Helvetica,sans-serif;color:#000;padding:24px;max-width:900px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:6px">
+        <div style="font-size:20px;font-weight:700">${(window.configBanco&&window.configBanco.nome)||'Extrato de Movimentações'}</div>
+        <div style="font-size:11px;color:#333">Emitido em ${new Date().toLocaleDateString('pt-BR')}</div>
+      </div>
+      <div style="font-size:12px;color:#333;margin-bottom:16px">Extrato de Movimentações · Período: ${periodoTxt}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px">
+        <thead><tr style="border-bottom:2px solid #000;text-align:left">
+          <th style="padding:6px 4px">Data</th><th style="padding:6px 4px">Descrição</th>
+          <th style="padding:6px 4px">Contraparte</th><th style="padding:6px 4px">Forma</th>
+          <th style="padding:6px 4px">Tipo</th><th style="padding:6px 4px;text-align:right">Valor</th>
+        </tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+      <div style="border-top:2px solid #000;padding-top:8px;font-size:12px;font-weight:700;display:flex;gap:24px;justify-content:flex-end">
+        <span>Entradas: ${fmtMoeda(totalEnt)}</span>
+        <span>Saídas: ${fmtMoeda(totalSai)}</span>
+        <span>Saldo: ${fmtMoeda(saldo)}</span>
+      </div>
+    </div>`;
+  document.body.classList.add('printing-extrato');
+  window.print();
+};
+window.addEventListener('afterprint', function(){ document.body.classList.remove('printing-extrato'); });
 
 window.abrirModalLancamento=function(tipo, id){
   window.lancTipo=tipo||'receber';
