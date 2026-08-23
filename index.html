@@ -3683,6 +3683,22 @@ function renderCfgContent(tab){
             <div style="font-size:10px;color:var(--tx3);margin-top:4px">PNG ou JPG, máx. 200x80px</div>
           </div>
         </div>
+      </div>
+      <div class="cfg-section">
+        <div class="cfg-section-title">🟢 Integração Sicoob (Cobrança/Boleto) — em preparação</div>
+        <div class="cfg-info-box" style="margin-bottom:12px">
+          <span style="font-size:16px">ℹ️</span>
+          <span>Pra emitir boleto registrado de verdade no Sicoob ainda faltam duas coisas fora do app: 1) certificado digital e-CNPJ (ICP-Brasil) e 2) liberação da API de Cobrança no <a href="https://developers.sicoob.com.br" target="_blank" style="color:var(--blue-light)">Sicoob Developers</a>. Pode já guardar o Client ID/Secret aqui assim que tiver — fica salvo só neste navegador, nunca é enviado a lugar nenhum até a conexão de verdade estar pronta.</span>
+        </div>
+        <div class="cfg-grid">
+          <div class="cfg-field"><label class="cfg-label">Client ID (Sicoob Developers)</label><input class="cfg-input" id="sic-client-id" placeholder="Cole aqui quando tiver" value="${(window.getSicoobCfg&&window.getSicoobCfg().clientId)||''}"></div>
+          <div class="cfg-field"><label class="cfg-label">Client Secret</label><input class="cfg-input" type="password" id="sic-client-secret" placeholder="Cole aqui quando tiver" value="${(window.getSicoobCfg&&window.getSicoobCfg().clientSecret)||''}"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-p btn-sm" onclick="window.sicoobSalvarCfg()">💾 Salvar credenciais</button>
+          <button class="btn btn-sm" disabled title="Fica disponível assim que o certificado digital e o backend de conexão estiverem prontos" style="opacity:.5;cursor:not-allowed">🔌 Testar conexão (em breve)</button>
+        </div>
+        <div id="sic-status" style="font-size:12px;margin-top:8px;min-height:16px"></div>
       </div>`;
   }
   else if(tab==='notificacoes'){
@@ -4277,6 +4293,27 @@ window.selecionarBanco = function(nome, cod, cor){
 
   // atualizar título da seção de dados bancários
   if(typeof notify === 'function') notify('Banco selecionado: ' + nome);
+};
+
+// ── Integração Sicoob (Cobrança/Boleto) — credenciais guardadas localmente ──
+// Só o Client ID/Secret ficam salvos aqui (localStorage, neste navegador).
+// Nada é enviado a nenhum servidor até termos o certificado digital e-CNPJ
+// e o backend de conexão prontos (a API do Sicoob exige mTLS, que o
+// navegador sozinho não consegue fazer com segurança).
+window.getSicoobCfg = function(){
+  try { return JSON.parse(localStorage.getItem('sisvip_sicoob_cfg')||'{}') || {}; }
+  catch(e){ return {}; }
+};
+window.sicoobSalvarCfg = function(){
+  var clientId     = (document.getElementById('sic-client-id')||{value:''}).value.trim();
+  var clientSecret = (document.getElementById('sic-client-secret')||{value:''}).value.trim();
+  var status = document.getElementById('sic-status');
+  var setStatus = function(cor, texto){ if(status){ status.style.color=cor; status.textContent=texto; } };
+  if(!clientId){ setStatus('#f87171','⚠️ Preencha ao menos o Client ID.'); return; }
+  var cfg = { clientId: clientId, clientSecret: clientSecret };
+  try { localStorage.setItem('sisvip_sicoob_cfg', JSON.stringify(cfg)); } catch(e){}
+  setStatus('#4ade80','✅ Credenciais salvas neste navegador. Ainda falta o certificado digital + backend para ativar a conexão de verdade.');
+  if(typeof notify === 'function') notify('✅ Credenciais Sicoob salvas (guardadas localmente)');
 };
 </script>
 <style>
