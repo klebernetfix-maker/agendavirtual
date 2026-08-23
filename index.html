@@ -8660,12 +8660,80 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   modalProduto.className='modal-overlay'; modalProduto.id='modal-produto'; modalProduto.style.display='none';
   modalProduto.onclick = function(e){ if(e.target===modalProduto) modalProduto.style.display='none'; };
   modalProduto.innerHTML =
-    '<div class="modal" style="width:380px">'
+    '<div class="modal" style="width:560px;max-width:94vw">'
       + '<div class="modal-header"><div class="modal-title" id="prod-modal-title">Novo Produto</div></div>'
-      + '<div class="modal-body">'
-        + '<div class="fgroup full"><label class="flabel">Nome</label><input class="finput" id="prod-nome" placeholder="Ex: Corte de cabelo, Refrigerante lata..."></div>'
-        + '<div class="fgroup full"><label class="flabel">Preço (R$)</label><input class="finput" id="prod-preco" type="text" placeholder="0,00" oninput="formatarValorInput(this)"></div>'
-        + '<div class="fgroup full"><label class="flabel" style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="prod-ativo" checked style="width:auto"> Produto ativo (aparece na tela de venda)</label></div>'
+      + '<div class="cfg-tabs" id="prod-tabs" style="margin:0">'
+        + '<button class="cfg-tab active" onclick="window.produtoTabSet(\'principal\')" id="prod-tab-principal">Principal</button>'
+        + '<button class="cfg-tab" onclick="window.produtoTabSet(\'estoque\')" id="prod-tab-estoque">Estoque</button>'
+        + '<button class="cfg-tab" onclick="window.produtoTabSet(\'promocao\')" id="prod-tab-promocao">Promoção</button>'
+        + '<button class="cfg-tab" onclick="window.produtoTabSet(\'combo\')" id="prod-tab-combo">Combo</button>'
+      + '</div>'
+      + '<div class="modal-body" style="max-height:56vh;overflow-y:auto">'
+
+        // ── Principal ──
+        + '<div id="prod-painel-principal">'
+          + '<div class="cfg-grid">'
+            + '<div class="cfg-field"><label class="cfg-label">Código</label><input class="cfg-input" id="prod-codigo" placeholder="Opcional"></div>'
+            + '<div class="cfg-field"><label class="cfg-label">Unidade</label><select class="cfg-select" id="prod-unidade"><option>Un</option><option>Kg</option><option>L</option><option>Cx</option><option>Pct</option></select></div>'
+            + '<div class="cfg-field cfg-full"><label class="cfg-label">Descrição *</label><input class="cfg-input" id="prod-nome" placeholder="Ex: Corte de cabelo, Refrigerante lata..."></div>'
+            + '<div class="cfg-field"><label class="cfg-label">Grupo</label><input class="cfg-input" id="prod-grupo" list="prod-grupos-list" placeholder="Ex: Bebidas"><datalist id="prod-grupos-list"></datalist></div>'
+            + '<div class="cfg-field"><label class="cfg-label">Ativo</label><select class="cfg-select" id="prod-ativo"><option value="sim">Sim</option><option value="nao">Não</option></select></div>'
+            + '<div class="cfg-field"><label class="cfg-label">Local de Impressão</label><select class="cfg-select" id="prod-local-impressao"><option value="nenhum">Nenhum</option><option value="cozinha">Cozinha</option><option value="bar">Bar</option><option value="ambos">Cozinha e Bar</option></select></div>'
+            + '<div class="cfg-field"><label class="cfg-label">Pontos de Fidelidade</label><input class="cfg-input" id="prod-pontos" type="number" min="0" step="1" placeholder="0"></div>'
+            + '<div class="cfg-field cfg-full"><label class="cfg-label">Preço do produto (R$) *</label><input class="cfg-input" id="prod-preco" type="text" placeholder="0,00" oninput="formatarValorInput(this)"></div>'
+          + '</div>'
+        + '</div>'
+
+        // ── Estoque ──
+        + '<div id="prod-painel-estoque" style="display:none">'
+          + '<div class="cfg-grid">'
+            + '<div class="cfg-field"><label class="cfg-label">Controlar Estoque?</label><select class="cfg-select" id="prod-estoque-controlar" onchange="window._prodEstoqueToggle()"><option value="nao">Não</option><option value="sim">Sim</option></select></div>'
+            + '<div></div>'
+            + '<div class="cfg-field" id="prod-estoque-atual-wrap"><label class="cfg-label">Quantidade em Estoque</label><input class="cfg-input" id="prod-estoque-atual" type="number" step="1" placeholder="0"></div>'
+            + '<div class="cfg-field" id="prod-estoque-minimo-wrap"><label class="cfg-label">Estoque Mínimo (aviso)</label><input class="cfg-input" id="prod-estoque-minimo" type="number" step="1" placeholder="0"></div>'
+          + '</div>'
+        + '</div>'
+
+        // ── Promoção ──
+        + '<div id="prod-painel-promocao" style="display:none">'
+          + '<div class="cfg-grid">'
+            + '<div class="cfg-field cfg-full"><label class="cfg-label">Quando a promoção vale</label>'
+              + '<select class="cfg-select" id="prod-promo-tipo" onchange="window._prodPromoToggle()">'
+                + '<option value="nao">Não está em promoção</option>'
+                + '<option value="periodo">Por período (data inicial e final)</option>'
+                + '<option value="horario">Por horário (todos os dias)</option>'
+                + '<option value="diasemana">Por dia da semana</option>'
+                + '<option value="diasehorario">Por dia da semana e horário</option>'
+              + '</select></div>'
+            + '<div class="cfg-field"><label class="cfg-label">Preço promocional (R$)</label><input class="cfg-input" id="prod-promo-preco" type="text" placeholder="0,00" oninput="formatarValorInput(this)"></div>'
+          + '</div>'
+          + '<div id="prod-promo-periodo" style="display:none;margin-top:10px" class="cfg-grid">'
+            + '<div class="cfg-field"><label class="cfg-label">Data inicial</label><input class="cfg-input" id="prod-promo-data-ini" type="date"></div>'
+            + '<div class="cfg-field"><label class="cfg-label">Data final</label><input class="cfg-input" id="prod-promo-data-fim" type="date"></div>'
+          + '</div>'
+          + '<div id="prod-promo-horario" style="display:none;margin-top:10px" class="cfg-grid">'
+            + '<div class="cfg-field"><label class="cfg-label">Hora inicial</label><input class="cfg-input" id="prod-promo-hora-ini" type="time"></div>'
+            + '<div class="cfg-field"><label class="cfg-label">Hora final</label><input class="cfg-input" id="prod-promo-hora-fim" type="time"></div>'
+          + '</div>'
+          + '<div id="prod-promo-dias" style="display:none;margin-top:10px">'
+            + '<label class="cfg-label">Dias da semana</label>'
+            + '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px" id="prod-promo-dias-checks">'
+              + ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(function(d,i){
+                  return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" class="prod-promo-dia-chk" value="'+i+'" style="width:auto"> '+d+'</label>';
+                }).join('')
+            + '</div>'
+          + '</div>'
+        + '</div>'
+
+        // ── Combo ──
+        + '<div id="prod-painel-combo" style="display:none">'
+          + '<div class="cfg-field" style="margin-bottom:12px"><label class="cfg-label">Produto Combo?</label><select class="cfg-select" id="prod-combo-ativo" onchange="window._prodComboToggle()"><option value="nao">Não</option><option value="sim">Sim</option></select></div>'
+          + '<div id="prod-combo-editor" style="display:none">'
+            + '<div id="prod-combo-etapas"></div>'
+            + '<div style="text-align:center;padding:10px;border:1px dashed var(--card-border);border-radius:10px;margin-top:8px;cursor:pointer;color:var(--blue-light);font-size:12px" onclick="window._prodComboAddEtapa()">+ Adicionar etapa</div>'
+          + '</div>'
+        + '</div>'
+
       + '</div>'
       + '<div class="modal-footer">'
         + '<button class="btn btn-sm" onclick="document.getElementById(\'modal-produto\').style.display=\'none\'">Cancelar</button>'
@@ -8673,6 +8741,21 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       + '</div>'
     + '</div>';
   document.body.appendChild(modalProduto);
+
+  // ── Modal: Escolher opções do combo (na hora da venda) ──
+  var modalComboEscolha = document.createElement('div');
+  modalComboEscolha.className='modal-overlay'; modalComboEscolha.id='modal-combo-escolha'; modalComboEscolha.style.display='none';
+  modalComboEscolha.onclick = function(e){ if(e.target===modalComboEscolha) modalComboEscolha.style.display='none'; };
+  modalComboEscolha.innerHTML =
+    '<div class="modal" style="width:420px">'
+      + '<div class="modal-header"><div class="modal-title" id="cbe-titulo">Monte seu combo</div></div>'
+      + '<div class="modal-body" id="cbe-corpo" style="max-height:56vh;overflow-y:auto"></div>'
+      + '<div class="modal-footer">'
+        + '<button class="btn btn-sm" onclick="document.getElementById(\'modal-combo-escolha\').style.display=\'none\'">Cancelar</button>'
+        + '<button class="btn btn-p btn-sm" onclick="window._cbeConfirmar()">Adicionar ao carrinho</button>'
+      + '</div>'
+    + '</div>';
+  document.body.appendChild(modalComboEscolha);
 
   // ── Modal: Nova Venda ──
   var modalVenda = document.createElement('div');
@@ -8691,7 +8774,11 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
             + '<span>Total</span><span id="vd-total" style="color:var(--blue-light)">R$ 0,00</span>'
           + '</div>'
         + '</div>'
-        + '<div class="fgroup full" style="margin-top:14px"><label class="flabel">Forma de Pagamento</label>'
+        + '<div class="fgroup full" style="margin-top:14px"><label class="flabel">Cliente (opcional — pra pontos de fidelidade)</label>'
+          + '<input class="finput" id="vd-cliente" list="vd-clientes-list" placeholder="Digite pra buscar, ou deixe em branco (venda balcão)">'
+          + '<datalist id="vd-clientes-list"></datalist>'
+        + '</div>'
+        + '<div class="fgroup full" style="margin-top:10px"><label class="flabel">Forma de Pagamento</label>'
           + '<select class="finput" id="vd-forma"><option>Dinheiro</option><option>PIX</option><option>Cartão</option><option>Boleto</option></select>'
         + '</div>'
       + '</div>'
@@ -8873,12 +8960,48 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     window.renderCaixaPage();
   };
 
+  // ── Helpers de promoção/estoque ──
+  function _agoraHM(){
+    var d = new Date();
+    return (d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+  }
+  function precoEfetivo(p){
+    var promo = p.promo;
+    if(!promo || !promo.tipo || promo.tipo==='nao' || !(promo.preco>0)) return p.preco;
+    var agora = new Date();
+    var hoje = agora.getFullYear()+'-'+String(agora.getMonth()+1).padStart(2,'0')+'-'+String(agora.getDate()).padStart(2,'0');
+    var diaSemana = agora.getDay();
+    var horaAtual = _agoraHM();
+    var ativo = false;
+    if(promo.tipo==='periodo'){
+      ativo = (!promo.dataIni || hoje>=promo.dataIni) && (!promo.dataFim || hoje<=promo.dataFim);
+    } else if(promo.tipo==='horario'){
+      ativo = (!promo.horaIni || horaAtual>=promo.horaIni) && (!promo.horaFim || horaAtual<=promo.horaFim);
+    } else if(promo.tipo==='diasemana'){
+      ativo = (promo.dias||[]).indexOf(diaSemana)!==-1;
+    } else if(promo.tipo==='diasehorario'){
+      ativo = (promo.dias||[]).indexOf(diaSemana)!==-1
+        && (!promo.horaIni || horaAtual>=promo.horaIni) && (!promo.horaFim || horaAtual<=promo.horaFim);
+    }
+    return ativo ? promo.preco : p.preco;
+  }
+  function estoqueDisponivel(p){
+    if(!p.estoque || !p.estoque.controlar) return Infinity;
+    return Number(p.estoque.atual)||0;
+  }
+  function qtdNoCarrinho(produtoId){
+    return window._vdCarrinho.filter(function(i){ return i.produtoId===produtoId; }).reduce(function(a,i){ return a+i.qtd; },0);
+  }
+
   // ── Venda ──
   window._vdCarrinho = [];
   window.abrirModalVenda = function(){
     if(!caixaAbertaDoOperador()){ if(typeof notify==='function') notify('Abra o caixa primeiro.'); return; }
     window._vdCarrinho = [];
     document.getElementById('vd-busca-produto').value = '';
+    document.getElementById('vd-cliente').value = '';
+    var listaCli = document.getElementById('vd-clientes-list');
+    if(listaCli) listaCli.innerHTML = (window.clientes||[]).map(function(c){ return '<option value="'+_esc(c.nome)+'">'; }).join('');
     window.renderListaProdutosVenda();
     renderCarrinhoVenda();
     document.getElementById('vd-forma').value = 'Dinheiro';
@@ -8891,25 +9014,50 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     el.innerHTML = !ativos.length
       ? '<div style="font-size:12px;color:var(--tx3);padding:8px 0">Nenhum produto encontrado. Cadastre em Produtos.</div>'
       : ativos.map(function(p){
+          var precoU = precoEfetivo(p);
+          var emPromo = precoU !== p.preco;
+          var precoHtml = emPromo
+            ? '<span style="text-decoration:line-through;color:var(--tx3);margin-right:5px">'+_fmtMoedaCx(p.preco)+'</span><span style="color:#f59e0b;font-weight:700">'+_fmtMoedaCx(precoU)+'</span>'
+            : _fmtMoedaCx(precoU);
+          var disp = estoqueDisponivel(p);
+          var estoqueHtml = disp!==Infinity ? ' <span style="color:'+(disp<=(p.estoque.minimo||0)?'#ef4444':'var(--tx3)')+'">· estoque: '+disp+'</span>' : '';
+          var isCombo = p.combo && p.combo.ativo && (p.combo.etapas||[]).length;
           return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--card2);border-radius:8px">'
-            + '<div><div style="font-size:12px;font-weight:600">'+_esc(p.nome)+'</div><div style="font-size:11px;color:var(--tx3)">'+_fmtMoedaCx(p.preco)+'</div></div>'
-            + '<button class="btn btn-sm" onclick="window.vdAdicionarProduto('+p.id+')">+ Adicionar</button>'
+            + '<div><div style="font-size:12px;font-weight:600">'+_esc(p.nome)+(isCombo?' <span style="font-size:9px;color:var(--blue-light)">COMBO</span>':'')+'</div><div style="font-size:11px">'+precoHtml+estoqueHtml+'</div></div>'
+            + '<button class="btn btn-sm" onclick="window.vdAdicionarProduto('+p.id+')" '+(disp!==Infinity && disp<1 && !isCombo?'disabled title="Sem estoque"':'')+'>+ Adicionar</button>'
           + '</div>';
         }).join('');
   };
   window.vdAdicionarProduto = function(id){
     var p = (window.produtos||[]).find(function(x){ return x.id===id; });
     if(!p) return;
-    var item = window._vdCarrinho.find(function(i){ return i.produtoId===id; });
+    if(p.combo && p.combo.ativo && (p.combo.etapas||[]).length){
+      abrirComboEscolha(p);
+      return;
+    }
+    var disp = estoqueDisponivel(p);
+    if(disp!==Infinity && qtdNoCarrinho(id)+1 > disp){
+      if(typeof notify==='function') notify('Estoque insuficiente — restam '+disp+' unidade(s).');
+      return;
+    }
+    var item = window._vdCarrinho.find(function(i){ return i.produtoId===id && !i.comboDetalhe; });
     if(item) item.qtd++;
-    else window._vdCarrinho.push({produtoId:id, nome:p.nome, preco:p.preco, qtd:1});
+    else window._vdCarrinho.push({cartId:Date.now()+Math.random(), produtoId:id, nome:p.nome, preco:precoEfetivo(p), qtd:1});
     renderCarrinhoVenda();
   };
-  window.vdAlterarQtd = function(id, delta){
-    var item = window._vdCarrinho.find(function(i){ return i.produtoId===id; });
+  window.vdAlterarQtd = function(cartId, delta){
+    var item = window._vdCarrinho.find(function(i){ return i.cartId===cartId; });
     if(!item) return;
+    if(delta>0){
+      var p = (window.produtos||[]).find(function(x){ return x.id===item.produtoId; });
+      var disp = p ? estoqueDisponivel(p) : Infinity;
+      if(disp!==Infinity && qtdNoCarrinho(item.produtoId)+1 > disp){
+        if(typeof notify==='function') notify('Estoque insuficiente — restam '+disp+' unidade(s).');
+        return;
+      }
+    }
     item.qtd += delta;
-    if(item.qtd<=0) window._vdCarrinho = window._vdCarrinho.filter(function(i){ return i.produtoId!==id; });
+    if(item.qtd<=0) window._vdCarrinho = window._vdCarrinho.filter(function(i){ return i.cartId!==cartId; });
     renderCarrinhoVenda();
   };
   function renderCarrinhoVenda(){
@@ -8920,11 +9068,11 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       : window._vdCarrinho.map(function(i){
           var sub = i.preco*i.qtd; total += sub;
           return '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;gap:8px">'
-            + '<span style="flex:1">'+_esc(i.nome)+'</span>'
+            + '<span style="flex:1">'+_esc(i.nome)+(i.comboDetalhe?'<div style="font-size:10px;color:var(--tx3)">'+_esc(i.comboDetalhe)+'</div>':'')+'</span>'
             + '<span style="display:flex;align-items:center;gap:6px">'
-              + '<button class="btn btn-sm" style="padding:2px 8px" onclick="window.vdAlterarQtd('+i.produtoId+',-1)">−</button>'
+              + '<button class="btn btn-sm" style="padding:2px 8px" onclick="window.vdAlterarQtd('+i.cartId+',-1)">−</button>'
               + '<span>'+i.qtd+'</span>'
-              + '<button class="btn btn-sm" style="padding:2px 8px" onclick="window.vdAlterarQtd('+i.produtoId+',1)">+</button>'
+              + '<button class="btn btn-sm" style="padding:2px 8px" onclick="window.vdAlterarQtd('+i.cartId+',1)">+</button>'
             + '</span>'
             + '<span style="width:80px;text-align:right;font-weight:600">'+_fmtMoedaCx(sub)+'</span>'
           + '</div>';
@@ -8932,27 +9080,116 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     var totalEl = document.getElementById('vd-total');
     if(totalEl) totalEl.textContent = _fmtMoedaCx(total);
   }
+
+  // ── Escolher opções do combo ──
+  window._cbeProdutoAtual = null;
+  window._cbeSelecoes = {};
+  function abrirComboEscolha(p){
+    window._cbeProdutoAtual = p;
+    window._cbeSelecoes = {};
+    document.getElementById('cbe-titulo').textContent = '🍔 '+p.nome;
+    renderComboEscolhaUI();
+    document.getElementById('modal-combo-escolha').style.display = 'flex';
+  }
+  function renderComboEscolhaUI(){
+    var p = window._cbeProdutoAtual;
+    var el = document.getElementById('cbe-corpo');
+    el.innerHTML = '<div style="font-size:12px;color:var(--tx3);margin-bottom:10px">Preço base: '+_fmtMoedaCx(precoEfetivo(p))+'</div>'
+      + (p.combo.etapas||[]).map(function(etapa, ei){
+          var opcoesHtml = (etapa.opcoes||[]).map(function(op, oi){
+            var checked = window._cbeSelecoes[ei]===oi;
+            return '<label style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:'+(checked?'rgba(59,130,246,.12)':'var(--card2)')+';border:1px solid '+(checked?'var(--blue)':'var(--card-border)')+';border-radius:8px;margin-bottom:6px;cursor:pointer">'
+              + '<span style="display:flex;align-items:center;gap:8px;font-size:12px"><input type="radio" name="cbe-etapa-'+ei+'" style="width:auto" '+(checked?'checked':'')+' onchange="window._cbeSelecionar('+ei+','+oi+')"> '+_esc(op.nome)+'</span>'
+              + (op.precoAdicional ? '<span style="font-size:11px;color:var(--tx3)">+'+_fmtMoedaCx(op.precoAdicional)+'</span>' : '')
+            + '</label>';
+          }).join('');
+          return '<div style="margin-bottom:14px">'
+            + '<div style="font-size:12px;font-weight:700;margin-bottom:6px">'+_esc(etapa.nome)+(etapa.obrigatoria!==false?' <span style="color:#ef4444">*</span>':' <span style="color:var(--tx3);font-weight:400">(opcional)</span>')+'</div>'
+            + opcoesHtml
+          + '</div>';
+        }).join('');
+  }
+  window._cbeSelecionar = function(ei, oi){
+    window._cbeSelecoes[ei] = oi;
+    renderComboEscolhaUI();
+  };
+  window._cbeConfirmar = function(){
+    var p = window._cbeProdutoAtual;
+    var etapas = p.combo.etapas || [];
+    for(var ei=0; ei<etapas.length; ei++){
+      if(etapas[ei].obrigatoria!==false && window._cbeSelecoes[ei]===undefined){
+        if(typeof notify==='function') notify('Escolha uma opção em "'+etapas[ei].nome+'".');
+        return;
+      }
+    }
+    var disp = estoqueDisponivel(p);
+    if(disp!==Infinity && qtdNoCarrinho(p.id)+1 > disp){
+      if(typeof notify==='function') notify('Estoque insuficiente.');
+      return;
+    }
+    var precoBase = precoEfetivo(p);
+    var detalhes = [];
+    etapas.forEach(function(etapa, ei){
+      var oi = window._cbeSelecoes[ei];
+      if(oi===undefined) return;
+      var op = etapa.opcoes[oi];
+      precoBase += (op.precoAdicional||0);
+      detalhes.push(etapa.nome+': '+op.nome);
+    });
+    window._vdCarrinho.push({
+      cartId: Date.now()+Math.random(),
+      produtoId: p.id, nome: p.nome, preco: precoBase, qtd: 1,
+      comboDetalhe: detalhes.join(', '),
+    });
+    document.getElementById('modal-combo-escolha').style.display='none';
+    renderCarrinhoVenda();
+  };
+
   window.finalizarVenda = function(){
     if(!window._vdCarrinho.length){ if(typeof notify==='function') notify('Adicione ao menos um produto.'); return; }
     var sessao = caixaAbertaDoOperador();
     if(!sessao){ if(typeof notify==='function') notify('Abra o caixa primeiro.'); return; }
     var total = window._vdCarrinho.reduce(function(a,i){ return a+i.preco*i.qtd; }, 0);
     var forma = document.getElementById('vd-forma').value;
+    var nomeCliente = (document.getElementById('vd-cliente').value||'').trim();
     var agora = new Date();
+
+    // abate estoque dos produtos vendidos que controlam estoque
+    window._vdCarrinho.forEach(function(item){
+      var p = (window.produtos||[]).find(function(x){ return x.id===item.produtoId; });
+      if(p && p.estoque && p.estoque.controlar){
+        p.estoque.atual = Math.max(0, (Number(p.estoque.atual)||0) - item.qtd);
+      }
+    });
+
+    // pontos de fidelidade, se um cliente real foi selecionado
+    var clienteObj = nomeCliente ? (window.clientes||[]).find(function(c){ return c.nome===nomeCliente; }) : null;
+    var pontosGanhos = 0;
+    if(clienteObj){
+      window._vdCarrinho.forEach(function(item){
+        var p = (window.produtos||[]).find(function(x){ return x.id===item.produtoId; });
+        if(p && p.pontosFidelidade) pontosGanhos += p.pontosFidelidade * item.qtd;
+      });
+      if(pontosGanhos>0){
+        clienteObj.pontosFidelidade = (clienteObj.pontosFidelidade||0) + pontosGanhos;
+      }
+    }
+
     sessao.movimentos.push({
       id: Date.now(), tipo:'venda', dataHora: agora.toLocaleString('pt-BR'),
-      itens: window._vdCarrinho.slice(), total: total, formaPagamento: forma,
+      itens: window._vdCarrinho.slice(), total: total, formaPagamento: forma, cliente: nomeCliente||null,
     });
     if(window.lancamentos){
       window.lancamentos.push({
-        id: Date.now()+1, descricao:'Venda no caixa', cliente:'Venda balcão',
+        id: Date.now()+1, descricao:'Venda no caixa', cliente: nomeCliente || 'Venda balcão',
         valor: total, tipo:'receber', forma: forma, status:'pago',
         venc: (window.TODAY_DISP || agora.toLocaleDateString('pt-BR')),
       });
     }
     salvarCaixaDados();
     if(typeof window.sisvipSave==='function') window.sisvipSave('venda-caixa');
-    if(typeof notify==='function') notify('✅ Venda de '+_fmtMoedaCx(total)+' registrada!');
+    var msg = '✅ Venda de '+_fmtMoedaCx(total)+' registrada!'+(pontosGanhos>0?' +'+pontosGanhos+' pontos p/ '+nomeCliente+'.':'');
+    if(typeof notify==='function') notify(msg);
     document.getElementById('modal-venda').style.display='none';
     window.renderCaixaPage();
   };
@@ -9070,12 +9307,24 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     grid.innerHTML = !src.length
       ? '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--tx3)">Nenhum produto cadastrado</div>'
       : src.map(function(p){
+          var emPromo = precoEfetivo(p) !== p.preco;
+          var disp = estoqueDisponivel(p);
+          var estoqueBaixo = disp!==Infinity && p.estoque && disp<=(Number(p.estoque.minimo)||0);
+          var isCombo = p.combo && p.combo.ativo && (p.combo.etapas||[]).length;
+          var precoHtml = emPromo
+            ? '<span style="font-size:13px;text-decoration:line-through;color:var(--tx3);margin-right:5px">'+_fmtMoedaCx(p.preco)+'</span>'+_fmtMoedaCx(precoEfetivo(p))
+            : _fmtMoedaCx(p.preco);
           return '<div class="cad-card">'
-            + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
-              + '<div style="font-weight:600;font-size:13px">'+_esc(p.nome)+'</div>'
-              + '<span class="badge '+(p.ativo!==false?'bs':'bg')+'">'+(p.ativo!==false?'Ativo':'Inativo')+'</span>'
+            + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:6px">'
+              + '<div><div style="font-weight:600;font-size:13px">'+_esc(p.nome)+'</div>'+(p.grupo?'<div style="font-size:10px;color:var(--tx3)">'+_esc(p.grupo)+'</div>':'')+'</div>'
+              + '<span class="badge '+(p.ativo!==false?'bs':'bg')+'" style="flex-shrink:0">'+(p.ativo!==false?'Ativo':'Inativo')+'</span>'
             + '</div>'
-            + '<div style="font-size:18px;font-weight:700;color:var(--blue-light)">'+_fmtMoedaCx(p.preco)+'</div>'
+            + '<div style="font-size:18px;font-weight:700;color:'+(emPromo?'#f59e0b':'var(--blue-light)')+'">'+precoHtml+'</div>'
+            + '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">'
+              + (emPromo?'<span class="badge" style="background:#f59e0b18;color:#f59e0b;font-size:9px">Promoção</span>':'')
+              + (isCombo?'<span class="badge" style="background:rgba(59,130,246,.12);color:var(--blue-light);font-size:9px">Combo</span>':'')
+              + (disp!==Infinity?'<span class="badge" style="background:'+(estoqueBaixo?'#ef444418':'rgba(255,255,255,.06)')+';color:'+(estoqueBaixo?'#ef4444':'var(--tx3)')+';font-size:9px">estoque: '+disp+'</span>':'')
+            + '</div>'
             + '<div class="cad-actions" style="margin-top:10px">'
               + '<button class="btn btn-sm" style="flex:1" onclick="window.editarProduto('+p.id+')">Editar</button>'
               + '<button class="btn-danger2" onclick="window.excluirProduto('+p.id+')">✕</button>'
@@ -9084,12 +9333,43 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
         }).join('');
   };
   window._prodEditId = null;
+  function _prodPreencherGruposDatalist(){
+    var dl = document.getElementById('prod-grupos-list');
+    if(!dl) return;
+    var grupos = Array.from(new Set((window.produtos||[]).map(function(p){ return p.grupo; }).filter(Boolean)));
+    dl.innerHTML = grupos.map(function(g){ return '<option value="'+_esc(g)+'">'; }).join('');
+  }
+  function _prodResetFormulario(){
+    document.getElementById('prod-codigo').value='';
+    document.getElementById('prod-nome').value='';
+    document.getElementById('prod-unidade').value='Un';
+    document.getElementById('prod-grupo').value='';
+    document.getElementById('prod-ativo').value='sim';
+    document.getElementById('prod-local-impressao').value='nenhum';
+    document.getElementById('prod-pontos').value='';
+    document.getElementById('prod-preco').value='';
+    document.getElementById('prod-estoque-controlar').value='nao';
+    document.getElementById('prod-estoque-atual').value='';
+    document.getElementById('prod-estoque-minimo').value='';
+    document.getElementById('prod-promo-tipo').value='nao';
+    document.getElementById('prod-promo-preco').value='';
+    document.getElementById('prod-promo-data-ini').value='';
+    document.getElementById('prod-promo-data-fim').value='';
+    document.getElementById('prod-promo-hora-ini').value='';
+    document.getElementById('prod-promo-hora-fim').value='';
+    Array.from(document.querySelectorAll('.prod-promo-dia-chk')).forEach(function(c){ c.checked=false; });
+    document.getElementById('prod-combo-ativo').value='nao';
+    window._prodComboEtapas = [];
+    window.produtoTabSet('principal');
+    window._prodEstoqueToggle();
+    window._prodPromoToggle();
+    window._prodComboToggle();
+  }
   window.abrirModalProduto = function(){
     window._prodEditId = null;
     document.getElementById('prod-modal-title').textContent='Novo Produto';
-    document.getElementById('prod-nome').value='';
-    document.getElementById('prod-preco').value='';
-    document.getElementById('prod-ativo').checked=true;
+    _prodPreencherGruposDatalist();
+    _prodResetFormulario();
     document.getElementById('modal-produto').style.display='flex';
   };
   window.editarProduto = function(id){
@@ -9097,26 +9377,198 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     if(!p) return;
     window._prodEditId = id;
     document.getElementById('prod-modal-title').textContent='Editar Produto';
-    document.getElementById('prod-nome').value=p.nome;
-    document.getElementById('prod-preco').value=String(p.preco).replace('.',',');
-    document.getElementById('prod-ativo').checked = p.ativo!==false;
+    _prodPreencherGruposDatalist();
+    _prodResetFormulario();
+
+    document.getElementById('prod-codigo').value = p.codigo||'';
+    document.getElementById('prod-nome').value = p.nome;
+    document.getElementById('prod-unidade').value = p.unidade||'Un';
+    document.getElementById('prod-grupo').value = p.grupo||'';
+    document.getElementById('prod-ativo').value = p.ativo!==false ? 'sim':'nao';
+    document.getElementById('prod-local-impressao').value = p.localImpressao||'nenhum';
+    document.getElementById('prod-pontos').value = p.pontosFidelidade||'';
+    document.getElementById('prod-preco').value = String(p.preco).replace('.',',');
+
+    var est = p.estoque||{};
+    document.getElementById('prod-estoque-controlar').value = est.controlar ? 'sim':'nao';
+    document.getElementById('prod-estoque-atual').value = est.atual||'';
+    document.getElementById('prod-estoque-minimo').value = est.minimo||'';
+    window._prodEstoqueToggle();
+
+    var promo = p.promo||{};
+    document.getElementById('prod-promo-tipo').value = promo.tipo||'nao';
+    document.getElementById('prod-promo-preco').value = promo.preco ? String(promo.preco).replace('.',','):'';
+    document.getElementById('prod-promo-data-ini').value = promo.dataIni||'';
+    document.getElementById('prod-promo-data-fim').value = promo.dataFim||'';
+    document.getElementById('prod-promo-hora-ini').value = promo.horaIni||'';
+    document.getElementById('prod-promo-hora-fim').value = promo.horaFim||'';
+    (promo.dias||[]).forEach(function(d){
+      var chk = document.querySelector('.prod-promo-dia-chk[value="'+d+'"]');
+      if(chk) chk.checked = true;
+    });
+    window._prodPromoToggle();
+
+    var combo = p.combo||{};
+    document.getElementById('prod-combo-ativo').value = combo.ativo ? 'sim':'nao';
+    window._prodComboEtapas = (combo.etapas||[]).map(function(et){
+      return { nome: et.nome||'', obrigatoria: et.obrigatoria!==false, opcoes: (et.opcoes||[]).map(function(op){ return {nome:op.nome||'', precoAdicional:op.precoAdicional||0}; }) };
+    });
+    window._prodComboToggle();
+
     document.getElementById('modal-produto').style.display='flex';
   };
   window.salvarProduto = function(){
     var nome = document.getElementById('prod-nome').value.trim();
+    if(!nome){ if(typeof notify==='function') notify('Informe a descrição do produto.'); return; }
     var preco = _parseValorCx(document.getElementById('prod-preco').value);
-    var ativo = document.getElementById('prod-ativo').checked;
-    if(!nome){ if(typeof notify==='function') notify('Informe o nome do produto.'); return; }
+
+    var estoque = {
+      controlar: document.getElementById('prod-estoque-controlar').value==='sim',
+      atual: Number(document.getElementById('prod-estoque-atual').value)||0,
+      minimo: Number(document.getElementById('prod-estoque-minimo').value)||0,
+    };
+
+    var promoTipo = document.getElementById('prod-promo-tipo').value;
+    var dias = Array.from(document.querySelectorAll('.prod-promo-dia-chk:checked')).map(function(c){ return Number(c.value); });
+    var promo = {
+      tipo: promoTipo,
+      preco: _parseValorCx(document.getElementById('prod-promo-preco').value),
+      dataIni: document.getElementById('prod-promo-data-ini').value||'',
+      dataFim: document.getElementById('prod-promo-data-fim').value||'',
+      horaIni: document.getElementById('prod-promo-hora-ini').value||'',
+      horaFim: document.getElementById('prod-promo-hora-fim').value||'',
+      dias: dias,
+    };
+
+    _prodComboColetarDoDOM();
+    var comboAtivo = document.getElementById('prod-combo-ativo').value==='sim';
+    var etapasValidas = (window._prodComboEtapas||[]).filter(function(e){ return e.nome && e.nome.trim(); }).map(function(e){
+      return { nome:e.nome.trim(), obrigatoria: e.obrigatoria!==false, opcoes:(e.opcoes||[]).filter(function(o){ return o.nome && o.nome.trim(); }).map(function(o){ return {nome:o.nome.trim(), precoAdicional:Number(o.precoAdicional)||0}; }) };
+    });
+    var combo = { ativo: comboAtivo, etapas: etapasValidas };
+
+    var dados = {
+      nome: nome,
+      codigo: document.getElementById('prod-codigo').value.trim(),
+      unidade: document.getElementById('prod-unidade').value,
+      grupo: document.getElementById('prod-grupo').value.trim(),
+      ativo: document.getElementById('prod-ativo').value==='sim',
+      localImpressao: document.getElementById('prod-local-impressao').value,
+      pontosFidelidade: Number(document.getElementById('prod-pontos').value)||0,
+      preco: preco,
+      estoque: estoque,
+      promo: promo,
+      combo: combo,
+    };
+
     if(window._prodEditId){
       var p = window.produtos.find(function(x){ return x.id===window._prodEditId; });
-      if(p){ p.nome=nome; p.preco=preco; p.ativo=ativo; }
+      if(p) Object.assign(p, dados);
     } else {
-      window.produtos.push({id:Date.now(), nome:nome, preco:preco, ativo:ativo});
+      dados.id = Date.now();
+      window.produtos.push(dados);
     }
     salvarCaixaDados();
     if(typeof notify==='function') notify('✅ Produto salvo!');
     document.getElementById('modal-produto').style.display='none';
     window.renderProdutos();
+  };
+
+  // ── Abas do modal de produto ──
+  window.produtoTabSet = function(tab){
+    ['principal','estoque','promocao','combo'].forEach(function(t){
+      var painel = document.getElementById('prod-painel-'+t);
+      var abab = document.getElementById('prod-tab-'+t);
+      if(painel) painel.style.display = (t===tab)?'block':'none';
+      if(abab) abab.classList.toggle('active', t===tab);
+    });
+  };
+  window._prodEstoqueToggle = function(){
+    var ativo = document.getElementById('prod-estoque-controlar').value==='sim';
+    ['prod-estoque-atual-wrap','prod-estoque-minimo-wrap'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.opacity = ativo?'1':'.4';
+    });
+  };
+  window._prodPromoToggle = function(){
+    var tipo = document.getElementById('prod-promo-tipo').value;
+    document.getElementById('prod-promo-periodo').style.display = (tipo==='periodo')?'grid':'none';
+    document.getElementById('prod-promo-horario').style.display = (tipo==='horario'||tipo==='diasehorario')?'grid':'none';
+    document.getElementById('prod-promo-dias').style.display = (tipo==='diasemana'||tipo==='diasehorario')?'block':'none';
+  };
+
+  // ── Combo: etapas e opções (add/remove com sincronização do DOM) ──
+  window._prodComboEtapas = [];
+  window._prodComboToggle = function(){
+    var ativo = document.getElementById('prod-combo-ativo').value==='sim';
+    document.getElementById('prod-combo-editor').style.display = ativo?'block':'none';
+    if(ativo) renderComboEtapasUI();
+  };
+  function _prodComboColetarDoDOM(){
+    (window._prodComboEtapas||[]).forEach(function(etapa, ei){
+      var nomeEl = document.getElementById('combo-etapa-nome-'+ei);
+      var obrigEl = document.getElementById('combo-etapa-obrig-'+ei);
+      if(nomeEl) etapa.nome = nomeEl.value;
+      if(obrigEl) etapa.obrigatoria = obrigEl.value==='sim';
+      etapa.opcoes = etapa.opcoes||[];
+      etapa.opcoes.forEach(function(op, oi){
+        var opNomeEl = document.getElementById('combo-op-nome-'+ei+'-'+oi);
+        var opPrecoEl = document.getElementById('combo-op-preco-'+ei+'-'+oi);
+        if(opNomeEl) op.nome = opNomeEl.value;
+        if(opPrecoEl) op.precoAdicional = _parseValorCx(opPrecoEl.value);
+      });
+    });
+  }
+  function renderComboEtapasUI(){
+    var el = document.getElementById('prod-combo-etapas');
+    if(!el) return;
+    if(!window._prodComboEtapas.length){
+      el.innerHTML = '<div style="font-size:12px;color:var(--tx3);padding:6px 0">Nenhuma etapa ainda. Clique em "+ Adicionar etapa" abaixo.</div>';
+      return;
+    }
+    el.innerHTML = window._prodComboEtapas.map(function(etapa, ei){
+      etapa.opcoes = etapa.opcoes||[];
+      var opcoesHtml = etapa.opcoes.map(function(op, oi){
+        return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;padding-left:12px">'
+          + '<input class="cfg-input" style="flex:1" id="combo-op-nome-'+ei+'-'+oi+'" placeholder="Nome da opção (ex: Coca-Cola)" value="'+_esc(op.nome||'')+'">'
+          + '<input class="cfg-input" style="width:110px" type="text" id="combo-op-preco-'+ei+'-'+oi+'" placeholder="+0,00" value="'+(op.precoAdicional?String(op.precoAdicional).replace('.',','):'')+'" oninput="formatarValorInput(this)">'
+          + '<button class="btn-danger2" style="padding:2px 8px" onclick="window._prodComboRemoveOpcao('+ei+','+oi+')">✕</button>'
+        + '</div>';
+      }).join('');
+      return '<div style="border:1px solid var(--card-border);border-radius:10px;padding:10px 12px;margin-bottom:10px">'
+        + '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">'
+          + '<input class="cfg-input" style="flex:1" id="combo-etapa-nome-'+ei+'" placeholder="Nome da etapa (ex: Escolha a bebida)" value="'+_esc(etapa.nome||'')+'">'
+          + '<select class="cfg-select" style="width:130px" id="combo-etapa-obrig-'+ei+'">'
+            + '<option value="sim"'+(etapa.obrigatoria!==false?' selected':'')+'>Obrigatória</option>'
+            + '<option value="nao"'+(etapa.obrigatoria===false?' selected':'')+'>Opcional</option>'
+          + '</select>'
+          + '<button class="btn-danger2" onclick="window._prodComboRemoveEtapa('+ei+')">✕</button>'
+        + '</div>'
+        + opcoesHtml
+        + '<div style="padding-left:12px;font-size:11px;color:var(--blue-light);cursor:pointer" onclick="window._prodComboAddOpcao('+ei+')">+ Adicionar opção</div>'
+      + '</div>';
+    }).join('');
+  }
+  window._prodComboAddEtapa = function(){
+    _prodComboColetarDoDOM();
+    window._prodComboEtapas.push({nome:'', obrigatoria:true, opcoes:[]});
+    renderComboEtapasUI();
+  };
+  window._prodComboRemoveEtapa = function(ei){
+    _prodComboColetarDoDOM();
+    window._prodComboEtapas.splice(ei,1);
+    renderComboEtapasUI();
+  };
+  window._prodComboAddOpcao = function(ei){
+    _prodComboColetarDoDOM();
+    window._prodComboEtapas[ei].opcoes = window._prodComboEtapas[ei].opcoes||[];
+    window._prodComboEtapas[ei].opcoes.push({nome:'', precoAdicional:0});
+    renderComboEtapasUI();
+  };
+  window._prodComboRemoveOpcao = function(ei, oi){
+    _prodComboColetarDoDOM();
+    window._prodComboEtapas[ei].opcoes.splice(oi,1);
+    renderComboEtapasUI();
   };
   window.excluirProduto = function(id){
     if(!confirm('Excluir este produto?')) return;
