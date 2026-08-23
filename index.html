@@ -8661,6 +8661,15 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   mainEl.appendChild(pageProdutos);
 
   // ── Modal: Produto ──
+  // Campo de catálogo com botão "+" pra criar um item novo sem sair do cadastro de produto
+  function _campoCatalogo(label, selectId, tipo, full){
+    return '<div class="cfg-field'+(full?' cfg-full':'')+'"><label class="cfg-label">'+label+'</label>'
+      + '<div style="display:flex;gap:6px">'
+        + '<select class="cfg-select" id="'+selectId+'" style="flex:1"></select>'
+        + '<button type="button" class="btn btn-sm" style="padding:0 12px;flex-shrink:0" title="Cadastrar novo(a) '+label.toLowerCase()+'" onclick="window.prodQuickAdd(\''+tipo+'\',\''+selectId+'\')">+</button>'
+      + '</div>'
+    + '</div>';
+  }
   var modalProduto = document.createElement('div');
   modalProduto.className='modal-overlay'; modalProduto.id='modal-produto'; modalProduto.style.display='none';
   modalProduto.onclick = function(e){ if(e.target===modalProduto) modalProduto.style.display='none'; };
@@ -8682,10 +8691,10 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
             + '<div class="cfg-field"><label class="cfg-label">Código</label><input class="cfg-input" id="prod-codigo" placeholder="Opcional"></div>'
             + '<div class="cfg-field"><label class="cfg-label">Unidade</label><select class="cfg-select" id="prod-unidade"><option>Un</option><option>Kg</option><option>L</option><option>Cx</option><option>Pct</option></select></div>'
             + '<div class="cfg-field cfg-full"><label class="cfg-label">Descrição *</label><input class="cfg-input" id="prod-nome" placeholder="Ex: Corte de cabelo, Refrigerante lata..."></div>'
-            + '<div class="cfg-field"><label class="cfg-label">Grupo</label><input class="cfg-input" id="prod-grupo" list="prod-grupos-list" placeholder="Ex: Bebidas"><datalist id="prod-grupos-list"></datalist></div>'
-            + '<div class="cfg-field"><label class="cfg-label">Marca</label><select class="cfg-select" id="prod-marca"></select></div>'
-            + '<div class="cfg-field"><label class="cfg-label">Classe</label><select class="cfg-select" id="prod-classe"></select></div>'
-            + '<div class="cfg-field"><label class="cfg-label">Departamento</label><select class="cfg-select" id="prod-departamento"></select></div>'
+            + _campoCatalogo('Grupo', 'prod-grupo', 'grupos')
+            + _campoCatalogo('Marca', 'prod-marca', 'marcas')
+            + _campoCatalogo('Classe', 'prod-classe', 'classes')
+            + _campoCatalogo('Departamento', 'prod-departamento', 'departamentos')
             + '<div class="cfg-field"><label class="cfg-label">Ativo</label><select class="cfg-select" id="prod-ativo"><option value="sim">Sim</option><option value="nao">Não</option></select></div>'
             + '<div class="cfg-field"><label class="cfg-label">Local de Impressão</label><select class="cfg-select" id="prod-local-impressao"><option value="nenhum">Nenhum</option><option value="cozinha">Cozinha</option><option value="bar">Bar</option><option value="ambos">Cozinha e Bar</option></select></div>'
             + '<div class="cfg-field"><label class="cfg-label">Pontos de Fidelidade</label><input class="cfg-input" id="prod-pontos" type="number" min="0" step="1" placeholder="0"></div>'
@@ -8706,9 +8715,9 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
               + '<option value="1">1 — Estrangeira (importação direta)</option>'
               + '<option value="2">2 — Estrangeira (mercado interno)</option>'
             + '</select></div>'
-            + '<div class="cfg-field"><label class="cfg-label">Classificação Fiscal (NCM)</label><select class="cfg-select" id="prod-fiscal-ncm"></select></div>'
-            + '<div class="cfg-field"><label class="cfg-label">Alíquota</label><select class="cfg-select" id="prod-fiscal-aliquota"></select></div>'
-            + '<div class="cfg-field"><label class="cfg-label">CFOP</label><select class="cfg-select" id="prod-fiscal-cfop"></select></div>'
+            + _campoCatalogo('Classificação Fiscal (NCM)', 'prod-fiscal-ncm', 'classificacoesFiscais')
+            + _campoCatalogo('Alíquota', 'prod-fiscal-aliquota', 'aliquotas')
+            + _campoCatalogo('CFOP', 'prod-fiscal-cfop', 'cfop')
           + '</div>'
           + '<div style="margin-top:10px;font-size:11px;color:var(--tx3)">Nenhuma opção aqui? Cadastre em <strong>Cadastros Fiscais</strong> no menu lateral.</div>'
         + '</div>'
@@ -9419,28 +9428,40 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
         }).join('');
   };
   window._prodEditId = null;
-  function _prodPreencherGruposDatalist(){
-    var dl = document.getElementById('prod-grupos-list');
-    if(!dl) return;
-    var grupos = Array.from(new Set((window.produtos||[]).map(function(p){ return p.grupo; }).filter(Boolean)));
-    dl.innerHTML = grupos.map(function(g){ return '<option value="'+_esc(g)+'">'; }).join('');
-  }
+  // ── Formatação do texto exibido pra cada tipo de catálogo (reaproveitado nos selects e no quick-add) ──
+  var CATALOGO_FORMATADORES = {
+    grupos:                function(it){ return it.nome; },
+    marcas:                function(it){ return it.nome; },
+    classes:               function(it){ return it.nome; },
+    departamentos:         function(it){ return it.nome; },
+    aliquotas:             function(it){ return it.nome + (it.percentual?' ('+it.percentual+'%)':''); },
+    classificacoesFiscais: function(it){ return it.codigo + (it.descricao?' - '+it.descricao:''); },
+    cfop:                  function(it){ return it.codigo + (it.descricao?' - '+it.descricao:''); },
+  };
+  // Mapa select do produto → tipo de catálogo (usado pra popular e pro botão "+" de criação rápida)
+  var PROD_SELECT_CATALOGO = {
+    'prod-grupo':           'grupos',
+    'prod-marca':           'marcas',
+    'prod-classe':          'classes',
+    'prod-departamento':    'departamentos',
+    'prod-fiscal-ncm':      'classificacoesFiscais',
+    'prod-fiscal-aliquota': 'aliquotas',
+    'prod-fiscal-cfop':     'cfop',
+  };
   function _prodPreencherSelectsCatalogo(){
-    function popular(selectId, tipo, formatador){
+    Object.keys(PROD_SELECT_CATALOGO).forEach(function(selectId){
+      var tipo = PROD_SELECT_CATALOGO[selectId];
       var el = document.getElementById(selectId);
       if(!el) return;
+      var valorAtual = el.value;
       var itens = (window.catalogos && window.catalogos[tipo]) || [];
+      var formatador = CATALOGO_FORMATADORES[tipo];
       el.innerHTML = '<option value="">— Nenhum —</option>' + itens.map(function(it){
         var texto = formatador(it);
         return texto ? '<option value="'+_esc(texto)+'">'+_esc(texto)+'</option>' : '';
       }).join('');
-    }
-    popular('prod-marca', 'marcas', function(it){ return it.nome; });
-    popular('prod-classe', 'classes', function(it){ return it.nome; });
-    popular('prod-departamento', 'departamentos', function(it){ return it.nome; });
-    popular('prod-fiscal-ncm', 'classificacoesFiscais', function(it){ return it.codigo + (it.descricao?' - '+it.descricao:''); });
-    popular('prod-fiscal-aliquota', 'aliquotas', function(it){ return it.nome + (it.percentual?' ('+it.percentual+'%)':''); });
-    popular('prod-fiscal-cfop', 'cfop', function(it){ return it.codigo + (it.descricao?' - '+it.descricao:''); });
+      if(valorAtual) el.value = valorAtual;
+    });
   }
   function _prodResetFormulario(){
     document.getElementById('prod-codigo').value='';
@@ -9479,7 +9500,6 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   window.abrirModalProduto = function(){
     window._prodEditId = null;
     document.getElementById('prod-modal-title').textContent='Novo Produto';
-    _prodPreencherGruposDatalist();
     _prodPreencherSelectsCatalogo();
     _prodResetFormulario();
     document.getElementById('modal-produto').style.display='flex';
@@ -9489,7 +9509,6 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     if(!p) return;
     window._prodEditId = id;
     document.getElementById('prod-modal-title').textContent='Editar Produto';
-    _prodPreencherGruposDatalist();
     _prodPreencherSelectsCatalogo();
     _prodResetFormulario();
 
@@ -9718,6 +9737,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   //  cadastro de produto) — sem cálculo real de imposto.
   // ══════════════════════════════════════════════════════
   var CATALOGO_DEFS = {
+    grupos:                 { label:'Grupos',                icon:'📁', campos:[{key:'nome',label:'Nome'}] },
     marcas:                { label:'Marcas',                icon:'⭐', campos:[{key:'nome',label:'Nome'}] },
     classes:                { label:'Classes',               icon:'📊', campos:[{key:'nome',label:'Nome'}] },
     departamentos:          { label:'Departamentos',         icon:'🏢', campos:[{key:'nome',label:'Nome'}] },
@@ -9857,6 +9877,22 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     if(typeof notify==='function') notify('✅ Salvo!');
     document.getElementById('modal-catalogo-item').style.display='none';
     window.renderCatalogo();
+
+    // veio do botão "+" dentro do cadastro de produto? repopula o select de origem
+    // e já deixa o item recém-criado selecionado, sem sair do formulário do produto.
+    if(window._prodQuickAddOrigemSelectId){
+      var formatador = CATALOGO_FORMATADORES[tipo];
+      var textoNovo = formatador(dados);
+      _prodPreencherSelectsCatalogo();
+      var selEl = document.getElementById(window._prodQuickAddOrigemSelectId);
+      if(selEl) selEl.value = textoNovo;
+      window._prodQuickAddOrigemSelectId = null;
+    }
+  };
+  window.prodQuickAdd = function(tipo, selectId){
+    window._prodQuickAddOrigemSelectId = selectId;
+    window._catalogoAtual = tipo;
+    window.abrirModalCatalogoItem();
   };
   window.excluirCatalogoItem = function(id){
     var tipo = window._catalogoAtual;
