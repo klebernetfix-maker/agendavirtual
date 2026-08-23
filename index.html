@@ -2680,7 +2680,7 @@ modalLanc.innerHTML=`
     <div id="ml-boleto-section" style="display:none;margin-top:16px;padding:16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:12px">
       <div style="font-size:12px;font-weight:600;color:#fbbf24;margin-bottom:10px">📄 Dados do Boleto</div>
       <div style="font-size:11px;color:#94a3b8;line-height:2;background:#0e1727;padding:10px;border-radius:8px;border:1px solid rgba(245,158,11,.2)">
-        <div><strong>Banco:</strong> Nubank (Nu Pagamentos S.A.) — 260</div>
+        <div><strong>Banco:</strong> <span id="bl-banco"></span></div>
         <div><strong>Beneficiário:</strong> <span id="bl-nome"></span></div>
         <div><strong>CNPJ:</strong> <span id="bl-cnpj"></span></div>
         <div><strong>Agência/Conta:</strong> <span id="bl-agconta"></span></div>
@@ -2695,7 +2695,7 @@ modalLanc.innerHTML=`
         <button onclick="imprimirBoleto()" class="btn btn-sm" style="background:#f59e0b;color:#fff;border-color:#f59e0b;font-size:11px">🖨 Imprimir Boleto</button>
         <button onclick="copiarLinha()" class="btn btn-sm" style="font-size:11px">📋 Copiar linha</button>
       </div>
-      <div style="margin-top:8px;font-size:10px;color:#fbbf24;background:rgba(245,158,11,.08);padding:6px 10px;border-radius:6px">⚠️ Para boleto registrado com confirmação automática, conecte a API Nubank PJ.</div>
+      <div style="margin-top:8px;font-size:10px;color:#fbbf24;background:rgba(245,158,11,.08);padding:6px 10px;border-radius:6px" id="bl-api-aviso">⚠️ Esta é uma linha simulada, só para referência/impressão — não é um boleto registrado no banco.</div>
     </div>
   </div>
   <div class="modal-footer">
@@ -2734,11 +2734,12 @@ function gerarPixPayload(chave, nome, valor, cidade, txid){
   return payload + crc16(payload);
 }
 
-function gerarLinhaBoleto(valor, venc, nossoNum){
+function gerarLinhaBoleto(valor, venc, nossoNum, codBanco){
   const v = String(Math.round(valor*100)).padStart(10,'0');
   const d = (venc||'').split('/').reverse().join('');
   const n = (nossoNum||Math.random().toString().slice(2,12));
-  return `260${n.slice(0,5)}.${n.slice(5,10)} ${d.slice(0,5)}.${d.slice(5,8)}0 ${n.slice(0,5)}.${n.slice(5,10)}5 9 ${d}${v}`;
+  const b = (codBanco||'260').padStart(3,'0');
+  return `${b}${n.slice(0,5)}.${n.slice(5,10)} ${d.slice(0,5)}.${d.slice(5,8)}0 ${n.slice(0,5)}.${n.slice(5,10)}5 9 ${d}${v}`;
 }
 
 window.currentPixPayload='';
@@ -2776,8 +2777,9 @@ function atualizarBoleto(){
   const valor=parseValor(valorStr);
   const venc=isoToDisp(document.getElementById('ml-venc').value);
   const cfg=window.configBanco;
-  const linha=gerarLinhaBoleto(valor,venc);
+  const linha=gerarLinhaBoleto(valor,venc,null,cfg.codigoBanco);
   window.currentLinhaBoleto=linha;
+  document.getElementById('bl-banco').textContent=(cfg.banco||'—')+(cfg.codigoBanco?' — '+cfg.codigoBanco:'');
   document.getElementById('bl-nome').textContent=cfg.nome;
   document.getElementById('bl-cnpj').textContent=cfg.cnpj;
   document.getElementById('bl-agconta').textContent=cfg.agencia+' / '+cfg.conta;
@@ -3490,7 +3492,7 @@ function renderCfgContent(tab){
     el.innerHTML=`
       <div class="cfg-warn-box" style="margin-bottom:16px">
         <span style="font-size:18px;flex-shrink:0">⚠️</span>
-        <div>Boleto registrado requer integração com a API Nubank PJ. Configure as credenciais em <strong>Dados Bancários → API Nubank</strong>. As configurações abaixo serão usadas na geração dos boletos.</div>
+        <div>Nenhum banco tem integração de API de cobrança conectada ainda — o boleto gerado hoje é uma linha simulada, só para referência/impressão, sem registro real no banco (${c.banco.banco||'nenhum banco selecionado'}). As configurações abaixo serão usadas na geração dessa prévia.</div>
       </div>
       <div class="cfg-section">
         <div class="cfg-section-title">📄 Configurações do Boleto</div>
