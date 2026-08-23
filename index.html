@@ -245,6 +245,13 @@ textarea.finput{resize:vertical;min-height:76px;line-height:1.5}
 .periodo-label{font-size:12px;font-weight:500;color:var(--tx2);white-space:nowrap}
 
 /* Grids responsivos — detalhes no bloco mobile abaixo */
+
+/* ── Impressão do Boleto — mostra só a área dedicada, esconde o resto ── */
+#boleto-print-area{ display:none; }
+@media print{
+  body.printing-boleto > *:not(#boleto-print-area){ display:none !important; }
+  body.printing-boleto #boleto-print-area{ display:block !important; background:#fff; }
+}
 </style>
 </head>
 <body>
@@ -2705,6 +2712,33 @@ modalLanc.innerHTML=`
 </div>`;
 document.body.appendChild(modalLanc);
 
+// ── ÁREA DEDICADA DE IMPRESSÃO DO BOLETO ──
+// Fica fora do modal (irmã dele, direto no body) pra não ser escondida
+// junto quando o CSS de impressão esconde o resto da tela.
+const boletoPrintArea = document.createElement('div');
+boletoPrintArea.id = 'boleto-print-area';
+boletoPrintArea.innerHTML = `
+  <div style="font-family:Arial,Helvetica,sans-serif;color:#000;padding:24px;max-width:700px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:14px">
+      <div style="font-size:20px;font-weight:700" id="blp-banco"></div>
+      <div style="font-size:11px;color:#333">Documento simulado — não é um boleto registrado no banco</div>
+    </div>
+    <div style="font-size:10px;color:#333;margin-bottom:2px">Linha digitável (simulada)</div>
+    <div style="font-family:'Courier New',monospace;font-size:14px;font-weight:700;letter-spacing:1px;border:1px solid #000;padding:8px 10px;margin-bottom:18px" id="blp-linha"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;font-size:12px;margin-bottom:16px">
+      <div><strong>Beneficiário:</strong><br><span id="blp-nome"></span></div>
+      <div><strong>CNPJ do beneficiário:</strong><br><span id="blp-cnpj"></span></div>
+      <div><strong>Agência/Conta:</strong><br><span id="blp-agconta"></span></div>
+      <div><strong>Vencimento:</strong><br><span id="blp-venc"></span></div>
+      <div><strong>Pagador:</strong><br><span id="blp-pagador"></span></div>
+      <div><strong>Valor do documento:</strong><br><span id="blp-valor" style="font-size:16px;font-weight:700"></span></div>
+    </div>
+    <div id="blp-desc" style="font-size:11px;color:#333;margin-bottom:20px"></div>
+    <div style="padding:10px 12px;border:1px dashed #000;font-size:10px;line-height:1.5">⚠ Este é um documento simulado gerado pelo SisVip, apenas para referência/impressão interna — não possui registro bancário nem código de barras válido para pagamento.</div>
+  </div>`;
+boletoPrintArea.style.display = 'none';
+document.body.appendChild(boletoPrintArea);
+
 // ── PIX PAYLOAD (padrão EMV/BACEN) ──
 function gerarPixPayload(chave, nome, valor, cidade, txid){
   function f(id, v){ const len=String(v.length).padStart(2,'0'); return id+len+v; }
@@ -2779,13 +2813,26 @@ function atualizarBoleto(){
   const cfg=window.configBanco;
   const linha=gerarLinhaBoleto(valor,venc,null,cfg.codigoBanco);
   window.currentLinhaBoleto=linha;
-  document.getElementById('bl-banco').textContent=(cfg.banco||'—')+(cfg.codigoBanco?' — '+cfg.codigoBanco:'');
+  const bancoTxt=(cfg.banco||'—')+(cfg.codigoBanco?' — '+cfg.codigoBanco:'');
+  const pagador=(document.getElementById('ml-cliente')||{value:''}).value||'—';
+  const desc=(document.getElementById('ml-desc')||{value:''}).value;
+  document.getElementById('bl-banco').textContent=bancoTxt;
   document.getElementById('bl-nome').textContent=cfg.nome;
   document.getElementById('bl-cnpj').textContent=cfg.cnpj;
   document.getElementById('bl-agconta').textContent=cfg.agencia+' / '+cfg.conta;
   document.getElementById('bl-valor').textContent=fmtMoeda(valor);
   document.getElementById('bl-venc').textContent=venc;
   document.getElementById('bl-linha').textContent=linha;
+  // espelha os mesmos dados na área dedicada de impressão
+  document.getElementById('blp-banco').textContent=bancoTxt;
+  document.getElementById('blp-linha').textContent=linha;
+  document.getElementById('blp-nome').textContent=cfg.nome;
+  document.getElementById('blp-cnpj').textContent=cfg.cnpj;
+  document.getElementById('blp-agconta').textContent=cfg.agencia+' / '+cfg.conta;
+  document.getElementById('blp-venc').textContent=venc;
+  document.getElementById('blp-pagador').textContent=pagador;
+  document.getElementById('blp-valor').textContent=fmtMoeda(valor);
+  document.getElementById('blp-desc').textContent=desc?('Descrição: '+desc):'';
 }
 
 window.onFormaChange=function(){
@@ -2804,7 +2851,12 @@ window.copiarPix=function(){
 window.copiarLinha=function(){
   navigator.clipboard.writeText(window.currentLinhaBoleto).then(()=>notify('✓ Linha digitável copiada!')).catch(()=>notify('Copie manualmente'));
 };
-window.imprimirBoleto=function(){ window.print(); };
+window.imprimirBoleto=function(){
+  atualizarBoleto();
+  document.body.classList.add('printing-boleto');
+  window.print();
+};
+window.addEventListener('afterprint', function(){ document.body.classList.remove('printing-boleto'); });
 window.imprimirExtrato=function(){ window.print(); };
 
 window.abrirModalLancamento=function(tipo, id){
