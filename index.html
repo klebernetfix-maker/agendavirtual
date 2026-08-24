@@ -9771,6 +9771,63 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     }
   } catch(e){}
 
+  // ── Tabela de CFOP padrão (mais usados) — só semeia na primeira vez ──
+  try {
+    if(!localStorage.getItem('sisvip_cfop_seed') && window.catalogos.cfop.length===0){
+      var _cfopPadrao = [
+        ['1.101','Compra para industrialização'],
+        ['1.102','Compras para Comercialização'],
+        ['1.107','Compra para uso e consumo'],
+        ['1.108','Compra para ativo imobilizado'],
+        ['1.201','Devolução de venda de produção do estabelecimento'],
+        ['1.202','Devolução de venda de mercadoria adquirida de terceiros'],
+        ['1.551','Compra de bem para o ativo imobilizado'],
+        ['1.553','Devolução de venda de bem do ativo imobilizado'],
+        ['1.556','Compra de material para uso e consumo'],
+        ['1.914','Retorno de mercadoria enviada para conserto'],
+        ['1.917','Retorno de mercadoria enviada em comodato'],
+        ['1.920','Retorno de mercadoria ou bem remetido para demonstração'],
+        ['2.101','Compra para industrialização (Interestadual)'],
+        ['2.102','Compras para Comercialização (Interestadual)'],
+        ['2.108','Compra para ativo imobilizado (Interestadual)'],
+        ['2.201','Devolução de venda de produção do estabelecimento (Interestadual)'],
+        ['2.202','Devolução de venda de mercadoria (Interestadual)'],
+        ['2.553','Devolução de venda de bem do ativo imobilizado (Interestadual)'],
+        ['2.949','Outras entradas de mercadorias não especificadas (Interestadual)'],
+        ['5.101','Venda de produção do estabelecimento'],
+        ['5.102','Venda de mercadoria adquirida de terceiros'],
+        ['5.103','Venda de produção do estabelecimento efetuada fora do estabelecimento'],
+        ['5.201','Devolução de compra para industrialização'],
+        ['5.202','Devolução de compra para comercialização'],
+        ['5.405','Venda de mercadoria adquirida com ST'],
+        ['5.551','Venda de bem do ativo imobilizado'],
+        ['5.553','Remessa em comodato'],
+        ['5.554','Remessa para conserto'],
+        ['5.555','Remessa em garantia'],
+        ['5.556','Remessa para demonstração'],
+        ['5.910','Remessa em bonificação, doação ou brinde'],
+        ['5.927','Lançamento de débito relativo à Difal'],
+        ['5.929','Lançamento efetuado em decorrência de NFCe'],
+        ['5.949','Outras saídas não especificadas'],
+        ['6.101','Venda de produção do estabelecimento (Interestadual)'],
+        ['6.102','Venda de mercadoria adquirida de terceiros (Interestadual)'],
+        ['6.201','Devolução de compra para industrialização (Interestadual)'],
+        ['6.202','Devolução de compra para comercialização (Interestadual)'],
+        ['6.405','Venda de mercadoria adquirida com ST (Interestadual)'],
+        ['6.551','Venda de bem do ativo imobilizado (Interestadual)'],
+        ['6.553','Remessa em comodato (Interestadual)'],
+        ['6.554','Remessa para conserto (Interestadual)'],
+        ['6.555','Remessa em garantia (Interestadual)'],
+        ['6.556','Remessa para demonstração (Interestadual)'],
+        ['6.910','Remessa em bonificação, doação ou brinde (Interestadual)'],
+        ['6.949','Outras saídas não especificadas (Interestadual)'],
+      ];
+      window.catalogos.cfop = _cfopPadrao.map(function(c, i){ return { id: Date.now()+i, codigo:c[0], descricao:c[1] }; });
+      localStorage.setItem('sisvip_cfop_seed', '1');
+      salvarCatalogos();
+    }
+  } catch(e){}
+
   // ── Sidebar: seção "Cadastros Fiscais" com um item por catálogo ──
   var catSep = document.createElement('div');
   catSep.className = 'sb-section';
