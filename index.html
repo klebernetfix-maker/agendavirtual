@@ -8888,7 +8888,8 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       + '</div>'
       + '<div class="modal-footer">'
         + '<button class="btn btn-sm" onclick="document.getElementById(\'modal-fechar-caixa\').style.display=\'none\'">Cancelar</button>'
-        + '<button class="btn btn-p btn-sm" onclick="window.confirmarFechamentoCaixa()">Fechar Caixa</button>'
+        + '<button class="btn btn-sm" title="Fecha usando o valor esperado, sem contar o dinheiro na mão" onclick="window.confirmarFechamentoCaixa(true)">⚡ Fechar sem informar valores</button>'
+        + '<button class="btn btn-p btn-sm" onclick="window.confirmarFechamentoCaixa(false)">✓ Fechar informando valores</button>'
       + '</div>'
     + '</div>';
   document.body.appendChild(modalFecharCaixa);
@@ -8923,7 +8924,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
         + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px" id="cx-resumo"></div>'
         + '<div class="panel">'
           + '<div class="panel-header"><span class="panel-title">Movimentos do Caixa</span><span id="cx-mov-count" class="badge bi">0</span></div>'
-          + '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Hora</th><th>Tipo</th><th>Descrição</th><th>Forma</th><th style="text-align:right">Valor</th></tr></thead><tbody id="cx-mov-tbody"></tbody></table></div>'
+          + '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Hora</th><th>Tipo</th><th>Descrição</th><th>Forma</th><th style="text-align:right">Valor</th><th></th></tr></thead><tbody id="cx-mov-tbody"></tbody></table></div>'
         + '</div>';
       renderResumoCaixa(sessao);
       renderMovimentosCaixa(sessao);
@@ -8956,17 +8957,18 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     var movs = sessao.movimentos.slice().reverse();
     var cnt = document.getElementById('cx-mov-count'); if(cnt) cnt.textContent = movs.length;
     tbody.innerHTML = !movs.length
-      ? '<tr><td colspan="5"><div class="empty">Nenhum movimento ainda.</div></td></tr>'
+      ? '<tr><td colspan="6"><div class="empty">Nenhum movimento ainda.</div></td></tr>'
       : movs.map(function(m){
           var hora = (m.dataHora||'').split(' ').pop();
           if(m.tipo==='venda'){
             var desc = m.itens.map(function(i){ return i.qtd+'x '+i.nome; }).join(', ');
-            return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bs">Venda</span></td><td style="font-size:12px">'+_esc(desc)+'</td><td>'+formaBadgeCx(m.formaPagamento)+'</td><td style="text-align:right;font-weight:600;color:#22c55e">+ '+_fmtMoedaCx(m.total)+'</td></tr>';
+            return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bs">Venda</span></td><td style="font-size:12px">'+_esc(desc)+'</td><td>'+formaBadgeCx(m.formaPagamento)+'</td><td style="text-align:right;font-weight:600;color:#22c55e">+ '+_fmtMoedaCx(m.total)+'</td>'
+              + '<td><button class="btn btn-sm" style="padding:2px 8px" title="Reimprimir comanda desta venda" onclick="window.reimprimirComandaVenda('+m.id+')">🖨</button></td></tr>';
           }
           if(m.tipo==='sangria'){
-            return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bd-">Sangria</span></td><td style="font-size:12px">'+_esc(m.motivo||'—')+'</td><td>—</td><td style="text-align:right;font-weight:600;color:#ef4444">− '+_fmtMoedaCx(m.valor)+'</td></tr>';
+            return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bd-">Sangria</span></td><td style="font-size:12px">'+_esc(m.motivo||'—')+'</td><td>—</td><td style="text-align:right;font-weight:600;color:#ef4444">− '+_fmtMoedaCx(m.valor)+'</td><td></td></tr>';
           }
-          return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bi">Suprimento</span></td><td style="font-size:12px">'+_esc(m.motivo||'—')+'</td><td>—</td><td style="text-align:right;font-weight:600;color:#22c55e">+ '+_fmtMoedaCx(m.valor)+'</td></tr>';
+          return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bi">Suprimento</span></td><td style="font-size:12px">'+_esc(m.motivo||'—')+'</td><td>—</td><td style="text-align:right;font-weight:600;color:#22c55e">+ '+_fmtMoedaCx(m.valor)+'</td><td></td></tr>';
         }).join('');
   }
 
@@ -8983,7 +8985,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
           var corDif = Math.abs(dif)<0.01 ? 'var(--tx2)' : (dif>0?'#22c55e':'#ef4444');
           return '<tr><td style="font-size:11px;color:var(--tx2)">'+s.abertura.data+'</td><td style="font-size:12px">'+_esc(s.operador)+'</td>'
             + '<td style="font-size:11px">'+_fmtMoedaCx(s.abertura.valor)+' às '+s.abertura.hora+'</td>'
-            + '<td style="font-size:11px">'+_fmtMoedaCx(s.fechamento.valorContado)+' às '+s.fechamento.hora+'</td>'
+            + '<td style="font-size:11px">'+_fmtMoedaCx(s.fechamento.valorContado)+' às '+s.fechamento.hora+(s.fechamento.semConferir?' <span style="color:var(--tx3)" title="Fechado sem conferência manual">⚡</span>':'')+'</td>'
             + '<td style="text-align:right;font-weight:600;color:'+corDif+'">'+(dif>=0?'+':'')+_fmtMoedaCx(dif)+'</td></tr>';
         }).join('')
       + '</tbody></table></div></div>';
@@ -9210,18 +9212,18 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
 
   // ── Comanda: agrupa os itens do carrinho por setor (cozinha/bar) e imprime cada folha separada ──
   var LOCAL_IMPRESSAO_LABEL = { cozinha:'🍳 Cozinha', bar:'🍹 Bar', ambos:'🍳 Cozinha + 🍹 Bar', nenhum:'Sem setor definido' };
-  window.imprimirComanda = function(){
-    if(!window._vdCarrinho.length){ if(typeof notify==='function') notify('Adicione ao menos um produto.'); return; }
+  // Monta o HTML das folhas de comanda (uma por setor) a partir de uma lista de itens —
+  // reaproveitado tanto pra imprimir o carrinho atual quanto pra reimprimir uma venda já feita.
+  function _gerarFolhasComanda(itens, tituloExtra){
     var grupos = {};
-    window._vdCarrinho.forEach(function(item){
+    itens.forEach(function(item){
       var p = (window.produtos||[]).find(function(x){ return x.id===item.produtoId; });
       var setor = (p && p.localImpressao) || 'nenhum';
       grupos[setor] = grupos[setor] || [];
       grupos[setor].push(item);
     });
-    var agora = new Date();
-    var horaImpressao = agora.toLocaleTimeString('pt-BR').slice(0,5);
-    var folhas = Object.keys(grupos).map(function(setor){
+    var horaImpressao = new Date().toLocaleTimeString('pt-BR').slice(0,5);
+    return Object.keys(grupos).map(function(setor){
       var itensHtml = grupos[setor].map(function(i){
         return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #999;font-size:14px">'
           + '<span><strong>'+i.qtd+'x</strong> '+_esc(i.nome)+(i.comboDetalhe?'<div style="font-size:11px;color:#555">'+_esc(i.comboDetalhe)+'</div>':'')+'</span>'
@@ -9229,13 +9231,27 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       }).join('');
       return '<div style="font-family:Arial,Helvetica,sans-serif;color:#000;padding:20px;max-width:400px;margin:0 auto 30px;border-bottom:2px dashed #000">'
         + '<div style="text-align:center;font-size:16px;font-weight:700;margin-bottom:4px">'+(LOCAL_IMPRESSAO_LABEL[setor]||setor)+'</div>'
-        + '<div style="text-align:center;font-size:11px;color:#555;margin-bottom:14px">Comanda — '+horaImpressao+'</div>'
+        + '<div style="text-align:center;font-size:11px;color:#555;margin-bottom:14px">'+(tituloExtra||'Comanda')+' — '+horaImpressao+'</div>'
         + itensHtml
       + '</div>';
     }).join('');
-    document.getElementById('comanda-print-area').innerHTML = folhas;
+  }
+  function _dispararImpressaoComanda(html){
+    document.getElementById('comanda-print-area').innerHTML = html;
     document.body.classList.add('printing-comanda');
     window.print();
+  }
+  window.imprimirComanda = function(){
+    if(!window._vdCarrinho.length){ if(typeof notify==='function') notify('Adicione ao menos um produto.'); return; }
+    _dispararImpressaoComanda(_gerarFolhasComanda(window._vdCarrinho, 'Comanda'));
+  };
+  window.reimprimirComandaVenda = function(movimentoId){
+    var sessao = caixaAbertaDoOperador() || (window.caixaSessoes||[]).find(function(s){
+      return (s.movimentos||[]).some(function(m){ return m.id===movimentoId; });
+    });
+    var mov = sessao && sessao.movimentos.find(function(m){ return m.id===movimentoId; });
+    if(!mov){ if(typeof notify==='function') notify('Venda não encontrada.'); return; }
+    _dispararImpressaoComanda(_gerarFolhasComanda(mov.itens, 'Reimpressão'));
   };
   window.addEventListener('afterprint', function(){ document.body.classList.remove('printing-comanda'); });
 
@@ -9368,12 +9384,19 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     else if(dif>0){ el.style.color='#22c55e'; el.textContent='Sobra de '+_fmtMoedaCx(dif)+' em relação ao esperado.'; }
     else { el.style.color='#ef4444'; el.textContent='Falta '+_fmtMoedaCx(Math.abs(dif))+' em relação ao esperado.'; }
   };
-  window.confirmarFechamentoCaixa = function(){
+  window.confirmarFechamentoCaixa = function(semConferir){
     var sessao = caixaAbertaDoOperador();
     if(!sessao) return;
     var calc = calcularFechamento(sessao);
-    var contado = _parseValorCx(document.getElementById('fc-valor-contado').value);
     var obs = document.getElementById('fc-obs').value.trim();
+    var contado;
+    if(semConferir){
+      // Fechamento rápido: confia no valor calculado pelo sistema, sem contar o dinheiro na mão.
+      contado = calc.dinheiroEsperado;
+      obs = (obs ? obs+' — ' : '') + 'Fechado sem conferência manual dos valores.';
+    } else {
+      contado = _parseValorCx(document.getElementById('fc-valor-contado').value);
+    }
     var agora = new Date();
     sessao.fechamento = {
       data: window.TODAY_DISP || agora.toLocaleDateString('pt-BR'),
@@ -9381,11 +9404,12 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       valorContado: contado,
       valorEsperado: calc.dinheiroEsperado,
       diferenca: contado - calc.dinheiroEsperado,
+      semConferir: !!semConferir,
       obs: obs,
     };
     sessao.status = 'fechado';
     salvarCaixaDados();
-    if(typeof notify==='function') notify('🔒 Caixa fechado.');
+    if(typeof notify==='function') notify('🔒 Caixa fechado'+(semConferir?' (sem conferência manual).':'.'));
     document.getElementById('modal-fechar-caixa').style.display='none';
     window.renderCaixaPage();
   };
