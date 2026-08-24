@@ -9757,6 +9757,20 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   }
   window._salvarCatalogos = salvarCatalogos;
 
+  // ── Situações tributárias padrão de Alíquota — só semeia na primeira vez
+  // (se o usuário apagar depois, não volta a inserir sozinho) ──
+  try {
+    if(!localStorage.getItem('sisvip_aliquotas_seed') && window.catalogos.aliquotas.length===0){
+      window.catalogos.aliquotas = [
+        { id: Date.now(),   nome:'Isenção',                   percentual:0 },
+        { id: Date.now()+1, nome:'Não Incidente',             percentual:0 },
+        { id: Date.now()+2, nome:'Substituição Tributária',   percentual:0 },
+      ];
+      localStorage.setItem('sisvip_aliquotas_seed', '1');
+      salvarCatalogos();
+    }
+  } catch(e){}
+
   // ── Sidebar: seção "Cadastros Fiscais" com um item por catálogo ──
   var catSep = document.createElement('div');
   catSep.className = 'sb-section';
