@@ -8800,7 +8800,8 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   // ── Modal: Nova Venda ──
   var modalVenda = document.createElement('div');
   modalVenda.className='modal-overlay'; modalVenda.id='modal-venda'; modalVenda.style.display='none';
-  modalVenda.onclick = function(e){ if(e.target===modalVenda) modalVenda.style.display='none'; };
+  // Sem fechar ao clicar fora — a venda em andamento (carrinho, endereço de entrega, etc.)
+  // é fácil de perder com um clique sem querer. Só fecha pelo botão "Cancelar" mesmo.
   modalVenda.innerHTML =
     '<div class="modal" style="width:480px">'
       + '<div class="modal-header"><div class="modal-title">🛒 Nova Venda</div></div>'
