@@ -8986,7 +8986,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       : movs.map(function(m){
           var hora = (m.dataHora||'').split(' ').pop();
           if(m.tipo==='venda'){
-            var desc = m.itens.map(function(i){ return i.qtd+'x '+i.nome; }).join(', ') + (m.obs?' <span style="color:var(--tx3)">· '+_esc(m.obs)+'</span>':'');
+            var desc = (m.numero?'<b>Nº '+m.numero+'</b> · ':'') + m.itens.map(function(i){ return i.qtd+'x '+i.nome; }).join(', ') + (m.obs?' <span style="color:var(--tx3)">· '+_esc(m.obs)+'</span>':'');
             return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bs">Venda</span></td><td style="font-size:12px">'+desc+'</td><td>'+formaBadgeCx(m.formaPagamento)+'</td><td style="text-align:right;font-weight:600;color:#22c55e">+ '+_fmtMoedaCx(m.total)+'</td>'
               + '<td><button class="btn btn-sm" style="padding:2px 8px" title="Reimprimir comanda desta venda" onclick="window.reimprimirComandaVenda('+m.id+')">🖨</button></td></tr>';
           }
@@ -9121,6 +9121,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   window.abrirModalVenda = function(){
     if(!caixaAbertaDoOperador()){ if(typeof notify==='function') notify('Abra o caixa primeiro.'); return; }
     window._vdCarrinho = [];
+    window._vdNumeroReservado = null;
     document.getElementById('vd-busca-produto').value = '';
     document.getElementById('vd-cliente').value = '';
     document.getElementById('vd-obs').value = '';
@@ -9294,7 +9295,17 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   // Monta o HTML das folhas de comanda (uma por setor) a partir de uma lista de itens —
   // reaproveitado tanto pra imprimir o carrinho atual quanto pra reimprimir uma venda já feita.
   // Formato bobina térmica 80mm: monoespaçado, letras grandes, sem preço (é só pra produção).
-  function _gerarFolhasComanda(itens, tituloExtra){
+  // Número sequencial de venda — nunca reinicia, olha todas as sessões (abertas e fechadas).
+  function _proximoNumeroVenda(){
+    var max = 0;
+    (window.caixaSessoes||[]).forEach(function(s){
+      (s.movimentos||[]).forEach(function(m){
+        if(m.tipo==='venda' && m.numero>max) max = m.numero;
+      });
+    });
+    return max+1;
+  }
+  function _gerarFolhasComanda(itens, tituloExtra, numero){
     var grupos = {};
     itens.forEach(function(item){
       var p = (window.produtos||[]).find(function(x){ return x.id===item.produtoId; });
@@ -9313,6 +9324,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
         + '</div>';
       }).join('');
       return '<div style="font-family:\'Courier New\',monospace;color:#000;width:76mm;margin:0 auto 6mm;padding:2mm 0;page-break-after:always">'
+        + '<div style="text-align:center;font-size:22px;font-weight:700">Nº '+numero+'</div>'
         + '<div style="text-align:center;font-size:15px;font-weight:700;border-bottom:1px solid #000;padding-bottom:4px;margin-bottom:4px">'+(LOCAL_IMPRESSAO_LABEL[setor]||setor)+'</div>'
         + '<div style="text-align:center;font-size:10px;margin-bottom:6px">'+(tituloExtra||'Comanda')+' · '+dataImpressao+' '+horaImpressao+'</div>'
         + itensHtml
@@ -9321,7 +9333,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     }).join('');
   }
   // Recibo pra cliente conferir antes de pagar — com preços, taxa de serviço e total. Sem valor fiscal.
-  function _gerarPrecontaHtml(itens, totais){
+  function _gerarPrecontaHtml(itens, totais, numero){
     var agora = new Date();
     var empresa = (window.configBanco && window.configBanco.nome) || 'SisVip';
     var itensHtml = itens.map(function(i){
@@ -9333,6 +9345,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     }).join('');
     return '<div style="font-family:\'Courier New\',monospace;color:#000;width:76mm;margin:0 auto;padding:2mm 0">'
       + '<div style="text-align:center;font-size:14px;font-weight:700">'+_esc(empresa)+'</div>'
+      + '<div style="text-align:center;font-size:18px;font-weight:700;margin-top:4px">Pedido Nº '+numero+'</div>'
       + '<div style="text-align:center;font-size:10px;margin-bottom:8px">Pré-conta · '+agora.toLocaleDateString('pt-BR')+' '+agora.toLocaleTimeString('pt-BR').slice(0,5)+'</div>'
       + '<div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:6px 0;margin-bottom:6px">'+itensHtml+'</div>'
       + '<div style="display:flex;justify-content:space-between;font-size:11px"><span>Subtotal</span><span>'+_fmtMoedaCx(totais.subtotal)+'</span></div>'
@@ -9355,7 +9368,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   }
   window.imprimirComanda = function(){
     if(!window._vdCarrinho.length){ if(typeof notify==='function') notify('Adicione ao menos um produto.'); return; }
-    _dispararImpressaoComanda(_gerarFolhasComanda(window._vdCarrinho, 'Comanda'));
+    _dispararImpressaoComanda(_gerarFolhasComanda(window._vdCarrinho, 'Comanda', window._vdNumeroAtual()));
   };
   window.reimprimirComandaVenda = function(movimentoId){
     var sessao = caixaAbertaDoOperador() || (window.caixaSessoes||[]).find(function(s){
@@ -9363,11 +9376,16 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     });
     var mov = sessao && sessao.movimentos.find(function(m){ return m.id===movimentoId; });
     if(!mov){ if(typeof notify==='function') notify('Venda não encontrada.'); return; }
-    _dispararImpressaoComanda(_gerarFolhasComanda(mov.itens, 'Reimpressão'));
+    _dispararImpressaoComanda(_gerarFolhasComanda(mov.itens, 'Reimpressão', mov.numero||'—'));
   };
   window.imprimirPreConta = function(){
     if(!window._vdCarrinho.length){ if(typeof notify==='function') notify('Adicione ao menos um produto.'); return; }
-    _dispararImpressaoPreconta(_gerarPrecontaHtml(window._vdCarrinho, calcularTotaisVenda()));
+    _dispararImpressaoPreconta(_gerarPrecontaHtml(window._vdCarrinho, calcularTotaisVenda(), window._vdNumeroAtual()));
+  };
+  // Número que a venda em aberto vai receber ao finalizar — fixado na abertura do carrinho pra não mudar entre Comanda e Pré-conta.
+  window._vdNumeroAtual = function(){
+    if(!window._vdNumeroReservado) window._vdNumeroReservado = _proximoNumeroVenda();
+    return window._vdNumeroReservado;
   };
   window.addEventListener('afterprint', function(){
     document.body.classList.remove('printing-comanda');
@@ -9416,10 +9434,11 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     }
 
     sessao.movimentos.push({
-      id: Date.now(), tipo:'venda', dataHora: agora.toLocaleString('pt-BR'),
+      id: Date.now(), tipo:'venda', dataHora: agora.toLocaleString('pt-BR'), numero: window._vdNumeroAtual(),
       itens: window._vdCarrinho.slice(), total: total, txServico: totais.txServico, formaPagamento: forma, cliente: nomeCliente||null, obs: obsVenda||null,
       valorRecebido: valorRecebido, troco: troco,
     });
+    window._vdNumeroReservado = null;
     if(window.lancamentos){
       window.lancamentos.push({
         id: Date.now()+1, descricao:'Venda no caixa'+(obsVenda?' — '+obsVenda:''), cliente: nomeCliente || 'Venda balcão',
