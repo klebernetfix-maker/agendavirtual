@@ -9070,25 +9070,46 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
 
   // ── Venda ──
   window._vdCarrinho = [];
+  // Fallback só usado se o catálogo de Formas de Pagamento ainda não carregou/foi zerado.
   var FORMA_PAGAMENTO_OPCOES = [
     { valor:'Dinheiro', icone:'💵', cor:'#22c55e' },
     { valor:'PIX',      icone:'⚡', cor:'#25d366' },
     { valor:'Cartão',   icone:'💳', cor:'#3b82f6' },
     { valor:'Boleto',   icone:'📄', cor:'#f59e0b' },
   ];
+  // Formas de pagamento vêm do catálogo cadastrável (Cadastros Fiscais → Formas de Pagamento);
+  // só cai no array fixo acima se o catálogo ainda estiver vazio.
+  function _formasPagamentoAtuais(){
+    return (window.catalogos && window.catalogos.formasPagamento && window.catalogos.formasPagamento.length)
+      ? window.catalogos.formasPagamento
+      : FORMA_PAGAMENTO_OPCOES.map(function(f){ return { nome:f.valor, icone:f.icone, contaComoDinheiro:(f.valor==='Dinheiro'?'Sim':'Não') }; });
+  }
+  // Se a forma não estiver marcada no catálogo, assume que só "Dinheiro" mesmo afeta o caixa físico.
+  function _formaContaComoDinheiro(nome){
+    var f = _formasPagamentoAtuais().find(function(x){ return x.nome===nome; });
+    if(f) return f.contaComoDinheiro==='Sim';
+    return nome==='Dinheiro';
+  }
+  function _iconeForma(nome){
+    var f = _formasPagamentoAtuais().find(function(x){ return x.nome===nome; });
+    return (f && f.icone) ? f.icone : '💰';
+  }
   function renderFormaPagamentoBotoes(){
     var el = document.getElementById('vd-forma-botoes');
     if(!el) return;
     var atual = document.getElementById('vd-forma').value;
-    el.innerHTML = FORMA_PAGAMENTO_OPCOES.map(function(f){
-      var ativo = f.valor===atual;
-      return '<button type="button" onclick="window.vdSelecionarForma(\''+f.valor+'\')" style="padding:10px 4px;border-radius:10px;border:2px solid '+(ativo?f.cor:'var(--card-border)')+';background:'+(ativo?f.cor+'18':'var(--card2)')+';color:'+(ativo?f.cor:'var(--tx2)')+';font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .12s ease">'
-        + '<span style="font-size:18px">'+f.icone+'</span>'+f.valor
+    el.innerHTML = _formasPagamentoAtuais().map(function(f){
+      var ativo = f.nome===atual;
+      // id numérico é seguro pra embutir direto no onclick; nome cai no fallback via JSON.stringify (aspas já escapadas).
+      var arg = (f.id!=null) ? String(f.id) : JSON.stringify(f.nome);
+      return '<button type="button" onclick=\'window.vdSelecionarForma('+arg+')\' style="padding:10px 4px;border-radius:10px;border:2px solid '+(ativo?'var(--blue-light)':'var(--card-border)')+';background:'+(ativo?'rgba(59,130,246,.15)':'var(--card2)')+';color:'+(ativo?'var(--blue-light)':'var(--tx2)')+';font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .12s ease">'
+        + '<span style="font-size:18px">'+(f.icone||'💰')+'</span>'+_esc(f.nome)
       + '</button>';
     }).join('');
   }
-  window.vdSelecionarForma = function(valor){
-    document.getElementById('vd-forma').value = valor;
+  window.vdSelecionarForma = function(chave){
+    var f = _formasPagamentoAtuais().find(function(x){ return (x.id!=null && String(x.id)===String(chave)) || x.nome===chave; });
+    document.getElementById('vd-forma').value = f ? f.nome : chave;
     renderFormaPagamentoBotoes();
     window._vdAtualizarAreaTroco();
   };
@@ -9096,7 +9117,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     var forma = document.getElementById('vd-forma').value;
     var area = document.getElementById('vd-troco-area');
     if(!area) return;
-    if(forma==='Dinheiro'){
+    if(_formaContaComoDinheiro(forma)){
       area.style.display = 'block';
       window._vdAtualizarTroco();
     } else {
@@ -9403,7 +9424,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     var nomeCliente = (document.getElementById('vd-cliente').value||'').trim();
     var obsVenda = (document.getElementById('vd-obs').value||'').trim();
     var valorRecebido = null, troco = null;
-    if(forma==='Dinheiro'){
+    if(_formaContaComoDinheiro(forma)){
       valorRecebido = _parseValorCx(document.getElementById('vd-valor-recebido').value);
       if(valorRecebido>0){
         troco = valorRecebido - total;
@@ -9497,21 +9518,33 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     var vendas = sessao.movimentos.filter(function(m){ return m.tipo==='venda'; });
     var sangrias = sessao.movimentos.filter(function(m){ return m.tipo==='sangria'; });
     var suprimentos = sessao.movimentos.filter(function(m){ return m.tipo==='suprimento'; });
-    var vendasDinheiro = vendas.filter(function(v){ return v.formaPagamento==='Dinheiro'; }).reduce(function(a,v){ return a+v.total; },0);
-    var vendasOutros = vendas.filter(function(v){ return v.formaPagamento!=='Dinheiro'; }).reduce(function(a,v){ return a+v.total; },0);
+    var porForma = {};
+    vendas.forEach(function(v){
+      var chave = v.formaPagamento || '—';
+      porForma[chave] = (porForma[chave]||0) + v.total;
+    });
+    var vendasDinheiro = 0, vendasOutros = 0;
+    Object.keys(porForma).forEach(function(k){
+      if(_formaContaComoDinheiro(k)) vendasDinheiro += porForma[k]; else vendasOutros += porForma[k];
+    });
     var totalSangrias = sangrias.reduce(function(a,v){ return a+v.valor; },0);
     var totalSuprimentos = suprimentos.reduce(function(a,v){ return a+v.valor; },0);
     var dinheiroEsperado = sessao.abertura.valor + vendasDinheiro + totalSuprimentos - totalSangrias;
-    return {vendasDinheiro:vendasDinheiro, vendasOutros:vendasOutros, totalSangrias:totalSangrias, totalSuprimentos:totalSuprimentos, dinheiroEsperado:dinheiroEsperado};
+    return {porForma:porForma, vendasDinheiro:vendasDinheiro, vendasOutros:vendasOutros, totalSangrias:totalSangrias, totalSuprimentos:totalSuprimentos, dinheiroEsperado:dinheiroEsperado};
   }
   window.abrirModalFecharCaixa = function(){
     var sessao = caixaAbertaDoOperador();
     if(!sessao) return;
     var calc = calcularFechamento(sessao);
+    var linhasFormas = Object.keys(calc.porForma).sort().map(function(k){
+      var conta = _formaContaComoDinheiro(k);
+      return '<div>'+_iconeForma(k)+' '+_esc(k)+': <strong>'+_fmtMoedaCx(calc.porForma[k])+'</strong>'
+        + (conta ? '' : ' <span style="color:var(--tx3);font-size:11px">(não conta no caixa físico)</span>')
+      + '</div>';
+    }).join('');
     document.getElementById('fc-resumo').innerHTML =
       '<div>Abertura: <strong>'+_fmtMoedaCx(sessao.abertura.valor)+'</strong></div>'
-      + '<div>Vendas em dinheiro: <strong>'+_fmtMoedaCx(calc.vendasDinheiro)+'</strong></div>'
-      + '<div>Vendas PIX/Cartão/Boleto: <strong>'+_fmtMoedaCx(calc.vendasOutros)+'</strong> (não conta no caixa físico)</div>'
+      + (linhasFormas || '<div style="color:var(--tx3)">Nenhuma venda neste caixa ainda.</div>')
       + '<div>Suprimentos: <strong>'+_fmtMoedaCx(calc.totalSuprimentos)+'</strong></div>'
       + '<div>Sangrias: <strong>−'+_fmtMoedaCx(calc.totalSangrias)+'</strong></div>'
       + '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--card-border)">Dinheiro esperado: <strong style="color:var(--blue-light)">'+_fmtMoedaCx(calc.dinheiroEsperado)+'</strong></div>';
@@ -9917,6 +9950,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     aliquotas:              { label:'Alíquotas',             icon:'🧾', campos:[{key:'nome',label:'Descrição'},{key:'icms',label:'ICMS',tipo:'select',opcoes:['Sim','Não'],padrao:'Sim'},{key:'percentual',label:'Valor (%)',tipo:'number'}] },
     classificacoesFiscais:  { label:'Classificações Fiscais', icon:'📋', campos:[{key:'codigo',label:'Código (NCM)'},{key:'descricao',label:'Descrição'}] },
     cfop:                   { label:'CFOP',                  icon:'🔢', campos:[{key:'codigo',label:'Código'},{key:'descricao',label:'Descrição'}] },
+    formasPagamento:        { label:'Formas de Pagamento',   icon:'💳', campos:[{key:'nome',label:'Nome'},{key:'icone',label:'Ícone (emoji)'},{key:'contaComoDinheiro',label:'Conta como dinheiro no caixa físico?',tipo:'select',opcoes:['Sim','Não'],padrao:'Não'}] },
   };
 
   window.catalogos = {};
@@ -9997,6 +10031,20 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       ];
       window.catalogos.cfop = _cfopPadrao.map(function(c, i){ return { id: Date.now()+i, codigo:c[0], descricao:c[1] }; });
       localStorage.setItem('sisvip_cfop_seed', '1');
+      salvarCatalogos();
+    }
+  } catch(e){}
+
+  // ── Formas de pagamento padrão — só semeia na primeira vez (se apagar depois, respeita) ──
+  try {
+    if(!localStorage.getItem('sisvip_formaspg_seed') && window.catalogos.formasPagamento.length===0){
+      window.catalogos.formasPagamento = [
+        { id: Date.now(),   nome:'Dinheiro', icone:'💵', contaComoDinheiro:'Sim' },
+        { id: Date.now()+1, nome:'PIX',      icone:'⚡', contaComoDinheiro:'Não' },
+        { id: Date.now()+2, nome:'Cartão',   icone:'💳', contaComoDinheiro:'Não' },
+        { id: Date.now()+3, nome:'Boleto',   icone:'📄', contaComoDinheiro:'Não' },
+      ];
+      localStorage.setItem('sisvip_formaspg_seed', '1');
       salvarCatalogos();
     }
   } catch(e){}
