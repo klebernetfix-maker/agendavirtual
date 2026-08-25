@@ -8852,7 +8852,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
             + '<div class="fgroup" style="flex:1"><label class="flabel">UF</label><input class="finput" id="vd-ent-uf" maxlength="2" style="text-transform:uppercase"></div>'
           + '</div>'
           + '<div class="fgroup full" style="margin-top:8px"><label class="flabel">Referência (opcional)</label><input class="finput" id="vd-ent-referencia" placeholder="Portão azul, perto do mercado..."></div>'
-          + '<div class="fgroup full" style="margin-top:8px"><label class="flabel">Taxa de entrega (R$)</label><input class="finput" id="vd-ent-taxa" type="text" placeholder="0,00" oninput="formatarValorInput(this);window.renderCarrinhoVenda()"></div>'
+          + '<div class="fgroup full" style="margin-top:8px"><label class="flabel">Taxa de entrega (R$)</label><input class="finput" id="vd-ent-taxa" type="text" placeholder="0,00" oninput="formatarValorInput(this);window._vdRenderCarrinho()"></div>'
         + '</div>'
         + '<div class="fgroup full" style="margin-top:14px"><label class="flabel">Forma de Pagamento</label>'
           + '<input type="hidden" id="vd-forma" value="Dinheiro">'
@@ -9379,6 +9379,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     if(totalEl) totalEl.textContent = _fmtMoedaCx(totais.total);
     if(typeof window._vdAtualizarTroco==='function') window._vdAtualizarTroco();
   }
+  window._vdRenderCarrinho = renderCarrinhoVenda; // exposto pra ser chamado de dentro de atributos oninput inline
 
   // ── Escolher opções do combo ──
   window._cbeProdutoAtual = null;
