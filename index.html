@@ -246,8 +246,8 @@ textarea.finput{resize:vertical;min-height:76px;line-height:1.5}
 
 /* Grids responsivos — detalhes no bloco mobile abaixo */
 
-/* ── Impressão do Boleto/Extrato/Relatório/Comanda — mostra só a área dedicada, esconde o resto ── */
-#boleto-print-area, #extrato-print-area, #relatorio-print-area, #comanda-print-area{ display:none; }
+/* ── Impressão do Boleto/Extrato/Relatório/Comanda/Pré-conta — mostra só a área dedicada, esconde o resto ── */
+#boleto-print-area, #extrato-print-area, #relatorio-print-area, #comanda-print-area, #preconta-print-area{ display:none; }
 @media print{
   body.printing-boleto > *:not(#boleto-print-area){ display:none !important; }
   body.printing-boleto #boleto-print-area{ display:block !important; background:#fff; }
@@ -257,6 +257,8 @@ textarea.finput{resize:vertical;min-height:76px;line-height:1.5}
   body.printing-relatorio #relatorio-print-area{ display:block !important; background:#fff; }
   body.printing-comanda > *:not(#comanda-print-area){ display:none !important; }
   body.printing-comanda #comanda-print-area{ display:block !important; background:#fff; }
+  body.printing-preconta > *:not(#preconta-print-area){ display:none !important; }
+  body.printing-preconta #preconta-print-area{ display:block !important; background:#fff; }
 }
 </style>
 </head>
@@ -8819,6 +8821,10 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
           + '<input type="hidden" id="vd-forma" value="Dinheiro">'
           + '<div id="vd-forma-botoes" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px"></div>'
         + '</div>'
+        + '<div id="vd-troco-area" style="display:none;margin-top:12px;padding:12px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px">'
+          + '<div class="fgroup full"><label class="flabel">Valor recebido do cliente (R$)</label><input class="finput" id="vd-valor-recebido" type="text" placeholder="0,00" oninput="formatarValorInput(this);window._vdAtualizarTroco()"></div>'
+          + '<div id="vd-troco-resultado" style="font-size:13px;font-weight:600;margin-top:6px;min-height:18px"></div>'
+        + '</div>'
         + '<div class="fgroup full" style="margin-top:12px"><label class="flabel">Cliente (opcional — pra pontos de fidelidade)</label>'
           + '<input class="finput" id="vd-cliente" list="vd-clientes-list" placeholder="Digite pra buscar, ou deixe em branco (venda balcão)">'
           + '<datalist id="vd-clientes-list"></datalist>'
@@ -8828,6 +8834,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       + '<div class="modal-footer">'
         + '<button class="btn btn-sm" onclick="document.getElementById(\'modal-venda\').style.display=\'none\'">Cancelar</button>'
         + '<button class="btn btn-sm" onclick="window.imprimirComanda()" title="Manda pra cozinha/bar antes de fechar a conta">🖨 Comanda</button>'
+        + '<button class="btn btn-sm" onclick="window.imprimirPreConta()" title="Mostra pro cliente conferir antes de pagar">🧾 Pré-conta</button>'
         + '<button class="btn btn-p btn-sm" onclick="window.finalizarVenda()">✓ Finalizar Venda</button>'
       + '</div>'
     + '</div>';
@@ -8838,6 +8845,22 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   comandaPrintArea.id = 'comanda-print-area';
   comandaPrintArea.style.display = 'none';
   document.body.appendChild(comandaPrintArea);
+
+  var precontaPrintArea = document.createElement('div');
+  precontaPrintArea.id = 'preconta-print-area';
+  precontaPrintArea.style.display = 'none';
+  document.body.appendChild(precontaPrintArea);
+
+  // ── Controla o tamanho da página de impressão por job: 80mm (bobina térmica)
+  // pra Comanda/Pré-conta, papel normal pro Boleto/Extrato/Relatório ──
+  var _printPageSizeStyle = document.createElement('style');
+  _printPageSizeStyle.id = 'print-page-size-style';
+  document.head.appendChild(_printPageSizeStyle);
+  function _definirTamanhoPaginaImpressao(bobina80mm){
+    _printPageSizeStyle.textContent = bobina80mm
+      ? '@page{ size:80mm auto; margin:2mm; }'
+      : '@page{ size:auto; margin:12mm; }';
+  }
 
   // ── Modal: Sangria ──
   var modalSangria = document.createElement('div');
@@ -9067,6 +9090,33 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   window.vdSelecionarForma = function(valor){
     document.getElementById('vd-forma').value = valor;
     renderFormaPagamentoBotoes();
+    window._vdAtualizarAreaTroco();
+  };
+  window._vdAtualizarAreaTroco = function(){
+    var forma = document.getElementById('vd-forma').value;
+    var area = document.getElementById('vd-troco-area');
+    if(!area) return;
+    if(forma==='Dinheiro'){
+      area.style.display = 'block';
+      window._vdAtualizarTroco();
+    } else {
+      area.style.display = 'none';
+    }
+  };
+  window._vdAtualizarTroco = function(){
+    var totais = calcularTotaisVenda();
+    var recebido = _parseValorCx((document.getElementById('vd-valor-recebido')||{value:''}).value);
+    var resEl = document.getElementById('vd-troco-resultado');
+    if(!resEl) return;
+    if(!recebido){ resEl.textContent=''; return; }
+    var troco = recebido - totais.total;
+    if(troco < 0){
+      resEl.style.color = '#ef4444';
+      resEl.textContent = 'Falta '+_fmtMoedaCx(Math.abs(troco))+' — valor recebido é menor que o total.';
+    } else {
+      resEl.style.color = '#22c55e';
+      resEl.textContent = 'Troco: '+_fmtMoedaCx(troco);
+    }
   };
   window.abrirModalVenda = function(){
     if(!caixaAbertaDoOperador()){ if(typeof notify==='function') notify('Abra o caixa primeiro.'); return; }
@@ -9074,12 +9124,15 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     document.getElementById('vd-busca-produto').value = '';
     document.getElementById('vd-cliente').value = '';
     document.getElementById('vd-obs').value = '';
+    document.getElementById('vd-valor-recebido').value = '';
+    document.getElementById('vd-troco-resultado').textContent = '';
     var listaCli = document.getElementById('vd-clientes-list');
     if(listaCli) listaCli.innerHTML = (window.clientes||[]).map(function(c){ return '<option value="'+_esc(c.nome)+'">'; }).join('');
     window.renderListaProdutosVenda();
     renderCarrinhoVenda();
     document.getElementById('vd-forma').value = 'Dinheiro';
     renderFormaPagamentoBotoes();
+    window._vdAtualizarAreaTroco();
     document.getElementById('modal-venda').style.display = 'flex';
   };
   window.renderListaProdutosVenda = function(){
@@ -9169,6 +9222,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     }
     var totalEl = document.getElementById('vd-total');
     if(totalEl) totalEl.textContent = _fmtMoedaCx(totais.total);
+    if(typeof window._vdAtualizarTroco==='function') window._vdAtualizarTroco();
   }
 
   // ── Escolher opções do combo ──
@@ -9235,10 +9289,11 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     renderCarrinhoVenda();
   };
 
-  // ── Comanda: agrupa os itens do carrinho por setor (cozinha/bar) e imprime cada folha separada ──
+  // ── Comanda (produção, 80mm) e Pré-conta (cliente, 80mm) ──
   var LOCAL_IMPRESSAO_LABEL = { cozinha:'🍳 Cozinha', bar:'🍹 Bar', ambos:'🍳 Cozinha + 🍹 Bar', nenhum:'Sem setor definido' };
   // Monta o HTML das folhas de comanda (uma por setor) a partir de uma lista de itens —
   // reaproveitado tanto pra imprimir o carrinho atual quanto pra reimprimir uma venda já feita.
+  // Formato bobina térmica 80mm: monoespaçado, letras grandes, sem preço (é só pra produção).
   function _gerarFolhasComanda(itens, tituloExtra){
     var grupos = {};
     itens.forEach(function(item){
@@ -9247,23 +9302,55 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       grupos[setor] = grupos[setor] || [];
       grupos[setor].push(item);
     });
-    var horaImpressao = new Date().toLocaleTimeString('pt-BR').slice(0,5);
+    var agora = new Date();
+    var horaImpressao = agora.toLocaleTimeString('pt-BR').slice(0,5);
+    var dataImpressao = agora.toLocaleDateString('pt-BR');
     return Object.keys(grupos).map(function(setor){
       var itensHtml = grupos[setor].map(function(i){
-        return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #999;font-size:14px">'
-          + '<span><strong>'+i.qtd+'x</strong> '+_esc(i.nome)+(i.comboDetalhe?'<div style="font-size:11px;color:#555">'+_esc(i.comboDetalhe)+'</div>':'')+'</span>'
+        return '<div style="padding:5px 0;border-bottom:1px dashed #000">'
+          + '<div style="font-size:15px;font-weight:700">'+i.qtd+'x '+_esc(i.nome)+'</div>'
+          + (i.comboDetalhe?'<div style="font-size:10px;padding-left:8px">↳ '+_esc(i.comboDetalhe)+'</div>':'')
         + '</div>';
       }).join('');
-      return '<div style="font-family:Arial,Helvetica,sans-serif;color:#000;padding:20px;max-width:400px;margin:0 auto 30px;border-bottom:2px dashed #000">'
-        + '<div style="text-align:center;font-size:16px;font-weight:700;margin-bottom:4px">'+(LOCAL_IMPRESSAO_LABEL[setor]||setor)+'</div>'
-        + '<div style="text-align:center;font-size:11px;color:#555;margin-bottom:14px">'+(tituloExtra||'Comanda')+' — '+horaImpressao+'</div>'
+      return '<div style="font-family:\'Courier New\',monospace;color:#000;width:76mm;margin:0 auto 6mm;padding:2mm 0;page-break-after:always">'
+        + '<div style="text-align:center;font-size:15px;font-weight:700;border-bottom:1px solid #000;padding-bottom:4px;margin-bottom:4px">'+(LOCAL_IMPRESSAO_LABEL[setor]||setor)+'</div>'
+        + '<div style="text-align:center;font-size:10px;margin-bottom:6px">'+(tituloExtra||'Comanda')+' · '+dataImpressao+' '+horaImpressao+'</div>'
         + itensHtml
+        + '<div style="text-align:center;font-size:9px;margin-top:8px">— fim —</div>'
       + '</div>';
     }).join('');
   }
+  // Recibo pra cliente conferir antes de pagar — com preços, taxa de serviço e total. Sem valor fiscal.
+  function _gerarPrecontaHtml(itens, totais){
+    var agora = new Date();
+    var empresa = (window.configBanco && window.configBanco.nome) || 'SisVip';
+    var itensHtml = itens.map(function(i){
+      var sub = i.preco*i.qtd;
+      return '<div style="margin-bottom:4px">'
+        + '<div style="display:flex;justify-content:space-between;font-size:12px"><span>'+i.qtd+'x '+_esc(i.nome)+'</span><span>'+_fmtMoedaCx(sub)+'</span></div>'
+        + (i.comboDetalhe?'<div style="font-size:9px;color:#333;padding-left:8px">↳ '+_esc(i.comboDetalhe)+'</div>':'')
+      + '</div>';
+    }).join('');
+    return '<div style="font-family:\'Courier New\',monospace;color:#000;width:76mm;margin:0 auto;padding:2mm 0">'
+      + '<div style="text-align:center;font-size:14px;font-weight:700">'+_esc(empresa)+'</div>'
+      + '<div style="text-align:center;font-size:10px;margin-bottom:8px">Pré-conta · '+agora.toLocaleDateString('pt-BR')+' '+agora.toLocaleTimeString('pt-BR').slice(0,5)+'</div>'
+      + '<div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:6px 0;margin-bottom:6px">'+itensHtml+'</div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:11px"><span>Subtotal</span><span>'+_fmtMoedaCx(totais.subtotal)+'</span></div>'
+      + (totais.temTxServico?'<div style="display:flex;justify-content:space-between;font-size:11px"><span>Taxa de serviço (10%)</span><span>'+_fmtMoedaCx(totais.txServico)+'</span></div>':'')
+      + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid #000;margin-top:6px;padding-top:6px"><span>TOTAL</span><span>'+_fmtMoedaCx(totais.total)+'</span></div>'
+      + '<div style="text-align:center;font-size:9px;margin-top:12px;padding-top:6px;border-top:1px dashed #000">Documento sem valor fiscal — confira antes de pagar</div>'
+    + '</div>';
+  }
   function _dispararImpressaoComanda(html){
+    _definirTamanhoPaginaImpressao(true);
     document.getElementById('comanda-print-area').innerHTML = html;
     document.body.classList.add('printing-comanda');
+    window.print();
+  }
+  function _dispararImpressaoPreconta(html){
+    _definirTamanhoPaginaImpressao(true);
+    document.getElementById('preconta-print-area').innerHTML = html;
+    document.body.classList.add('printing-preconta');
     window.print();
   }
   window.imprimirComanda = function(){
@@ -9278,7 +9365,15 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     if(!mov){ if(typeof notify==='function') notify('Venda não encontrada.'); return; }
     _dispararImpressaoComanda(_gerarFolhasComanda(mov.itens, 'Reimpressão'));
   };
-  window.addEventListener('afterprint', function(){ document.body.classList.remove('printing-comanda'); });
+  window.imprimirPreConta = function(){
+    if(!window._vdCarrinho.length){ if(typeof notify==='function') notify('Adicione ao menos um produto.'); return; }
+    _dispararImpressaoPreconta(_gerarPrecontaHtml(window._vdCarrinho, calcularTotaisVenda()));
+  };
+  window.addEventListener('afterprint', function(){
+    document.body.classList.remove('printing-comanda');
+    document.body.classList.remove('printing-preconta');
+    _definirTamanhoPaginaImpressao(false);
+  });
 
   window.finalizarVenda = function(){
     if(!window._vdCarrinho.length){ if(typeof notify==='function') notify('Adicione ao menos um produto.'); return; }
@@ -9289,6 +9384,14 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     var forma = document.getElementById('vd-forma').value;
     var nomeCliente = (document.getElementById('vd-cliente').value||'').trim();
     var obsVenda = (document.getElementById('vd-obs').value||'').trim();
+    var valorRecebido = null, troco = null;
+    if(forma==='Dinheiro'){
+      valorRecebido = _parseValorCx(document.getElementById('vd-valor-recebido').value);
+      if(valorRecebido>0){
+        troco = valorRecebido - total;
+        if(troco<0){ if(typeof notify==='function') notify('Valor recebido é menor que o total — confira antes de fechar.'); return; }
+      }
+    }
     var agora = new Date();
 
     // abate estoque dos produtos vendidos que controlam estoque
@@ -9315,6 +9418,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     sessao.movimentos.push({
       id: Date.now(), tipo:'venda', dataHora: agora.toLocaleString('pt-BR'),
       itens: window._vdCarrinho.slice(), total: total, txServico: totais.txServico, formaPagamento: forma, cliente: nomeCliente||null, obs: obsVenda||null,
+      valorRecebido: valorRecebido, troco: troco,
     });
     if(window.lancamentos){
       window.lancamentos.push({
@@ -9325,7 +9429,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     }
     salvarCaixaDados();
     if(typeof window.sisvipSave==='function') window.sisvipSave('venda-caixa');
-    var msg = '✅ Venda de '+_fmtMoedaCx(total)+' registrada!'+(pontosGanhos>0?' +'+pontosGanhos+' pontos p/ '+nomeCliente+'.':'');
+    var msg = '✅ Venda de '+_fmtMoedaCx(total)+' registrada!'+(pontosGanhos>0?' +'+pontosGanhos+' pontos p/ '+nomeCliente+'.':'')+(troco>0?' Troco: '+_fmtMoedaCx(troco)+'.':'');
     if(typeof notify==='function') notify(msg);
     document.getElementById('modal-venda').style.display='none';
     window.renderCaixaPage();
