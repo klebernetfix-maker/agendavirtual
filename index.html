@@ -8815,13 +8815,15 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
             + '<span>Total</span><span id="vd-total" style="color:var(--blue-light)">R$ 0,00</span>'
           + '</div>'
         + '</div>'
-        + '<div class="fgroup full" style="margin-top:14px"><label class="flabel">Cliente (opcional — pra pontos de fidelidade)</label>'
+        + '<div class="fgroup full" style="margin-top:14px"><label class="flabel">Forma de Pagamento</label>'
+          + '<input type="hidden" id="vd-forma" value="Dinheiro">'
+          + '<div id="vd-forma-botoes" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px"></div>'
+        + '</div>'
+        + '<div class="fgroup full" style="margin-top:12px"><label class="flabel">Cliente (opcional — pra pontos de fidelidade)</label>'
           + '<input class="finput" id="vd-cliente" list="vd-clientes-list" placeholder="Digite pra buscar, ou deixe em branco (venda balcão)">'
           + '<datalist id="vd-clientes-list"></datalist>'
         + '</div>'
-        + '<div class="fgroup full" style="margin-top:10px"><label class="flabel">Forma de Pagamento</label>'
-          + '<select class="finput" id="vd-forma"><option>Dinheiro</option><option>PIX</option><option>Cartão</option><option>Boleto</option></select>'
-        + '</div>'
+        + '<div class="fgroup full" style="margin-top:10px"><label class="flabel">Observações (opcional)</label><input class="finput" id="vd-obs" placeholder="Ex: sem cebola, entregar na mesa 5..."></div>'
       + '</div>'
       + '<div class="modal-footer">'
         + '<button class="btn btn-sm" onclick="document.getElementById(\'modal-venda\').style.display=\'none\'">Cancelar</button>'
@@ -8961,8 +8963,8 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       : movs.map(function(m){
           var hora = (m.dataHora||'').split(' ').pop();
           if(m.tipo==='venda'){
-            var desc = m.itens.map(function(i){ return i.qtd+'x '+i.nome; }).join(', ');
-            return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bs">Venda</span></td><td style="font-size:12px">'+_esc(desc)+'</td><td>'+formaBadgeCx(m.formaPagamento)+'</td><td style="text-align:right;font-weight:600;color:#22c55e">+ '+_fmtMoedaCx(m.total)+'</td>'
+            var desc = m.itens.map(function(i){ return i.qtd+'x '+i.nome; }).join(', ') + (m.obs?' <span style="color:var(--tx3)">· '+_esc(m.obs)+'</span>':'');
+            return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bs">Venda</span></td><td style="font-size:12px">'+desc+'</td><td>'+formaBadgeCx(m.formaPagamento)+'</td><td style="text-align:right;font-weight:600;color:#22c55e">+ '+_fmtMoedaCx(m.total)+'</td>'
               + '<td><button class="btn btn-sm" style="padding:2px 8px" title="Reimprimir comanda desta venda" onclick="window.reimprimirComandaVenda('+m.id+')">🖨</button></td></tr>';
           }
           if(m.tipo==='sangria'){
@@ -9045,16 +9047,39 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
 
   // ── Venda ──
   window._vdCarrinho = [];
+  var FORMA_PAGAMENTO_OPCOES = [
+    { valor:'Dinheiro', icone:'💵', cor:'#22c55e' },
+    { valor:'PIX',      icone:'⚡', cor:'#25d366' },
+    { valor:'Cartão',   icone:'💳', cor:'#3b82f6' },
+    { valor:'Boleto',   icone:'📄', cor:'#f59e0b' },
+  ];
+  function renderFormaPagamentoBotoes(){
+    var el = document.getElementById('vd-forma-botoes');
+    if(!el) return;
+    var atual = document.getElementById('vd-forma').value;
+    el.innerHTML = FORMA_PAGAMENTO_OPCOES.map(function(f){
+      var ativo = f.valor===atual;
+      return '<button type="button" onclick="window.vdSelecionarForma(\''+f.valor+'\')" style="padding:10px 4px;border-radius:10px;border:2px solid '+(ativo?f.cor:'var(--card-border)')+';background:'+(ativo?f.cor+'18':'var(--card2)')+';color:'+(ativo?f.cor:'var(--tx2)')+';font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .12s ease">'
+        + '<span style="font-size:18px">'+f.icone+'</span>'+f.valor
+      + '</button>';
+    }).join('');
+  }
+  window.vdSelecionarForma = function(valor){
+    document.getElementById('vd-forma').value = valor;
+    renderFormaPagamentoBotoes();
+  };
   window.abrirModalVenda = function(){
     if(!caixaAbertaDoOperador()){ if(typeof notify==='function') notify('Abra o caixa primeiro.'); return; }
     window._vdCarrinho = [];
     document.getElementById('vd-busca-produto').value = '';
     document.getElementById('vd-cliente').value = '';
+    document.getElementById('vd-obs').value = '';
     var listaCli = document.getElementById('vd-clientes-list');
     if(listaCli) listaCli.innerHTML = (window.clientes||[]).map(function(c){ return '<option value="'+_esc(c.nome)+'">'; }).join('');
     window.renderListaProdutosVenda();
     renderCarrinhoVenda();
     document.getElementById('vd-forma').value = 'Dinheiro';
+    renderFormaPagamentoBotoes();
     document.getElementById('modal-venda').style.display = 'flex';
   };
   window.renderListaProdutosVenda = function(){
@@ -9263,6 +9288,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     var total = totais.total;
     var forma = document.getElementById('vd-forma').value;
     var nomeCliente = (document.getElementById('vd-cliente').value||'').trim();
+    var obsVenda = (document.getElementById('vd-obs').value||'').trim();
     var agora = new Date();
 
     // abate estoque dos produtos vendidos que controlam estoque
@@ -9288,11 +9314,11 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
 
     sessao.movimentos.push({
       id: Date.now(), tipo:'venda', dataHora: agora.toLocaleString('pt-BR'),
-      itens: window._vdCarrinho.slice(), total: total, txServico: totais.txServico, formaPagamento: forma, cliente: nomeCliente||null,
+      itens: window._vdCarrinho.slice(), total: total, txServico: totais.txServico, formaPagamento: forma, cliente: nomeCliente||null, obs: obsVenda||null,
     });
     if(window.lancamentos){
       window.lancamentos.push({
-        id: Date.now()+1, descricao:'Venda no caixa', cliente: nomeCliente || 'Venda balcão',
+        id: Date.now()+1, descricao:'Venda no caixa'+(obsVenda?' — '+obsVenda:''), cliente: nomeCliente || 'Venda balcão',
         valor: total, tipo:'receber', forma: forma, status:'pago',
         venc: (window.TODAY_DISP || agora.toLocaleDateString('pt-BR')),
       });
