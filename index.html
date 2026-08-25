@@ -7436,7 +7436,7 @@ window.buscaWebSelecionarItem = function(idx){
     overlay.id = 'modal-backup-senha';
     overlay.className = 'modal-overlay';
     overlay.style.display = 'flex';
-    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+    // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
     var ehExportar = modo==='exportar';
     overlay.innerHTML =
       '<div class="modal" style="width:380px">'
@@ -7942,7 +7942,7 @@ window.abrirRecuperarSenha = function(preselect, primeiroAcesso){
   var overlay = document.createElement('div');
   overlay.id = 'modal-recuperar-senha';
   overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(255,255,255,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
-  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
 
   var tituloModal    = primeiroAcesso ? '🔐 Crie sua senha' : '🔑 Recuperar Senha';
   var subtituloModal = primeiroAcesso ? 'Você entrou sem senha — defina uma agora' : 'Redefina a senha de acesso';
@@ -8103,7 +8103,7 @@ window.abrirDigisacPanel = function(){
   overlay.id = 'modal-digisac';
   overlay.className = 'modal-overlay';
   overlay.style.display = 'flex';
-  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
 
   overlay.innerHTML =
     '<div class="modal" style="width:460px">'
@@ -8232,7 +8232,7 @@ window.digisacAbrirEnvio = function(numero, nome){
   overlay.id = 'modal-digisac-envio';
   overlay.className = 'modal-overlay';
   overlay.style.display = 'flex';
-  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
   overlay.innerHTML =
     '<div class="modal" style="width:400px">'
       + '<div class="modal-header"><div class="modal-title">💬 Enviar WhatsApp</div>'
@@ -8277,7 +8277,7 @@ window.digisacAbrirBuscaContato = function(){
   overlay.id = 'modal-digisac-busca';
   overlay.className = 'modal-overlay';
   overlay.style.display = 'flex';
-  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
   overlay.innerHTML =
     '<div class="modal" style="width:480px">'
       + '<div class="modal-header"><div class="modal-title">💬 Buscar contato no Digisac</div></div>'
@@ -8674,7 +8674,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   }
   var modalProduto = document.createElement('div');
   modalProduto.className='modal-overlay'; modalProduto.id='modal-produto'; modalProduto.style.display='none';
-  modalProduto.onclick = function(e){ if(e.target===modalProduto) modalProduto.style.display='none'; };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
   modalProduto.innerHTML =
     '<div class="modal" style="width:560px;max-width:94vw">'
       + '<div class="modal-header"><div class="modal-title" id="prod-modal-title">Novo Produto</div></div>'
@@ -8785,7 +8785,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   // ── Modal: Escolher opções do combo (na hora da venda) ──
   var modalComboEscolha = document.createElement('div');
   modalComboEscolha.className='modal-overlay'; modalComboEscolha.id='modal-combo-escolha'; modalComboEscolha.style.display='none';
-  modalComboEscolha.onclick = function(e){ if(e.target===modalComboEscolha) modalComboEscolha.style.display='none'; };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
   modalComboEscolha.innerHTML =
     '<div class="modal" style="width:420px">'
       + '<div class="modal-header"><div class="modal-title" id="cbe-titulo">Monte seu combo</div></div>'
@@ -8903,7 +8903,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   // ── Modal: Sangria ──
   var modalSangria = document.createElement('div');
   modalSangria.className='modal-overlay'; modalSangria.id='modal-sangria'; modalSangria.style.display='none';
-  modalSangria.onclick = function(e){ if(e.target===modalSangria) modalSangria.style.display='none'; };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
   modalSangria.innerHTML =
     '<div class="modal" style="width:360px">'
       + '<div class="modal-header"><div class="modal-title">➖ Sangria (retirada)</div></div>'
@@ -8921,7 +8921,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   // ── Modal: Suprimento ──
   var modalSuprimento = document.createElement('div');
   modalSuprimento.className='modal-overlay'; modalSuprimento.id='modal-suprimento'; modalSuprimento.style.display='none';
-  modalSuprimento.onclick = function(e){ if(e.target===modalSuprimento) modalSuprimento.style.display='none'; };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
   modalSuprimento.innerHTML =
     '<div class="modal" style="width:360px">'
       + '<div class="modal-header"><div class="modal-title">➕ Suprimento (reforço)</div></div>'
@@ -8939,7 +8939,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   // ── Modal: Fechar Caixa ──
   var modalFecharCaixa = document.createElement('div');
   modalFecharCaixa.className='modal-overlay'; modalFecharCaixa.id='modal-fechar-caixa'; modalFecharCaixa.style.display='none';
-  modalFecharCaixa.onclick = function(e){ if(e.target===modalFecharCaixa) modalFecharCaixa.style.display='none'; };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
   modalFecharCaixa.innerHTML =
     '<div class="modal" style="width:420px">'
       + '<div class="modal-header"><div class="modal-title">🔒 Fechar Caixa</div></div>'
@@ -10243,7 +10243,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   // ── Modal compartilhado de item de catálogo ──
   var modalCatalogoItem = document.createElement('div');
   modalCatalogoItem.className='modal-overlay'; modalCatalogoItem.id='modal-catalogo-item'; modalCatalogoItem.style.display='none';
-  modalCatalogoItem.onclick = function(e){ if(e.target===modalCatalogoItem) modalCatalogoItem.style.display='none'; };
+  // Sem fechar ao clicar fora — evita perder o que já foi preenchido com um clique acidental.
   modalCatalogoItem.innerHTML =
     '<div class="modal" style="width:400px">'
       + '<div class="modal-header"><div class="modal-title" id="cat-modal-title">Novo Item</div></div>'
