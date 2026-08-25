@@ -8813,9 +8813,46 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
           + '<div id="vd-tx-servico-linha" style="display:none;justify-content:space-between;font-size:12px;color:var(--tx3);padding-top:6px">'
             + '<span>Taxa de serviço (10%)</span><span id="vd-tx-servico-valor">R$ 0,00</span>'
           + '</div>'
+          + '<div id="vd-tx-entrega-linha" style="display:none;justify-content:space-between;font-size:12px;color:var(--tx3);padding-top:6px">'
+            + '<span>Taxa de entrega</span><span id="vd-tx-entrega-valor">R$ 0,00</span>'
+          + '</div>'
           + '<div style="display:flex;justify-content:space-between;font-weight:700;font-size:16px;padding-top:8px;border-top:1px solid var(--card-border)">'
             + '<span>Total</span><span id="vd-total" style="color:var(--blue-light)">R$ 0,00</span>'
           + '</div>'
+        + '</div>'
+        + '<div class="fgroup full" style="margin-top:14px"><label class="flabel">Tipo de Venda</label>'
+          + '<input type="hidden" id="vd-tipo" value="balcao">'
+          + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">'
+            + '<button type="button" id="vd-tipo-balcao-btn" onclick="window.vdSelecionarTipo(\'balcao\')">🏪 Balcão</button>'
+            + '<button type="button" id="vd-tipo-entrega-btn" onclick="window.vdSelecionarTipo(\'entrega\')">🛵 Entrega</button>'
+          + '</div>'
+        + '</div>'
+        + '<div id="vd-entrega-area" style="display:none;margin-top:12px;padding:12px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:10px">'
+          + '<div style="display:flex;gap:8px;align-items:flex-end">'
+            + '<div class="fgroup" style="flex:1"><label class="flabel">CEP</label><input class="finput" id="vd-ent-cep" placeholder="00000-000" oninput="window._vdBuscarCep(this.value)"></div>'
+          + '</div>'
+          + '<div id="vd-ent-cep-status" style="font-size:11px;color:var(--tx3);margin-top:4px"></div>'
+          + '<div class="fgroup full" style="margin-top:8px"><label class="flabel">Não sabe o CEP? Busque pelo nome da rua</label>'
+            + '<div style="display:flex;gap:6px">'
+              + '<input class="finput" id="vd-ent-rua-busca" placeholder="Nome da rua..." style="flex:1">'
+              + '<button type="button" class="btn btn-sm" onclick="window._vdBuscarRua()">🔍 Buscar</button>'
+            + '</div>'
+            + '<div id="vd-ent-rua-resultados" style="margin-top:6px;display:flex;flex-direction:column;gap:4px"></div>'
+          + '</div>'
+          + '<div style="display:flex;gap:8px;margin-top:8px">'
+            + '<div class="fgroup" style="flex:2"><label class="flabel">Rua</label><input class="finput" id="vd-ent-rua"></div>'
+            + '<div class="fgroup" style="flex:1"><label class="flabel">Número</label><input class="finput" id="vd-ent-numero"></div>'
+          + '</div>'
+          + '<div style="display:flex;gap:8px;margin-top:8px">'
+            + '<div class="fgroup" style="flex:1"><label class="flabel">Bairro</label><input class="finput" id="vd-ent-bairro"></div>'
+            + '<div class="fgroup" style="flex:1"><label class="flabel">Complemento</label><input class="finput" id="vd-ent-complemento" placeholder="Apto, bloco..."></div>'
+          + '</div>'
+          + '<div style="display:flex;gap:8px;margin-top:8px">'
+            + '<div class="fgroup" style="flex:2"><label class="flabel">Cidade</label><input class="finput" id="vd-ent-cidade"></div>'
+            + '<div class="fgroup" style="flex:1"><label class="flabel">UF</label><input class="finput" id="vd-ent-uf" maxlength="2" style="text-transform:uppercase"></div>'
+          + '</div>'
+          + '<div class="fgroup full" style="margin-top:8px"><label class="flabel">Referência (opcional)</label><input class="finput" id="vd-ent-referencia" placeholder="Portão azul, perto do mercado..."></div>'
+          + '<div class="fgroup full" style="margin-top:8px"><label class="flabel">Taxa de entrega (R$)</label><input class="finput" id="vd-ent-taxa" type="text" placeholder="0,00" oninput="formatarValorInput(this);window.renderCarrinhoVenda()"></div>'
         + '</div>'
         + '<div class="fgroup full" style="margin-top:14px"><label class="flabel">Forma de Pagamento</label>'
           + '<input type="hidden" id="vd-forma" value="Dinheiro">'
@@ -8986,7 +9023,9 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       : movs.map(function(m){
           var hora = (m.dataHora||'').split(' ').pop();
           if(m.tipo==='venda'){
-            var desc = (m.numero?'<b>Nº '+m.numero+'</b> · ':'') + m.itens.map(function(i){ return i.qtd+'x '+i.nome; }).join(', ') + (m.obs?' <span style="color:var(--tx3)">· '+_esc(m.obs)+'</span>':'');
+            var desc = (m.numero?'<b>Nº '+m.numero+'</b> · ':'') + (m.entrega?'🛵 ':'') + m.itens.map(function(i){ return i.qtd+'x '+i.nome; }).join(', ')
+              + (m.entrega?' <span style="color:var(--tx3)">· '+_esc(m.entrega.rua)+', '+_esc(m.entrega.numero)+(m.entrega.bairro?' — '+_esc(m.entrega.bairro):'')+'</span>':'')
+              + (m.obs?' <span style="color:var(--tx3)">· '+_esc(m.obs)+'</span>':'');
             return '<tr><td style="font-size:11px;color:var(--tx2)">'+hora+'</td><td><span class="badge bs">Venda</span></td><td style="font-size:12px">'+desc+'</td><td>'+formaBadgeCx(m.formaPagamento)+'</td><td style="text-align:right;font-weight:600;color:#22c55e">+ '+_fmtMoedaCx(m.total)+'</td>'
               + '<td><button class="btn btn-sm" style="padding:2px 8px" title="Reimprimir comanda desta venda" onclick="window.reimprimirComandaVenda('+m.id+')">🖨</button></td></tr>';
           }
@@ -9148,6 +9187,12 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     document.getElementById('vd-obs').value = '';
     document.getElementById('vd-valor-recebido').value = '';
     document.getElementById('vd-troco-resultado').textContent = '';
+    ['vd-ent-cep','vd-ent-rua-busca','vd-ent-rua','vd-ent-numero','vd-ent-bairro','vd-ent-complemento','vd-ent-cidade','vd-ent-uf','vd-ent-referencia','vd-ent-taxa'].forEach(function(id){
+      var e = document.getElementById(id); if(e) e.value = '';
+    });
+    document.getElementById('vd-ent-cep-status').textContent = '';
+    document.getElementById('vd-ent-rua-resultados').innerHTML = '';
+    window.vdSelecionarTipo('balcao');
     var listaCli = document.getElementById('vd-clientes-list');
     if(listaCli) listaCli.innerHTML = (window.clientes||[]).map(function(c){ return '<option value="'+_esc(c.nome)+'">'; }).join('');
     window.renderListaProdutosVenda();
@@ -9157,6 +9202,86 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     window._vdAtualizarAreaTroco();
     document.getElementById('modal-venda').style.display = 'flex';
   };
+  // ── Tipo de venda: Balcão / Entrega ──
+  window.vdSelecionarTipo = function(tipo){
+    document.getElementById('vd-tipo').value = tipo;
+    var baseStyle = 'padding:10px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s ease;';
+    var ativoStyle = 'border:2px solid var(--blue-light);background:rgba(59,130,246,.15);color:var(--blue-light)';
+    var inativoStyle = 'border:2px solid var(--card-border);background:var(--card2);color:var(--tx2)';
+    document.getElementById('vd-tipo-balcao-btn').setAttribute('style', baseStyle+(tipo==='balcao'?ativoStyle:inativoStyle));
+    document.getElementById('vd-tipo-entrega-btn').setAttribute('style', baseStyle+(tipo==='entrega'?ativoStyle:inativoStyle));
+    document.getElementById('vd-entrega-area').style.display = tipo==='entrega' ? 'block' : 'none';
+    renderCarrinhoVenda();
+  };
+  // ── Busca de endereço por CEP (ViaCEP) — mesmo padrão usado no cadastro de cliente ──
+  window._vdBuscarCep = function(val){
+    var nums = (val||'').replace(/\D/g,'');
+    var st = document.getElementById('vd-ent-cep-status');
+    if(nums.length!==8){ if(st) st.textContent=''; return; }
+    if(st) st.textContent='⟳ buscando...';
+    fetch('https://viacep.com.br/ws/'+nums+'/json/', {mode:'cors'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d.erro){ if(st) st.textContent='CEP não encontrado.'; return; }
+        var set = function(id,v){ var e=document.getElementById(id); if(e&&v) e.value=v; };
+        set('vd-ent-rua', d.logradouro||'');
+        set('vd-ent-bairro', d.bairro||'');
+        set('vd-ent-cidade', d.localidade||'');
+        set('vd-ent-uf', d.uf||'');
+        if(st) st.textContent='✅ '+(d.bairro?d.bairro+' — ':'')+d.localidade+'/'+d.uf;
+      })
+      .catch(function(){ if(st) st.textContent='Erro ao buscar CEP.'; });
+  };
+  // ── Busca de endereço pelo nome da rua (quando o cliente não sabe o CEP) ──
+  window._vdBuscarRua = function(){
+    var rua = (document.getElementById('vd-ent-rua-busca').value||'').trim();
+    var uf = (document.getElementById('vd-ent-uf').value || (window.appConfig && window.appConfig.empresa && window.appConfig.empresa.estado) || '').trim();
+    var cidade = (document.getElementById('vd-ent-cidade').value || (window.appConfig && window.appConfig.empresa && window.appConfig.empresa.cidade) || '').trim();
+    var resEl = document.getElementById('vd-ent-rua-resultados');
+    if(rua.length<3 || !uf || !cidade){
+      resEl.innerHTML = '<div style="font-size:11px;color:#ef4444">Preencha Cidade e UF, e digite pelo menos 3 letras da rua.</div>';
+      return;
+    }
+    resEl.innerHTML = '<div style="font-size:11px;color:var(--tx3)">⟳ buscando...</div>';
+    fetch('https://viacep.com.br/ws/'+encodeURIComponent(uf)+'/'+encodeURIComponent(cidade)+'/'+encodeURIComponent(rua)+'/json/', {mode:'cors'})
+      .then(function(r){ return r.json(); })
+      .then(function(list){
+        if(!Array.isArray(list) || !list.length){
+          resEl.innerHTML = '<div style="font-size:11px;color:#ef4444">Nenhuma rua encontrada com esse nome.</div>';
+          return;
+        }
+        window._vdRuaResultados = list;
+        resEl.innerHTML = list.slice(0,8).map(function(d,i){
+          return '<div onclick="window._vdEscolherRua('+i+')" style="cursor:pointer;padding:6px 8px;border-radius:6px;background:var(--card2);font-size:11px">'
+            + '<strong>'+_esc(d.logradouro)+'</strong>'+(d.bairro?' — '+_esc(d.bairro):'')+' · CEP '+_esc(d.cep)
+          + '</div>';
+        }).join('');
+      })
+      .catch(function(){ resEl.innerHTML = '<div style="font-size:11px;color:#ef4444">Erro ao buscar. Tente novamente.</div>'; });
+  };
+  window._vdEscolherRua = function(i){
+    var d = (window._vdRuaResultados||[])[i];
+    if(!d) return;
+    var set = function(id,v){ var e=document.getElementById(id); if(e&&v!=null) e.value=v; };
+    set('vd-ent-rua', d.logradouro||'');
+    set('vd-ent-bairro', d.bairro||'');
+    set('vd-ent-cidade', d.localidade||'');
+    set('vd-ent-uf', d.uf||'');
+    set('vd-ent-cep', d.cep||'');
+    document.getElementById('vd-ent-rua-resultados').innerHTML = '';
+    document.getElementById('vd-ent-rua-busca').value = '';
+  };
+  // Lê os dados de entrega preenchidos no formulário (prévia, antes de finalizar a venda).
+  function _vdEntregaAtual(){
+    var tipoEl = document.getElementById('vd-tipo');
+    if(!tipoEl || tipoEl.value!=='entrega') return null;
+    var get = function(id){ var e=document.getElementById(id); return e ? (e.value||'').trim() : ''; };
+    return {
+      cep: get('vd-ent-cep'), rua: get('vd-ent-rua'), numero: get('vd-ent-numero'),
+      complemento: get('vd-ent-complemento'), bairro: get('vd-ent-bairro'),
+      cidade: get('vd-ent-cidade'), uf: get('vd-ent-uf'), referencia: get('vd-ent-referencia'),
+    };
+  }
   window.renderListaProdutosVenda = function(){
     var q = (document.getElementById('vd-busca-produto').value||'').toLowerCase();
     var ativos = (window.produtos||[]).filter(function(p){ return p.ativo!==false && p.nome.toLowerCase().indexOf(q)!==-1; });
@@ -9218,7 +9343,10 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       return p && p.cobrarTxServico;
     });
     var txServico = temTxServico ? subtotal*(TAXA_SERVICO_PCT/100) : 0;
-    return { subtotal: subtotal, temTxServico: temTxServico, txServico: txServico, total: subtotal+txServico };
+    var tipoEl = document.getElementById('vd-tipo');
+    var isEntrega = !!(tipoEl && tipoEl.value==='entrega');
+    var taxaEntrega = isEntrega ? _parseValorCx((document.getElementById('vd-ent-taxa')||{value:''}).value) : 0;
+    return { subtotal: subtotal, temTxServico: temTxServico, txServico: txServico, isEntrega: isEntrega, taxaEntrega: taxaEntrega, total: subtotal+txServico+taxaEntrega };
   }
   function renderCarrinhoVenda(){
     var el = document.getElementById('vd-carrinho');
@@ -9241,6 +9369,11 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     if(linhaTx){
       linhaTx.style.display = totais.temTxServico ? 'flex' : 'none';
       document.getElementById('vd-tx-servico-valor').textContent = _fmtMoedaCx(totais.txServico);
+    }
+    var linhaEnt = document.getElementById('vd-tx-entrega-linha');
+    if(linhaEnt){
+      linhaEnt.style.display = (totais.isEntrega && totais.taxaEntrega>0) ? 'flex' : 'none';
+      document.getElementById('vd-tx-entrega-valor').textContent = _fmtMoedaCx(totais.taxaEntrega);
     }
     var totalEl = document.getElementById('vd-total');
     if(totalEl) totalEl.textContent = _fmtMoedaCx(totais.total);
@@ -9326,7 +9459,24 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     });
     return max+1;
   }
-  function _gerarFolhasComanda(itens, tituloExtra, numero){
+  // Bloco de endereço impresso na comanda/pré-conta quando a venda é de entrega.
+  function _htmlEnderecoEntrega(entrega, compacto){
+    if(!entrega || !entrega.rua) return '';
+    var linha1 = _esc(entrega.rua)+(entrega.numero?', '+_esc(entrega.numero):'')+(entrega.complemento?' — '+_esc(entrega.complemento):'');
+    if(compacto){
+      return '<div style="border-top:1px dashed #000;padding-top:6px;margin-top:6px;font-size:10px">'
+        + '<strong>🛵 Entrega:</strong> '+linha1+(entrega.bairro?' — '+_esc(entrega.bairro):'')
+      + '</div>';
+    }
+    return '<div style="border:1px dashed #000;padding:4px 6px;margin-bottom:6px;font-size:10px">'
+      + '<div style="font-weight:700;text-align:center">🛵 ENTREGA</div>'
+      + '<div>'+linha1+'</div>'
+      + (entrega.bairro?'<div>'+_esc(entrega.bairro)+'</div>':'')
+      + (entrega.cidade?'<div>'+_esc(entrega.cidade)+(entrega.uf?'/'+_esc(entrega.uf):'')+'</div>':'')
+      + (entrega.referencia?'<div>Ref: '+_esc(entrega.referencia)+'</div>':'')
+    + '</div>';
+  }
+  function _gerarFolhasComanda(itens, tituloExtra, numero, entrega){
     var grupos = {};
     itens.forEach(function(item){
       var p = (window.produtos||[]).find(function(x){ return x.id===item.produtoId; });
@@ -9337,6 +9487,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     var agora = new Date();
     var horaImpressao = agora.toLocaleTimeString('pt-BR').slice(0,5);
     var dataImpressao = agora.toLocaleDateString('pt-BR');
+    var enderecoHtml = _htmlEnderecoEntrega(entrega, false);
     return Object.keys(grupos).map(function(setor){
       var itensHtml = grupos[setor].map(function(i){
         return '<div style="padding:5px 0;border-bottom:1px dashed #000">'
@@ -9348,13 +9499,14 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
         + '<div style="text-align:center;font-size:22px;font-weight:700">Nº '+numero+'</div>'
         + '<div style="text-align:center;font-size:15px;font-weight:700;border-bottom:1px solid #000;padding-bottom:4px;margin-bottom:4px">'+(LOCAL_IMPRESSAO_LABEL[setor]||setor)+'</div>'
         + '<div style="text-align:center;font-size:10px;margin-bottom:6px">'+(tituloExtra||'Comanda')+' · '+dataImpressao+' '+horaImpressao+'</div>'
+        + enderecoHtml
         + itensHtml
         + '<div style="text-align:center;font-size:9px;margin-top:8px">— fim —</div>'
       + '</div>';
     }).join('');
   }
-  // Recibo pra cliente conferir antes de pagar — com preços, taxa de serviço e total. Sem valor fiscal.
-  function _gerarPrecontaHtml(itens, totais, numero){
+  // Recibo pra cliente conferir antes de pagar — com preços, taxa de serviço, taxa de entrega e total. Sem valor fiscal.
+  function _gerarPrecontaHtml(itens, totais, numero, entrega){
     var agora = new Date();
     var empresa = (window.configBanco && window.configBanco.nome) || 'SisVip';
     var itensHtml = itens.map(function(i){
@@ -9371,7 +9523,9 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
       + '<div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:6px 0;margin-bottom:6px">'+itensHtml+'</div>'
       + '<div style="display:flex;justify-content:space-between;font-size:11px"><span>Subtotal</span><span>'+_fmtMoedaCx(totais.subtotal)+'</span></div>'
       + (totais.temTxServico?'<div style="display:flex;justify-content:space-between;font-size:11px"><span>Taxa de serviço (10%)</span><span>'+_fmtMoedaCx(totais.txServico)+'</span></div>':'')
+      + (totais.taxaEntrega>0?'<div style="display:flex;justify-content:space-between;font-size:11px"><span>Taxa de entrega</span><span>'+_fmtMoedaCx(totais.taxaEntrega)+'</span></div>':'')
       + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid #000;margin-top:6px;padding-top:6px"><span>TOTAL</span><span>'+_fmtMoedaCx(totais.total)+'</span></div>'
+      + _htmlEnderecoEntrega(entrega, true)
       + '<div style="text-align:center;font-size:9px;margin-top:12px;padding-top:6px;border-top:1px dashed #000">Documento sem valor fiscal — confira antes de pagar</div>'
     + '</div>';
   }
@@ -9389,7 +9543,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
   }
   window.imprimirComanda = function(){
     if(!window._vdCarrinho.length){ if(typeof notify==='function') notify('Adicione ao menos um produto.'); return; }
-    _dispararImpressaoComanda(_gerarFolhasComanda(window._vdCarrinho, 'Comanda', window._vdNumeroAtual()));
+    _dispararImpressaoComanda(_gerarFolhasComanda(window._vdCarrinho, 'Comanda', window._vdNumeroAtual(), _vdEntregaAtual()));
   };
   window.reimprimirComandaVenda = function(movimentoId){
     var sessao = caixaAbertaDoOperador() || (window.caixaSessoes||[]).find(function(s){
@@ -9397,11 +9551,11 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     });
     var mov = sessao && sessao.movimentos.find(function(m){ return m.id===movimentoId; });
     if(!mov){ if(typeof notify==='function') notify('Venda não encontrada.'); return; }
-    _dispararImpressaoComanda(_gerarFolhasComanda(mov.itens, 'Reimpressão', mov.numero||'—'));
+    _dispararImpressaoComanda(_gerarFolhasComanda(mov.itens, 'Reimpressão', mov.numero||'—', mov.entrega||null));
   };
   window.imprimirPreConta = function(){
     if(!window._vdCarrinho.length){ if(typeof notify==='function') notify('Adicione ao menos um produto.'); return; }
-    _dispararImpressaoPreconta(_gerarPrecontaHtml(window._vdCarrinho, calcularTotaisVenda(), window._vdNumeroAtual()));
+    _dispararImpressaoPreconta(_gerarPrecontaHtml(window._vdCarrinho, calcularTotaisVenda(), window._vdNumeroAtual(), _vdEntregaAtual()));
   };
   // Número que a venda em aberto vai receber ao finalizar — fixado na abertura do carrinho pra não mudar entre Comanda e Pré-conta.
   window._vdNumeroAtual = function(){
@@ -9431,6 +9585,11 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
         if(troco<0){ if(typeof notify==='function') notify('Valor recebido é menor que o total — confira antes de fechar.'); return; }
       }
     }
+    var entrega = _vdEntregaAtual();
+    if(entrega){
+      if(!entrega.rua || !entrega.numero){ if(typeof notify==='function') notify('Preencha rua e número do endereço de entrega.'); return; }
+      entrega.taxaEntrega = totais.taxaEntrega;
+    }
     var agora = new Date();
 
     // abate estoque dos produtos vendidos que controlam estoque
@@ -9457,7 +9616,7 @@ setTimeout(function(){ if(typeof window.digisacSyncPoll==='function') window.dig
     sessao.movimentos.push({
       id: Date.now(), tipo:'venda', dataHora: agora.toLocaleString('pt-BR'), numero: window._vdNumeroAtual(),
       itens: window._vdCarrinho.slice(), total: total, txServico: totais.txServico, formaPagamento: forma, cliente: nomeCliente||null, obs: obsVenda||null,
-      valorRecebido: valorRecebido, troco: troco,
+      valorRecebido: valorRecebido, troco: troco, entrega: entrega,
     });
     window._vdNumeroReservado = null;
     if(window.lancamentos){
